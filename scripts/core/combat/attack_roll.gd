@@ -4,6 +4,8 @@ extends RefCounted
 
 const DIE_SIDES: int = 20
 const AUTOMATIC_MISS: int = 1
+## A normal hit whose total exceeds the armor class by at most this much counts as narrow.
+const NARROW_HIT_MARGIN: int = 1
 
 var natural_roll: int
 var attack_bonus: int
@@ -13,6 +15,7 @@ var is_natural_one: bool
 var is_natural_twenty: bool
 var is_crit: bool
 var is_hit: bool
+var is_narrow_hit: bool
 
 
 func _init(roll: int, bonus: int, armor_class: int, crit_threshold: int) -> void:
@@ -29,3 +32,4 @@ func _init(roll: int, bonus: int, armor_class: int, crit_threshold: int) -> void
 	is_natural_twenty = roll == DIE_SIDES
 	is_crit = roll >= crit_threshold
 	is_hit = is_crit or (not is_natural_one and total >= armor_class)
+	is_narrow_hit = is_hit and not is_crit and total - armor_class <= NARROW_HIT_MARGIN

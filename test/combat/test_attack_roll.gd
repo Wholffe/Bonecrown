@@ -3,6 +3,8 @@ extends GutTest
 const NORMAL_CRIT_THRESHOLD: int = 20
 const EXTENDED_CRIT_THRESHOLD: int = 19
 const UNREACHABLE_ARMOR_CLASS: int = 99
+## Natural rolls with +5 against AC 14 and whether they hit narrowly.
+const NARROW_HIT_CASES: Array = [[9, true], [10, true], [11, false], [8, false]]
 
 
 func test_total_adds_bonus_to_natural_roll() -> void:
@@ -61,3 +63,18 @@ func test_ordinary_hit_is_no_crit_and_no_natural_extreme() -> void:
 	assert_false(roll.is_crit)
 	assert_false(roll.is_natural_one)
 	assert_false(roll.is_natural_twenty)
+
+
+func test_narrow_hit_reaches_armor_class_by_at_most_one(
+	params: Array = use_parameters(NARROW_HIT_CASES)
+) -> void:
+	var roll: AttackRoll = AttackRoll.new(params[0], 5, 14, NORMAL_CRIT_THRESHOLD)
+
+	assert_eq(roll.is_narrow_hit, params[1], "%d + 5 vs AC 14" % params[0])
+
+
+func test_crit_is_never_narrow_hit() -> void:
+	var roll: AttackRoll = AttackRoll.new(19, 0, 19, EXTENDED_CRIT_THRESHOLD)
+
+	assert_true(roll.is_crit)
+	assert_false(roll.is_narrow_hit, "A crit counts as crit, even when it reaches the AC exactly")
