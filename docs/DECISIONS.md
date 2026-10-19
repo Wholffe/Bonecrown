@@ -69,3 +69,7 @@ Decisions approved by the user, oldest first. Each entry has a date, the decisio
 ## 2026-10-19: Fullscreen at the screen's resolution by default
 - **Decision:** The game starts in borderless fullscreen at the screen's native resolution instead of a 1280x720 window. The UI is still designed for 1280x720 and scales to the screen; on screens that are not 16:9 the container layouts expand to fill the screen.
 - **Reason:** Like in most other games, the default follows the screen settings.
+
+## 2026-10-19: Choice fields in data default to UNSET
+- **Decision:** Every enum field in the data classes (for example `SkillData.activation`, `SkillData.action_cost`, `StatModifierEffect.stat`) gets an extra member `UNSET = -1` as its default. The data test reports any content that leaves a required choice on `UNSET`.
+- **Reason:** Godot omits values equal to the default from `.tres` files. With a neutral default every real value is written explicitly, and a later change of a default cannot silently shift content.
