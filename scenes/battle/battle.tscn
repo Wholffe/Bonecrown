@@ -37,7 +37,6 @@ theme_override_constants/separation = 16
 
 [node name="PlayerSide" type="VBoxContainer" parent="Margin/Layout/Arena" unique_id=1130375543]
 layout_mode = 2
-size_flags_vertical = 0
 theme_override_constants/separation = 8
 
 [node name="PlayerCard" parent="Margin/Layout/Arena/PlayerSide" unique_id=1748169109 instance=ExtResource("2_0yh6x")]
@@ -48,7 +47,12 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="PlayerSkillsLabel" type="Label" parent="Margin/Layout/Arena/PlayerSide" unique_id=1538684684]
+[node name="PlayerSkillsScroll" type="ScrollContainer" parent="Margin/Layout/Arena/PlayerSide" unique_id=1993229210]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="PlayerSkillsLabel" type="Label" parent="Margin/Layout/Arena/PlayerSide/PlayerSkillsScroll" unique_id=1538684684]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -88,9 +92,15 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Attack"
 
-[node name="SkillButtons" type="VBoxContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1437184484]
+[node name="SkillButtonsScroll" type="ScrollContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1521657191]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SkillButtons" type="VBoxContainer" parent="Margin/Layout/BottomRow/ActionBar/SkillButtonsScroll" unique_id=1437184484]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
 [node name="MainMenuButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1495569792]

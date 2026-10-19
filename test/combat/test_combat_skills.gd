@@ -109,6 +109,7 @@ func test_second_wind_heals_d10_plus_level() -> void:
 	var params: Array = get_signal_parameters(combat, "combatant_healed", 0)
 	var heal: HealRoll = params[1]
 	assert_eq(heal.dice_results, [7] as Array[int])
+	assert_eq(heal.die_sides, 10, "Second Wind rolls a d10")
 	assert_eq(heal.heal_bonus, 3, "The bonus is the current level")
 	assert_eq(heal.total, 10)
 	assert_eq(params[2], 10)

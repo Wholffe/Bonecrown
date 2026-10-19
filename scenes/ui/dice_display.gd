@@ -10,12 +10,21 @@ const ROLL_FACE_STEP: int = 7
 
 ## When false, the play methods show the result at once and return without waiting.
 var animations_enabled: bool = true
+var _roll_count: int = 0
 
 @onready var _title_label: Label = %TitleLabel
 @onready var _die_label: Label = %DieLabel
 @onready var _detail_label: Label = %DetailLabel
 @onready var _outcome_label: Label = %OutcomeLabel
 @onready var _damage_label: Label = %DamageLabel
+
+
+## Joins single dice results for display, for example "3 + 5".
+static func join_dice_results(dice_results: Array[int]) -> String:
+	var dice_texts: PackedStringArray = []
+	for result: int in dice_results:
+		dice_texts.append(str(result))
+	return " + ".join(dice_texts)
 
 
 ## Rolls and reveals the result. The damage is null on a miss, as in Combat.attack_resolved.
@@ -36,10 +45,10 @@ func play_attack(
 
 
 ## Rolls and reveals the heal. Call hold() afterwards to keep the result on screen.
-func play_heal(healed: Combatant, skill: SkillData, heal: HealRoll, restored: int) -> void:
-	_start_roll("%s: %s" % [healed.display_name, skill.display_name])
+func play_heal(title: String, heal: HealRoll, restored: int) -> void:
+	_start_roll(title)
 	var dice_sum: int = heal.total - heal.heal_bonus
-	await _roll_die(dice_sum, _highest_heal_dice_sum(skill))
+	await _roll_die(dice_sum, heal.dice_results.size() * heal.die_sides)
 	_detail_label.text = "%+d = %d" % [heal.heal_bonus, heal.total]
 	_outcome_label.text = "HEALED %d" % restored
 
@@ -58,8 +67,10 @@ func _start_roll(title: String) -> void:
 
 
 func _roll_die(final_value: int, highest_value: int) -> void:
+	_roll_count += 1
 	if animations_enabled:
-		var face: int = final_value
+		# Starting from the result would give it away, so the faces start from the roll count.
+		var face: int = _roll_count
 		for _step: int in roundi(ROLL_DURATION / ROLL_STEP_DURATION):
 			face = (face + ROLL_FACE_STEP - 1) % highest_value + 1
 			_die_label.text = str(face)
@@ -83,21 +94,9 @@ func _describe_outcome(attack: AttackRoll) -> String:
 
 
 func _describe_sum(dice_results: Array[int], bonus: int, total: int) -> String:
-	var dice_texts: PackedStringArray = []
-	for result: int in dice_results:
-		dice_texts.append(str(result))
-	var sum_text: String = " + ".join(dice_texts)
+	var sum_text: String = join_dice_results(dice_results)
 	if bonus > 0:
 		sum_text += " + %d" % bonus
 	elif bonus < 0:
 		sum_text += " - %d" % -bonus
 	return "%s = %d" % [sum_text, total]
-
-
-# HealRoll does not know its die, so the rolling range comes from the skill's heal effect.
-func _highest_heal_dice_sum(skill: SkillData) -> int:
-	for effect: EffectData in skill.effects:
-		var heal_effect: HealEffect = effect as HealEffect
-		if heal_effect != null:
-			return heal_effect.die_count * heal_effect.die_sides
-	return AttackRoll.DIE_SIDES

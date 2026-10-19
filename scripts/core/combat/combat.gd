@@ -122,7 +122,9 @@ func _apply_effect(effect: EffectData) -> void:
 
 func _heal_player(effect: HealEffect) -> void:
 	var bonus: int = player.level if effect.adds_level else 0
-	var heal: HealRoll = HealRoll.new(_dice.roll_many(effect.die_count, effect.die_sides), bonus)
+	var heal: HealRoll = HealRoll.new(
+		_dice.roll_many(effect.die_count, effect.die_sides), effect.die_sides, bonus
+	)
 	var restored: int = player.heal(heal.total)
 	combatant_healed.emit(player, heal, restored)
 

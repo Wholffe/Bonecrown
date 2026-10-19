@@ -20,6 +20,8 @@ var _skill_buttons: Dictionary[SkillData, Button] = {}
 var _pending_events: Array[Callable] = []
 var _is_playing_back: bool = false
 var _used_skill: SkillData
+# Kept here, because tests set it before _ready(), when the dice display does not exist yet.
+var _animations_enabled: bool = true
 
 @onready var _player_card: CombatantCard = %PlayerCard
 @onready var _player_level_label: Label = %PlayerLevelLabel
@@ -33,6 +35,7 @@ var _used_skill: SkillData
 
 
 func _ready() -> void:
+	_dice_display.animations_enabled = _animations_enabled
 	_attack_button.pressed.connect(_on_attack_button_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
 	_start_combat()
@@ -42,9 +45,18 @@ func is_playing_back() -> bool:
 	return _is_playing_back
 
 
-## Tests and a later fast mode turn the roll animation off.
+## Returns at once when nothing plays back, because playback_finished is emitted synchronously
+## when no event animates, so awaiting the signal itself could wait forever.
+func wait_for_playback() -> void:
+	if _is_playing_back:
+		await playback_finished
+
+
+## Tests and a later fast mode turn the roll animation off. Works before and after _ready().
 func set_animations_enabled(enabled: bool) -> void:
-	_dice_display.animations_enabled = enabled
+	_animations_enabled = enabled
+	if is_node_ready():
+		_dice_display.animations_enabled = enabled
 
 
 func _start_combat() -> void:
@@ -120,7 +132,6 @@ func _play_pending_events() -> void:
 	while not _pending_events.is_empty():
 		var event: Callable = _pending_events.pop_front()
 		await event.call()
-		_refresh_actions()
 	_is_playing_back = false
 	_refresh_actions()
 	_refresh_player_info()
@@ -152,7 +163,7 @@ func _play_attack(
 func _play_heal(
 	combatant: Combatant, skill: SkillData, heal: HealRoll, restored: int, hit_points: int
 ) -> void:
-	await _dice_display.play_heal(combatant, skill, heal, restored)
+	await _dice_display.play_heal(_describe_heal_title(combatant, skill), heal, restored)
 	_log(_describe_heal(combatant, heal, restored))
 	_cards[combatant].show_hit_points(hit_points)
 	await _dice_display.hold()
@@ -169,9 +180,18 @@ func _play_combat_end(player_won: bool) -> void:
 	_log("Victory!" if player_won else "You have fallen. The run is over.")
 
 
+# The input handlers check this too, because a scripted pressed.emit() ignores disabled buttons.
+func _can_act() -> bool:
+	return not _is_playing_back and not _combat.is_over
+
+
+func _can_attack() -> bool:
+	return _can_act() and _target_card != null and _target_card.combatant.is_alive()
+
+
 func _refresh_actions() -> void:
-	var can_act: bool = not _is_playing_back and not _combat.is_over
-	_attack_button.disabled = not can_act or _target_card == null
+	var can_act: bool = _can_act()
+	_attack_button.disabled = not _can_attack()
 	for skill: SkillData in _skill_buttons:
 		var button: Button = _skill_buttons[skill]
 		button.text = _describe_skill_button(skill)
@@ -226,6 +246,13 @@ func _describe_damage(damage: DamageRoll) -> String:
 	return _describe_dice(damage.dice_results, damage.damage_bonus)
 
 
+# A heal without a preceding skill has no known source yet, see _on_combatant_healed().
+func _describe_heal_title(combatant: Combatant, skill: SkillData) -> String:
+	if skill == null:
+		return "%s heals" % combatant.display_name
+	return "%s: %s" % [combatant.display_name, skill.display_name]
+
+
 func _describe_heal(combatant: Combatant, heal: HealRoll, restored: int) -> String:
 	var heal_text: String = (
 		"%s heals %d (%s)"
@@ -241,10 +268,7 @@ func _describe_heal(combatant: Combatant, heal: HealRoll, restored: int) -> Stri
 
 
 func _describe_dice(dice_results: Array[int], bonus: int) -> String:
-	var dice_texts: PackedStringArray = []
-	for result: int in dice_results:
-		dice_texts.append(str(result))
-	return "dice %s, bonus %+d" % [" + ".join(dice_texts), bonus]
+	return "dice %s, bonus %+d" % [DiceDisplay.join_dice_results(dice_results), bonus]
 
 
 func _log(line: String) -> void:
@@ -285,15 +309,21 @@ func _on_combat_ended(player_won: bool) -> void:
 
 
 func _on_enemy_card_selected(card: CombatantCard) -> void:
+	if not _can_act() or card.is_defeated():
+		return
 	_select_target(card)
 
 
 func _on_attack_button_pressed() -> void:
+	if not _can_attack():
+		return
 	_combat.player_attack(_target_card.combatant)
 	_play_pending_events()
 
 
 func _on_skill_button_pressed(skill: SkillData) -> void:
+	if not _can_act() or not _combat.can_use_skill(skill):
+		return
 	_combat.use_skill(skill)
 	_play_pending_events()
 
