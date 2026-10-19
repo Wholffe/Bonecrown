@@ -15,10 +15,12 @@ func record_player_attack(enemy_id: StringName, attack: AttackRoll) -> void:
 	# A crit hits and a natural 1 misses whatever the armor class is, so neither proves anything.
 	if attack.is_crit or attack.is_natural_one:
 		return
-	if attack.is_hit:
+	if attack.is_narrow_hit:
 		_lower_highest_armor_class(enemy_id, attack.total)
-		if attack.is_narrow_hit:
-			_raise_lowest_armor_class(enemy_id, attack.total - AttackRoll.NARROW_HIT_MARGIN)
+		_raise_lowest_armor_class(enemy_id, attack.total - AttackRoll.NARROW_HIT_MARGIN)
+	elif attack.is_hit:
+		# The roll is shown as a plain hit, which also proves that it was not a narrow one.
+		_lower_highest_armor_class(enemy_id, attack.total - AttackRoll.NARROW_HIT_MARGIN - 1)
 	else:
 		_raise_lowest_armor_class(enemy_id, attack.total + 1)
 

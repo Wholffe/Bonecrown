@@ -24,10 +24,10 @@ func test_armor_class_and_attack_bonus_start_unknown() -> void:
 	assert_eq(_knowledge.attack_bonus(GOBLIN_ID), EnemyKnowledge.UNKNOWN)
 
 
-func test_hit_proves_armor_class_at_most_total() -> void:
+func test_plain_hit_proves_armor_class_below_the_narrow_range() -> void:
 	_knowledge.record_player_attack(GOBLIN_ID, AttackRoll.new(12, 5, 14, NORMAL_CRIT_THRESHOLD))
 
-	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 17, "12 + 5 = 17 hit")
+	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 15, "12 + 5 = 17 hit, but not narrowly")
 	assert_eq(_knowledge.lowest_armor_class(GOBLIN_ID), EnemyKnowledge.UNKNOWN)
 
 
@@ -51,7 +51,7 @@ func test_hit_and_miss_combine_to_range() -> void:
 	_knowledge.record_player_attack(GOBLIN_ID, AttackRoll.new(6, 5, 14, NORMAL_CRIT_THRESHOLD))
 
 	assert_eq(_knowledge.lowest_armor_class(GOBLIN_ID), 12)
-	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 17)
+	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 15)
 	assert_false(_knowledge.is_armor_class_known(GOBLIN_ID))
 
 
@@ -68,7 +68,7 @@ func test_weaker_hit_does_not_loosen_upper_bound() -> void:
 	_knowledge.record_player_attack(GOBLIN_ID, AttackRoll.new(11, 5, 14, NORMAL_CRIT_THRESHOLD))
 	_knowledge.record_player_attack(GOBLIN_ID, AttackRoll.new(14, 5, 14, NORMAL_CRIT_THRESHOLD))
 
-	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 16, "A hit at 19 after a hit at 16")
+	assert_eq(_knowledge.highest_armor_class(GOBLIN_ID), 14, "A plain hit at 19 after one at 16")
 
 
 func test_weaker_miss_does_not_loosen_lower_bound() -> void:
@@ -110,6 +110,13 @@ func test_enemy_attack_reveals_its_attack_bonus() -> void:
 
 	assert_true(_knowledge.is_attack_bonus_known(GOBLIN_ID))
 	assert_eq(_knowledge.attack_bonus(GOBLIN_ID), 3)
+
+
+func test_latest_enemy_attack_sets_the_known_attack_bonus() -> void:
+	_knowledge.record_enemy_attack(GOBLIN_ID, AttackRoll.new(10, 3, 14, NORMAL_CRIT_THRESHOLD))
+	_knowledge.record_enemy_attack(GOBLIN_ID, AttackRoll.new(10, 4, 14, NORMAL_CRIT_THRESHOLD))
+
+	assert_eq(_knowledge.attack_bonus(GOBLIN_ID), 4, "The card never contradicts the last roll")
 
 
 func test_enemy_natural_one_reveals_its_attack_bonus() -> void:
