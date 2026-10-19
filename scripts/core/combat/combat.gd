@@ -19,7 +19,7 @@ var round_number: int = 0
 var is_over: bool = false
 var _dice: DiceRoller
 var _resolver: AttackResolver
-var _uses_left: Dictionary[SkillData, int] = {}
+var _uses_spent: Dictionary[SkillData, int] = {}
 
 
 func _init(fight_player: Character, fight_enemies: Array[Combatant], dice: DiceRoller) -> void:
@@ -28,9 +28,6 @@ func _init(fight_player: Character, fight_enemies: Array[Combatant], dice: DiceR
 	enemies = fight_enemies
 	_dice = dice
 	_resolver = AttackResolver.new(dice)
-	for skill: SkillData in fight_player.active_skills():
-		if skill.uses_per_fight > 0:
-			_uses_left[skill] = skill.uses_per_fight
 
 
 ## Separate from _init, so listeners can connect before the first round starts.
@@ -48,7 +45,9 @@ func living_enemies() -> Array[Combatant]:
 
 ## Remaining uses of an active skill in this fight, or UNLIMITED_USES.
 func uses_left(skill: SkillData) -> int:
-	return _uses_left.get(skill, UNLIMITED_USES)
+	if skill.uses_per_fight == 0:
+		return UNLIMITED_USES
+	return maxi(skill.uses_per_fight - _uses_spent.get(skill, 0), 0)
 
 
 func can_use_skill(skill: SkillData) -> bool:
@@ -63,14 +62,18 @@ func player_attack(target: Combatant) -> void:
 
 
 func use_skill(skill: SkillData) -> void:
-	assert(can_use_skill(skill), "%s cannot be used now" % skill.id)
-	if skill in _uses_left:
-		_uses_left[skill] -= 1
+	# A guard instead of assert(), because asserts are stripped from release builds.
+	if not can_use_skill(skill):
+		push_error("%s cannot be used now" % skill.id)
+		return
+	_uses_spent[skill] = _uses_spent.get(skill, 0) + 1
 	skill_used.emit(player, skill)
 	for effect: EffectData in skill.effects:
 		_apply_effect(effect)
 	if skill.action_cost == SkillData.ActionCost.ACTION:
 		_finish_player_turn()
+	elif living_enemies().is_empty():
+		_end(true)
 
 
 func _begin_round() -> void:

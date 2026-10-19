@@ -14,4 +14,5 @@ script = ExtResource("3_hf02j")
 id = &"weapon_master"
 display_name = "Weapon Master"
 description = "+1 damage with melee weapons."
+activation = 0
 effects = Array[ExtResource("1_xe17h")]([SubResource("Resource_ejwiq")])

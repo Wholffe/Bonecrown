@@ -1,6 +1,6 @@
 class_name ClassData
 extends Resource
-## Data of a playable class: fixed starting attributes, hit points and starting equipment.
+## Data of a playable class: fixed starting attributes, hit points, equipment and skills.
 
 @export var id: StringName
 @export var display_name: String
