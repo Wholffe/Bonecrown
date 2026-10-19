@@ -41,3 +41,27 @@ Decisions approved by the user, oldest first. Each entry has a date, the decisio
 ## 2026-10-19: First English display names
 - **Decision:** Warrior (`warrior`), Longsword (`longsword`, "Langschwert"), Chain Mail (`chain_mail`, "Kettenhemd") and Goblin (`goblin`). Reserved for milestone 4: Second Wind ("Zweiter Atem") and Weapon Master ("Waffenmeister").
 - **Reason:** These are direct translations of the working names.
+
+## 2026-10-19: Skills are SkillData resources built from effects
+- **Decision:** A skill is a `SkillData` resource with `id`, `display_name`, `description`, `activation` (`PASSIVE` or `ACTIVE`), `action_cost` (`ACTION` or `FREE`, only for active skills), `uses_per_fight` (0 means unlimited) and a list of `effects`. Effects are `EffectData` building blocks, one subclass per effect type, and their rules live in `scripts/core/`. The first types are `StatModifierEffect` (`ATTACK`, `MELEE_DAMAGE`, `ARMOR_CLASS`) and `HealEffect`. Tiers, categories, conditions, cooldowns and triggers are added later as new fields or new effect types.
+- **Reason:** Most new skills are pure data, and only genuinely new mechanics need a new effect type. Rejected: one script per skill (puts logic into content) and one flat `SkillData` with every possible field (unwieldy for 66+ skills).
+
+## 2026-10-19: Second Wind is once per fight
+- **Decision:** The brief's "once per room" for Second Wind is implemented as once per fight.
+- **Reason:** Every room has exactly one fight.
+
+## 2026-10-19: Second Wind is a free action
+- **Decision:** Second Wind heals 1d10 + level and does not use the turn, so the player can still attack afterwards (like a 5e bonus action).
+- **Reason:** It keeps the 5e model, and the player's choice is about timing. A simulation of 200,000 fights (Warrior with Weapon Master and Second Wind against two goblins) gave 87% wins with Second Wind as a free action and 79% if it cost the turn.
+
+## 2026-10-19: Two goblins as placeholder encounter
+- **Decision:** Milestone 4 uses a placeholder encounter of two goblins, named "Goblin 1" and "Goblin 2", until the room sequence of milestone 7.
+- **Reason:** It makes target selection playable. Room 1 is temporarily hard (about 13% defeats in the simulation). Balancing follows in milestones 7 and 12.
+
+## 2026-10-19: Target selection by marking an enemy
+- **Decision:** Clicking an enemy marks it, and Attack hits the marked enemy. At the start of a fight the first living enemy is marked.
+- **Reason:** Follow-up attacks need fewer clicks than with "choose the action first, then the target".
+
+## 2026-10-19: Texts of the starting skills
+- **Decision:** Second Wind: "Once per fight, heal 1d10 + your level. Does not use your turn." Weapon Master: "+1 damage with melee weapons."
+- **Reason:** These are direct translations of the brief's working texts.
