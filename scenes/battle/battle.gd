@@ -1,3 +1,4 @@
+class_name Battle
 extends Control
 ## Battle screen with combatant cards, dice display, combat log and action bar.
 
@@ -50,6 +51,8 @@ func is_playing_back() -> bool:
 func wait_for_playback() -> void:
 	if _is_playing_back:
 		await playback_finished
+		# Resuming inside the emit would keep this node locked, so freeing it right after would fail.
+		await get_tree().process_frame
 
 
 ## Tests and a later fast mode turn the roll animation off. Works before and after _ready().
