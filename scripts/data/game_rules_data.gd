@@ -3,3 +3,5 @@ extends Resource
 ## Rule values that apply to every class.
 
 @export var proficiency_bonus: int = 0
+## Highest value an attribute can reach through skills and items.
+@export var attribute_cap: int = 0

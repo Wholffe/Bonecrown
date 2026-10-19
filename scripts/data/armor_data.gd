@@ -3,3 +3,7 @@ extends ItemData
 ## Armor slot item: the armor class before the dexterity bonus.
 
 @export var armor_base: int = 0
+
+
+func get_slot() -> Slot:
+	return Slot.ARMOR

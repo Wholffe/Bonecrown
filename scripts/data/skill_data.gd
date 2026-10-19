@@ -16,3 +16,7 @@ enum ActionCost { ACTION = 0, FREE = 1, UNSET = -1 }
 ## Only for active skills. 0 means no limit.
 @export var uses_per_fight: int = 0
 @export var effects: Array[EffectData] = []
+## Taken skills only come back in offers when they are stackable.
+@export var stackable: bool = false
+## Lowest character level at which the skill can be offered. 0 means from the start.
+@export var min_level: int = 0
