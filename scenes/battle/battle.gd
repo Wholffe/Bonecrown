@@ -146,6 +146,7 @@ func _play_attack(
 	await _dice_display.play_attack(attacker, defender, attack, damage)
 	_log(_describe_attack(attacker, defender, attack, damage))
 	_cards[defender].show_hit_points(defender_hit_points)
+	await _dice_display.hold()
 
 
 func _play_heal(
@@ -154,6 +155,7 @@ func _play_heal(
 	await _dice_display.play_heal(combatant, skill, heal, restored)
 	_log(_describe_heal(combatant, heal, restored))
 	_cards[combatant].show_hit_points(hit_points)
+	await _dice_display.hold()
 
 
 func _play_defeat(combatant: Combatant) -> void:

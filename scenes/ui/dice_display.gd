@@ -18,7 +18,8 @@ var animations_enabled: bool = true
 @onready var _damage_label: Label = %DamageLabel
 
 
-## The damage is null on a miss, as in Combat.attack_resolved.
+## Rolls and reveals the result. The damage is null on a miss, as in Combat.attack_resolved.
+## Call hold() afterwards to keep the result on screen.
 func play_attack(
 	attacker: Combatant, defender: Combatant, attack: AttackRoll, damage: DamageRoll
 ) -> void:
@@ -32,16 +33,21 @@ func play_attack(
 		_damage_label.text = (
 			"Damage: %s" % _describe_sum(damage.dice_results, damage.damage_bonus, damage.total)
 		)
-	await _hold()
 
 
+## Rolls and reveals the heal. Call hold() afterwards to keep the result on screen.
 func play_heal(healed: Combatant, skill: SkillData, heal: HealRoll, restored: int) -> void:
 	_start_roll("%s: %s" % [healed.display_name, skill.display_name])
 	var dice_sum: int = heal.total - heal.heal_bonus
 	await _roll_die(dice_sum, _highest_heal_dice_sum(skill))
 	_detail_label.text = "%+d = %d" % [heal.heal_bonus, heal.total]
 	_outcome_label.text = "HEALED %d" % restored
-	await _hold()
+
+
+## Keeps the revealed result on screen for a moment.
+func hold() -> void:
+	if animations_enabled:
+		await _wait(HOLD_DURATION)
 
 
 func _start_roll(title: String) -> void:
@@ -59,11 +65,6 @@ func _roll_die(final_value: int, highest_value: int) -> void:
 			_die_label.text = str(face)
 			await _wait(ROLL_STEP_DURATION)
 	_die_label.text = str(final_value)
-
-
-func _hold() -> void:
-	if animations_enabled:
-		await _wait(HOLD_DURATION)
 
 
 # A tween dies with this node, so freeing the scene mid-roll never resumes on a freed instance.
