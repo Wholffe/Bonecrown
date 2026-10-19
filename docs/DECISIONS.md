@@ -59,7 +59,7 @@ Decisions approved by the user, oldest first. Each entry has a date, the decisio
 - **Reason:** It makes target selection playable. Room 1 is temporarily hard (about 13% defeats in the simulation). Balancing follows in milestones 7 and 12.
 
 ## 2026-10-19: Target selection by marking an enemy
-- **Decision:** Clicking an enemy marks it, and Attack hits the marked enemy. At the start of a fight the first living enemy is marked.
+- **Decision:** Clicking an enemy marks it, and Attack hits the marked enemy. At the start of a fight the first living enemy is marked. When the marked enemy is defeated, the next living enemy is marked automatically.
 - **Reason:** Follow-up attacks need fewer clicks than with "choose the action first, then the target".
 
 ## 2026-10-19: Texts of the starting skills
