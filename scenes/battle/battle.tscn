@@ -1,17 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_7gynk"]
+[ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_xd4uy"]
+[ext_resource type="PackedScene" path="res://scenes/ui/combatant_card.tscn" id="2_0yh6x"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="3_h0kxc"]
 
-[node name="Battle" type="Control" unique_id=538017546]
+[node name="Battle" type="Control" unique_id=135838798]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_7gynk")
+script = ExtResource("1_xd4uy")
 
-[node name="Margin" type="MarginContainer" parent="." unique_id=1304752387]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1193244922]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,42 +25,75 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1354558953]
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=31369877]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="StatusRow" type="HBoxContainer" parent="Margin/Layout" unique_id=1918201709]
-layout_mode = 2
-
-[node name="PlayerStatus" type="Label" parent="Margin/Layout/StatusRow" unique_id=1450268283]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="EnemyStatus" type="Label" parent="Margin/Layout/StatusRow" unique_id=1236507634]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-horizontal_alignment = 2
-
-[node name="CombatLog" type="RichTextLabel" parent="Margin/Layout" unique_id=2061456232]
-unique_name_in_owner = true
+[node name="Arena" type="HBoxContainer" parent="Margin/Layout" unique_id=1150142752]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 3.0
+theme_override_constants/separation = 16
+
+[node name="PlayerSide" type="VBoxContainer" parent="Margin/Layout/Arena" unique_id=1130375543]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="PlayerCard" parent="Margin/Layout/Arena/PlayerSide" unique_id=1748169109 instance=ExtResource("2_0yh6x")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PlayerLevelLabel" type="Label" parent="Margin/Layout/Arena/PlayerSide" unique_id=1368481379]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PlayerSkillsLabel" type="Label" parent="Margin/Layout/Arena/PlayerSide" unique_id=1538684684]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DiceDisplay" parent="Margin/Layout/Arena" unique_id=656307730 instance=ExtResource("3_h0kxc")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+
+[node name="EnemyCards" type="HBoxContainer" parent="Margin/Layout/Arena" unique_id=241325945]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="BottomRow" type="HBoxContainer" parent="Margin/Layout" unique_id=1362808369]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 16
+
+[node name="CombatLog" type="RichTextLabel" parent="Margin/Layout/BottomRow" unique_id=2102508477]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 2
 scroll_following = true
 selection_enabled = true
 
-[node name="ActionRow" type="HBoxContainer" parent="Margin/Layout" unique_id=192925011]
+[node name="ActionBar" type="VBoxContainer" parent="Margin/Layout/BottomRow" unique_id=1455622366]
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 8
 
-[node name="AttackButton" type="Button" parent="Margin/Layout/ActionRow" unique_id=1955436101]
+[node name="AttackButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1223351329]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Attack"
 
-[node name="MainMenuButton" type="Button" parent="Margin/Layout/ActionRow" unique_id=881342508]
+[node name="SkillButtons" type="VBoxContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1437184484]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MainMenuButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1495569792]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Main Menu"
