@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_xd4uy"]
 [ext_resource type="PackedScene" path="res://scenes/ui/combatant_card.tscn" id="2_0yh6x"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="3_h0kxc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/popup_layer.tscn" id="4_sznow"]
 
 [node name="Battle" type="Control" unique_id=135838798]
 layout_mode = 3
@@ -14,6 +15,7 @@ grow_vertical = 2
 script = ExtResource("1_xd4uy")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=1193244922]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -107,3 +109,7 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 text = "Main Menu"
+
+[node name="PopupLayer" parent="Margin" unique_id=886987079 instance=ExtResource("4_sznow")]
+unique_name_in_owner = true
+layout_mode = 2

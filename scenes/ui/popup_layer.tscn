@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/popup_layer.gd" id="1_jof0k"]
+
+[node name="PopupLayer" type="Control" unique_id=886987079]
+mouse_filter = 2
+script = ExtResource("1_jof0k")

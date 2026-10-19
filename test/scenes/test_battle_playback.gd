@@ -8,7 +8,7 @@ const SEED: int = 42
 const SECOND_WIND_BUTTON: NodePath = ^"%SkillButtons/SecondWindButton"
 ## The warrior hits Goblin 1 for 3 + 4 (1 HP left), Goblin 1 hits for 4 + 1, Goblin 2 for 2 + 1.
 const ROUND_ROLLS: Array[int] = [17, 3, 13, 4, 13, 2]
-## Generous upper bound. A round with three animated attacks plays back in about 2.5 seconds.
+## Generous upper bound. A round with three animated attacks plays back in about 3.3 seconds.
 const PLAYBACK_TIMEOUT: float = 15.0
 const FRAMES_BEFORE_FREE: int = 3
 

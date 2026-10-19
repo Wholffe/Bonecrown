@@ -11,6 +11,11 @@ const ENCOUNTER: Array[EnemyData] = [GOBLIN, GOBLIN]
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
 # A preload would form a cycle, because the main menu preloads this scene.
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
+## The layout steps through these offsets when a crit is revealed, then returns to its rest.
+const SHAKE_OFFSETS: Array[Vector2] = [
+	Vector2(10, -6), Vector2(-9, 5), Vector2(7, 4), Vector2(-5, -3), Vector2(2, 2)
+]
+const SHAKE_STEP_DURATION: float = 0.035
 
 var _combat: Combat
 var _cards: Dictionary[Combatant, CombatantCard] = {}
@@ -23,7 +28,11 @@ var _is_playing_back: bool = false
 var _used_skill: SkillData
 # Kept here, because tests set it before _ready(), when the dice display does not exist yet.
 var _animations_enabled: bool = true
+var _shake_tween: Tween
+var _layout_rest_position: Vector2 = Vector2.ZERO
 
+@onready var _margin: MarginContainer = %Margin
+@onready var _popup_layer: PopupLayer = %PopupLayer
 @onready var _player_card: CombatantCard = %PlayerCard
 @onready var _player_level_label: Label = %PlayerLevelLabel
 @onready var _player_skills_label: Label = %PlayerSkillsLabel
@@ -160,6 +169,8 @@ func _play_attack(
 	await _dice_display.play_attack(attacker, defender, attack, damage)
 	_log(_describe_attack(attacker, defender, attack, damage))
 	_cards[defender].show_hit_points(defender_hit_points)
+	if _animations_enabled:
+		_show_attack_feedback(attacker, _cards[defender], attack, damage)
 	await _dice_display.hold()
 
 
@@ -169,7 +180,32 @@ func _play_heal(
 	await _dice_display.play_heal(_describe_heal_title(combatant, skill), heal, restored)
 	_log(_describe_heal(combatant, heal, restored))
 	_cards[combatant].show_hit_points(hit_points)
+	if _animations_enabled:
+		_popup_layer.show_heal(_cards[combatant], restored)
 	await _dice_display.hold()
+
+
+func _show_attack_feedback(
+	attacker: Combatant, defender_card: CombatantCard, attack: AttackRoll, damage: DamageRoll
+) -> void:
+	var outcome: DiceDisplay.Outcome = DiceDisplay.outcome_for(attack)
+	_popup_layer.show_attack(defender_card, outcome, damage, attacker.get_damage_die_sides())
+	if outcome == DiceDisplay.Outcome.CRITICAL_HIT:
+		_shake_layout()
+
+
+# The margin's parent is no container, so nothing resets its position while it shakes.
+func _shake_layout() -> void:
+	if _shake_tween != null:
+		_shake_tween.kill()
+		_margin.position = _layout_rest_position
+	_layout_rest_position = _margin.position
+	_shake_tween = create_tween()
+	for offset: Vector2 in SHAKE_OFFSETS:
+		_shake_tween.tween_property(
+			_margin, "position", _layout_rest_position + offset, SHAKE_STEP_DURATION
+		)
+	_shake_tween.tween_property(_margin, "position", _layout_rest_position, SHAKE_STEP_DURATION)
 
 
 func _play_defeat(combatant: Combatant) -> void:
