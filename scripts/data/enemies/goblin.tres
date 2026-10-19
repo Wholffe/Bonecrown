@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_oevm7"]
+
+[resource]
+script = ExtResource("1_oevm7")
+id = &"goblin"
+display_name = "Goblin"
+armor_class = 12
+max_hit_points = 8
+attack_bonus = 3
+damage_die_count = 1
+damage_die_sides = 6
+damage_bonus = 1

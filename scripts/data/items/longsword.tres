@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_e4pbs"]
+
+[resource]
+script = ExtResource("1_e4pbs")
+damage_die_count = 1
+damage_die_sides = 8
+id = &"longsword"
+display_name = "Longsword"

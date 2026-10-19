@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="GameRulesData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/game_rules_data.gd" id="1_wwbvg"]
+
+[resource]
+script = ExtResource("1_wwbvg")
+proficiency_bonus = 2
