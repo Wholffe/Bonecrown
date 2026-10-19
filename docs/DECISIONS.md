@@ -65,3 +65,7 @@ Decisions approved by the user, oldest first. Each entry has a date, the decisio
 ## 2026-10-19: Texts of the starting skills
 - **Decision:** Second Wind: "Once per fight, heal 1d10 + your level. Does not use your turn." Weapon Master: "+1 damage with melee weapons."
 - **Reason:** These are direct translations of the brief's working texts.
+
+## 2026-10-19: Fullscreen at the screen's resolution by default
+- **Decision:** The game starts in borderless fullscreen at the screen's native resolution instead of a 1280x720 window. The UI is still designed for 1280x720 and scales to the screen; on screens that are not 16:9 the container layouts expand to fill the screen.
+- **Reason:** Like in most other games, the default follows the screen settings.
