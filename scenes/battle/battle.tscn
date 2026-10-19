@@ -1,0 +1,64 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_7gynk"]
+
+[node name="Battle" type="Control" unique_id=538017546]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7gynk")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1304752387]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1354558953]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="StatusRow" type="HBoxContainer" parent="Margin/Layout" unique_id=1918201709]
+layout_mode = 2
+
+[node name="PlayerStatus" type="Label" parent="Margin/Layout/StatusRow" unique_id=1450268283]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnemyStatus" type="Label" parent="Margin/Layout/StatusRow" unique_id=1236507634]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+
+[node name="CombatLog" type="RichTextLabel" parent="Margin/Layout" unique_id=2061456232]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+scroll_following = true
+selection_enabled = true
+
+[node name="ActionRow" type="HBoxContainer" parent="Margin/Layout" unique_id=192925011]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="AttackButton" type="Button" parent="Margin/Layout/ActionRow" unique_id=1955436101]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Attack"
+
+[node name="MainMenuButton" type="Button" parent="Margin/Layout/ActionRow" unique_id=881342508]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Main Menu"
