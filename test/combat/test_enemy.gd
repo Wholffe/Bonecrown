@@ -42,3 +42,26 @@ func test_damage_leaves_shared_data_untouched() -> void:
 
 	assert_eq(GOBLIN.max_hit_points, 8)
 	assert_eq(Enemy.new(GOBLIN).hit_points, 8, "A new goblin must start at full health")
+
+
+func test_heal_restores_hit_points_up_to_maximum() -> void:
+	_goblin.take_damage(5)
+
+	var restored: int = _goblin.heal(10)
+
+	assert_eq(_goblin.hit_points, 8)
+	assert_eq(restored, 5, "Only the missing hit points count as restored")
+
+
+func test_group_numbers_duplicate_enemies() -> void:
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN, GOBLIN])
+
+	assert_eq(group.size(), 2)
+	assert_eq(group[0].display_name, "Goblin 1")
+	assert_eq(group[1].display_name, "Goblin 2")
+
+
+func test_group_keeps_name_of_single_enemy() -> void:
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN])
+
+	assert_eq(group[0].display_name, "Goblin")

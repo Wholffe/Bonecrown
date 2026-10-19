@@ -22,7 +22,4 @@ func roll_damage(
 	die_count: int, die_sides: int, damage_bonus: int, double_dice: bool
 ) -> DamageRoll:
 	var count: int = die_count * DOUBLED_DICE_FACTOR if double_dice else die_count
-	var results: Array[int] = []
-	for _i: int in count:
-		results.append(_dice.roll(die_sides))
-	return DamageRoll.new(results, damage_bonus)
+	return DamageRoll.new(_dice.roll_many(count, die_sides), damage_bonus)

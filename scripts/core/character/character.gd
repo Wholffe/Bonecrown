@@ -1,6 +1,6 @@
 class_name Character
 extends Combatant
-## The player character: class data plus run progress (level, equipment, current hit points).
+## The player character: class data plus run progress (level, equipment, skills, hit points).
 
 const STARTING_LEVEL: int = 1
 
@@ -9,6 +9,7 @@ var attributes: Attributes
 var level: int = STARTING_LEVEL
 var weapon: WeaponData
 var armor: ArmorData
+var skills: Array[SkillData] = []
 var _proficiency_bonus: int
 
 
@@ -18,20 +19,26 @@ func _init(data: ClassData, proficiency_bonus: int) -> void:
 	attributes = Attributes.new(data.strength, data.dexterity, data.constitution, data.luck)
 	weapon = data.starting_weapon
 	armor = data.starting_armor
+	# assign() copies, so learning skills later never changes the shared class data.
+	skills.assign(data.starting_skills)
 	_proficiency_bonus = proficiency_bonus
 	max_hit_points = data.base_hit_points + attributes.bonus_of(Attributes.Kind.CONSTITUTION)
 	hit_points = max_hit_points
 
 
 func get_armor_class() -> int:
-	return CombatFormulas.armor_class(
-		armor.armor_base, attributes.bonus_of(Attributes.Kind.DEXTERITY)
+	return (
+		CombatFormulas.armor_class(armor.armor_base, attributes.bonus_of(Attributes.Kind.DEXTERITY))
+		+ _stat_modifier(StatModifierEffect.Stat.ARMOR_CLASS)
 	)
 
 
 func get_attack_bonus() -> int:
-	return CombatFormulas.melee_attack_bonus(
-		attributes.bonus_of(Attributes.Kind.STRENGTH), _proficiency_bonus
+	return (
+		CombatFormulas.melee_attack_bonus(
+			attributes.bonus_of(Attributes.Kind.STRENGTH), _proficiency_bonus
+		)
+		+ _stat_modifier(StatModifierEffect.Stat.ATTACK)
 	)
 
 
@@ -47,5 +54,29 @@ func get_damage_die_sides() -> int:
 	return weapon.damage_die_sides
 
 
+# Every weapon is a melee weapon so far, so melee damage modifiers always apply.
 func get_damage_bonus() -> int:
-	return attributes.bonus_of(Attributes.Kind.STRENGTH)
+	return (
+		attributes.bonus_of(Attributes.Kind.STRENGTH)
+		+ _stat_modifier(StatModifierEffect.Stat.MELEE_DAMAGE)
+	)
+
+
+func active_skills() -> Array[SkillData]:
+	var active: Array[SkillData] = []
+	for skill: SkillData in skills:
+		if skill.activation == SkillData.Activation.ACTIVE:
+			active.append(skill)
+	return active
+
+
+func _stat_modifier(stat: StatModifierEffect.Stat) -> int:
+	var total: int = 0
+	for skill: SkillData in skills:
+		if skill.activation != SkillData.Activation.PASSIVE:
+			continue
+		for effect: EffectData in skill.effects:
+			var modifier: StatModifierEffect = effect as StatModifierEffect
+			if modifier != null and modifier.stat == stat:
+				total += modifier.amount
+	return total

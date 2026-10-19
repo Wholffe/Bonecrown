@@ -12,3 +12,4 @@ extends Resource
 @export var hit_points_per_level: int = 0
 @export var starting_weapon: WeaponData
 @export var starting_armor: ArmorData
+@export var starting_skills: Array[SkillData] = []

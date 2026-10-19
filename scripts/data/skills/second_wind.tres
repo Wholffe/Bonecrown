@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_1xjnm"]
+[ext_resource type="Script" path="res://scripts/data/heal_effect.gd" id="2_5jtpu"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_xqilu"]
+
+[sub_resource type="Resource" id="Resource_aspbk"]
+script = ExtResource("2_5jtpu")
+die_count = 1
+die_sides = 10
+adds_level = true
+
+[resource]
+script = ExtResource("3_xqilu")
+id = &"second_wind"
+display_name = "Second Wind"
+description = "Once per fight, heal 1d10 + your level. Does not use your turn."
+activation = 1
+action_cost = 1
+uses_per_fight = 1
+effects = Array[ExtResource("1_1xjnm")]([SubResource("Resource_aspbk")])

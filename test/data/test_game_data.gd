@@ -60,3 +60,28 @@ func test_enemies_have_valid_damage_dice_and_hit_points() -> void:
 			assert_gt(enemy.damage_die_count, 0, "%s die count" % enemy.id)
 			assert_gt(enemy.damage_die_sides, 0, "%s die sides" % enemy.id)
 			assert_gt(enemy.max_hit_points, 0, "%s hit points" % enemy.id)
+
+
+func test_classes_have_no_empty_starting_skill_slots() -> void:
+	for resource: Resource in _resources:
+		if resource is ClassData:
+			var class_data: ClassData = resource
+			assert_does_not_have(class_data.starting_skills, null, "%s skills" % class_data.id)
+
+
+func test_skills_have_effects() -> void:
+	for resource: Resource in _resources:
+		if resource is SkillData:
+			var skill: SkillData = resource
+			assert_gt(skill.effects.size(), 0, "%s has no effects" % skill.id)
+			assert_does_not_have(skill.effects, null, "%s has an empty effect slot" % skill.id)
+
+
+func test_heal_effects_have_valid_dice() -> void:
+	for resource: Resource in _resources:
+		if resource is SkillData:
+			for effect: EffectData in (resource as SkillData).effects:
+				var heal: HealEffect = effect as HealEffect
+				if heal != null:
+					assert_gt(heal.die_count, 0, "%s heal die count" % resource.resource_path)
+					assert_gt(heal.die_sides, 0, "%s heal die sides" % resource.resource_path)

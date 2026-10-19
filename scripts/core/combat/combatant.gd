@@ -21,3 +21,11 @@ func is_alive() -> bool:
 func take_damage(amount: int) -> void:
 	assert(amount >= 0, "Damage must not be negative")
 	hit_points = maxi(hit_points - amount, 0)
+
+
+## Returns the hit points actually restored, which is less than amount near full health.
+func heal(amount: int) -> int:
+	assert(amount >= 0, "Healing must not be negative")
+	var before: int = hit_points
+	hit_points = mini(hit_points + amount, max_hit_points)
+	return hit_points - before

@@ -2,7 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="1_0s5q5"]
 [ext_resource type="Resource" path="res://scripts/data/items/chain_mail.tres" id="2_beihx"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_ccsre"]
 [ext_resource type="Resource" path="res://scripts/data/items/longsword.tres" id="3_gg483"]
+[ext_resource type="Resource" path="res://scripts/data/skills/second_wind.tres" id="4_b6w27"]
+[ext_resource type="Resource" path="res://scripts/data/skills/weapon_master.tres" id="5_ei16b"]
 
 [resource]
 script = ExtResource("1_0s5q5")
@@ -16,3 +19,4 @@ base_hit_points = 12
 hit_points_per_level = 6
 starting_weapon = ExtResource("3_gg483")
 starting_armor = ExtResource("2_beihx")
+starting_skills = Array[ExtResource("3_ccsre")]([ExtResource("4_b6w27"), ExtResource("5_ei16b")])

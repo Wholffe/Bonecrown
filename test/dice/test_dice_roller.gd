@@ -38,3 +38,11 @@ func test_one_sided_die_always_rolls_one() -> void:
 	var dice: DiceRoller = DiceRoller.new(SEED)
 
 	assert_eq(dice.roll(1), 1)
+
+
+func test_roll_many_returns_one_result_per_die() -> void:
+	var results: Array[int] = DiceRoller.new(SEED).roll_many(3, 6)
+
+	assert_eq(results.size(), 3)
+	for result: int in results:
+		assert_between(result, 1, 6)
