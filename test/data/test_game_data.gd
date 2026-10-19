@@ -22,6 +22,31 @@ func _find_resource_paths(directory: String) -> PackedStringArray:
 	return paths
 
 
+func _skills() -> Array[SkillData]:
+	var skills: Array[SkillData] = []
+	for resource: Resource in _resources:
+		if resource is SkillData:
+			skills.append(resource)
+	return skills
+
+
+# Mirrors Combat._apply_effect: only HealEffect has a rule for active skills so far.
+func _has_active_skill_rule(effect: EffectData) -> bool:
+	return effect is HealEffect
+
+
+# Mirrors Character._stat_modifier: only StatModifierEffect counts on passive skills.
+func _has_passive_skill_rule(effect: EffectData) -> bool:
+	return effect is StatModifierEffect
+
+
+func _effect_name(effect: EffectData) -> String:
+	if effect == null:
+		return "<empty slot>"
+	var script: Script = effect.get_script()
+	return script.resource_path.get_file()
+
+
 func test_data_files_exist() -> void:
 	assert_gt(_resources.size(), 0, "No .tres files found under %s" % DATA_ROOT)
 
@@ -85,3 +110,57 @@ func test_heal_effects_have_valid_dice() -> void:
 				if heal != null:
 					assert_gt(heal.die_count, 0, "%s heal die count" % resource.resource_path)
 					assert_gt(heal.die_sides, 0, "%s heal die sides" % resource.resource_path)
+
+
+func test_skills_have_display_name_and_activation() -> void:
+	for skill: SkillData in _skills():
+		assert_ne(skill.display_name, "", "%s has no display name" % skill.id)
+		assert_ne(skill.activation, SkillData.Activation.UNSET, "%s has no activation" % skill.id)
+
+
+func test_active_skills_have_action_cost_and_use_limit() -> void:
+	for skill: SkillData in _skills():
+		if skill.activation != SkillData.Activation.ACTIVE:
+			continue
+		assert_ne(skill.action_cost, SkillData.ActionCost.UNSET, "%s action cost" % skill.id)
+		assert_gte(skill.uses_per_fight, 0, "%s uses per fight" % skill.id)
+
+
+func test_passive_skills_contain_only_passive_effect_types() -> void:
+	for skill: SkillData in _skills():
+		if skill.activation != SkillData.Activation.PASSIVE:
+			continue
+		for effect: EffectData in skill.effects:
+			assert_true(
+				_has_passive_skill_rule(effect),
+				"%s: %s has no rule for passive skills" % [skill.id, _effect_name(effect)]
+			)
+
+
+func test_active_skills_contain_only_active_effect_types() -> void:
+	for skill: SkillData in _skills():
+		if skill.activation != SkillData.Activation.ACTIVE:
+			continue
+		for effect: EffectData in skill.effects:
+			assert_true(
+				_has_active_skill_rule(effect),
+				"%s: %s has no rule for active skills" % [skill.id, _effect_name(effect)]
+			)
+
+
+func test_stat_modifiers_have_stat_and_amount() -> void:
+	for skill: SkillData in _skills():
+		for effect: EffectData in skill.effects:
+			var modifier: StatModifierEffect = effect as StatModifierEffect
+			if modifier != null:
+				assert_ne(modifier.stat, StatModifierEffect.Stat.UNSET, "%s stat" % skill.id)
+				assert_ne(modifier.amount, 0, "%s modifier amount" % skill.id)
+
+
+func test_enum_fields_default_to_unset() -> void:
+	var skill: SkillData = SkillData.new()
+	var modifier: StatModifierEffect = StatModifierEffect.new()
+
+	assert_eq(skill.activation, SkillData.Activation.UNSET)
+	assert_eq(skill.action_cost, SkillData.ActionCost.UNSET)
+	assert_eq(modifier.stat, StatModifierEffect.Stat.UNSET)

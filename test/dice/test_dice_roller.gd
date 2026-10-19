@@ -46,3 +46,9 @@ func test_roll_many_returns_one_result_per_die() -> void:
 	assert_eq(results.size(), 3)
 	for result: int in results:
 		assert_between(result, 1, 6)
+
+
+func test_roll_many_with_zero_dice_returns_no_results() -> void:
+	var results: Array[int] = DiceRoller.new(SEED).roll_many(0, 6)
+
+	assert_eq(results, [] as Array[int])

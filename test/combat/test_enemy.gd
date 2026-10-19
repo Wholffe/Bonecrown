@@ -9,6 +9,20 @@ func before_each() -> void:
 	_goblin = Enemy.new(GOBLIN)
 
 
+func _enemy_data(id: StringName, display_name: String) -> EnemyData:
+	var enemy_data: EnemyData = GOBLIN.duplicate()
+	enemy_data.id = id
+	enemy_data.display_name = display_name
+	return enemy_data
+
+
+func _display_names(group: Array[Combatant]) -> Array[String]:
+	var names: Array[String] = []
+	for enemy: Combatant in group:
+		names.append(enemy.display_name)
+	return names
+
+
 func test_goblin_has_brief_values() -> void:
 	assert_eq(_goblin.get_armor_class(), 12)
 	assert_eq(_goblin.max_hit_points, 8)
@@ -65,3 +79,28 @@ func test_group_keeps_name_of_single_enemy() -> void:
 	var group: Array[Combatant] = Enemy.create_group([GOBLIN])
 
 	assert_eq(group[0].display_name, "Goblin")
+
+
+func test_group_members_take_damage_separately() -> void:
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN, GOBLIN])
+
+	group[0].take_damage(3)
+
+	assert_eq(group[0].hit_points, 5)
+	assert_eq(group[1].hit_points, 8, "Damage to one goblin must not touch the other")
+
+
+func test_group_numbers_only_the_duplicates_in_a_mixed_group() -> void:
+	var orc: EnemyData = _enemy_data(&"test_orc", "Orc")
+
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN, orc, GOBLIN])
+
+	assert_eq(_display_names(group), ["Goblin 1", "Orc", "Goblin 2"] as Array[String])
+
+
+func test_group_numbers_different_enemies_that_share_a_display_name() -> void:
+	var other_goblin: EnemyData = _enemy_data(&"test_goblin_variant", GOBLIN.display_name)
+
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN, other_goblin])
+
+	assert_eq(_display_names(group), ["Goblin 1", "Goblin 2"] as Array[String])
