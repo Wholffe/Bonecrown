@@ -13,6 +13,7 @@ const BORDER_WIDTH: int = 2
 const SELECTED_BORDER_WIDTH: int = 4
 const PADDING: int = 12
 const DEFEATED_MODULATE: Color = Color(1.0, 1.0, 1.0, 0.35)
+const UNKNOWN_ATTACK_BONUS_TEXT: String = "Attack ?"
 
 var combatant: Combatant
 var _shown_hit_points: int = 0
@@ -41,16 +42,52 @@ func _gui_input(event: InputEvent) -> void:
 		selected.emit(self)
 
 
+## Armor class as far as the rolls so far prove it: "AC ?", "AC ≥ 13", "AC ≤ 15", "AC 13–15" or
+## the exact "AC 14". Either bound may be EnemyKnowledge.UNKNOWN. A known value is passed as both.
+static func describe_armor_class(lowest: int, highest: int) -> String:
+	if lowest == EnemyKnowledge.UNKNOWN and highest == EnemyKnowledge.UNKNOWN:
+		return "AC ?"
+	if highest == EnemyKnowledge.UNKNOWN:
+		return "AC ≥ %d" % lowest
+	if lowest == EnemyKnowledge.UNKNOWN:
+		return "AC ≤ %d" % highest
+	if lowest == highest:
+		return "AC %d" % lowest
+	return "AC %d–%d" % [lowest, highest]
+
+
+## The player's stats are shown exactly. Enemy stats stay hidden until show_enemy_knowledge().
 func show_combatant(shown_combatant: Combatant, is_player: bool) -> void:
 	combatant = shown_combatant
 	_body.color = PLAYER_BODY_COLOR if is_player else ENEMY_BODY_COLOR
 	_name_label.text = shown_combatant.display_name
-	_stats_label.text = (
-		"AC %d   Attack %+d"
-		% [shown_combatant.get_armor_class(), shown_combatant.get_attack_bonus()]
-	)
+	if is_player:
+		var armor_class: int = shown_combatant.get_armor_class()
+		_show_stats(
+			describe_armor_class(armor_class, armor_class),
+			"Attack %+d" % shown_combatant.get_attack_bonus()
+		)
+	else:
+		_show_stats(
+			describe_armor_class(EnemyKnowledge.UNKNOWN, EnemyKnowledge.UNKNOWN),
+			UNKNOWN_ATTACK_BONUS_TEXT
+		)
 	_hit_point_bar.max_value = shown_combatant.max_hit_points
 	show_hit_points(shown_combatant.hit_points)
+
+
+## Shows what the player has learned about the type of this enemy so far.
+func show_enemy_knowledge(knowledge: EnemyKnowledge) -> void:
+	var enemy_id: StringName = (combatant as Enemy).data.id
+	var attack_bonus_text: String = UNKNOWN_ATTACK_BONUS_TEXT
+	if knowledge.is_attack_bonus_known(enemy_id):
+		attack_bonus_text = "Attack %+d" % knowledge.attack_bonus(enemy_id)
+	_show_stats(
+		describe_armor_class(
+			knowledge.lowest_armor_class(enemy_id), knowledge.highest_armor_class(enemy_id)
+		),
+		attack_bonus_text
+	)
 
 
 ## Takes an explicit value, so the battle playback can show hit points from before later events.
@@ -81,6 +118,10 @@ func set_selected(value: bool) -> void:
 
 func is_selected() -> bool:
 	return _is_selected
+
+
+func _show_stats(armor_class_text: String, attack_bonus_text: String) -> void:
+	_stats_label.text = "%s   %s" % [armor_class_text, attack_bonus_text]
 
 
 func _can_be_selected() -> bool:

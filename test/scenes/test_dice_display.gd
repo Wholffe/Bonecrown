@@ -6,6 +6,8 @@ const GOBLIN: EnemyData = preload("res://scripts/data/enemies/goblin.tres")
 const ATTACK_BONUS: int = 5
 const ARMOR_CLASS: int = 12
 const CRIT_THRESHOLD: int = 20
+## What the player knew before the roll. It differs from the real AC 12 on purpose.
+const ARMOR_CLASS_TEXT: String = "AC 11–13"
 ## Natural roll, outcome and outcome text. With +5 against AC 12, a total of 12 or 13 is narrow.
 const ATTACK_CASES: Array = [
 	[20, DiceDisplay.Outcome.CRITICAL_HIT, "CRITICAL HIT"],
@@ -29,7 +31,9 @@ func _create_display() -> DiceDisplay:
 func _play_attack(display: DiceDisplay, natural_roll: int) -> void:
 	var attack: AttackRoll = AttackRoll.new(natural_roll, ATTACK_BONUS, ARMOR_CLASS, CRIT_THRESHOLD)
 	var damage: DamageRoll = DamageRoll.new([3], 4) if attack.is_hit else null
-	await display.play_attack(Enemy.new(GOBLIN), Enemy.new(GOBLIN), attack, damage)
+	await display.play_attack(
+		Enemy.new(GOBLIN), Enemy.new(GOBLIN), attack, damage, ARMOR_CLASS_TEXT
+	)
 
 
 func _play_heal(display: DiceDisplay, restored: int) -> void:
@@ -84,12 +88,12 @@ func test_attack_reveal_emits_once_per_roll() -> void:
 	assert_no_new_orphans()
 
 
-func test_attack_reveal_shows_the_total_against_the_armor_class() -> void:
+func test_attack_reveal_shows_the_total_against_the_passed_armor_class_text() -> void:
 	var display: DiceDisplay = _create_display()
 
 	await _play_attack(display, 15)
 
-	assert_eq((display.get_node("%DetailLabel") as Label).text, "+5 = 20 vs AC 12")
+	assert_eq((display.get_node("%DetailLabel") as Label).text, "+5 = 20 vs AC 11–13")
 	assert_no_new_orphans()
 
 

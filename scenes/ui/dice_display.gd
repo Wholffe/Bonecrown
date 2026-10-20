@@ -109,18 +109,21 @@ static func outcome_for(attack: AttackRoll) -> Outcome:
 
 
 ## Rolls and reveals the result. The damage is null on a miss, as in Combat.attack_resolved.
+## The armor class text shows what the player knew before the roll, for example "AC ?".
 ## Call hold() afterwards to keep the result on screen.
 func play_attack(
-	attacker: Combatant, defender: Combatant, attack: AttackRoll, damage: DamageRoll
+	attacker: Combatant,
+	defender: Combatant,
+	attack: AttackRoll,
+	damage: DamageRoll,
+	armor_class_text: String
 ) -> void:
 	_start_roll("%s attacks %s" % [attacker.display_name, defender.display_name])
 	await _roll_die(attack.natural_roll, AttackRoll.DIE_SIDES)
 	var outcome: Outcome = outcome_for(attack)
 	if outcome == Outcome.CRITICAL_HIT and animations_enabled:
 		await _wait(CRIT_FREEZE_DURATION)
-	_detail_label.text = (
-		"%+d = %d vs AC %d" % [attack.attack_bonus, attack.total, attack.target_armor_class]
-	)
+	_detail_label.text = "%+d = %d vs %s" % [attack.attack_bonus, attack.total, armor_class_text]
 	if damage != null:
 		_damage_label.text = (
 			"Damage: %s" % _describe_sum(damage.dice_results, damage.damage_bonus, damage.total)

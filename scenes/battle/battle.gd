@@ -98,6 +98,7 @@ func _create_cards(enemies: Array[Combatant]) -> void:
 		var card: CombatantCard = COMBATANT_CARD_SCENE.instantiate() as CombatantCard
 		_enemy_cards_box.add_child(card)
 		card.show_combatant(enemy, false)
+		card.show_enemy_knowledge(RunState.enemy_knowledge)
 		card.selected.connect(_on_enemy_card_selected)
 		_cards[enemy] = card
 		_enemy_cards.append(card)
@@ -166,8 +167,11 @@ func _play_attack(
 	damage: DamageRoll,
 	defender_hit_points: int
 ) -> void:
-	await _dice_display.play_attack(attacker, defender, attack, damage)
-	_log(_describe_attack(attacker, defender, attack, damage))
+	# Taken before the reveal, so the roll is shown against what the player knew when it was made.
+	var armor_class_text: String = _describe_known_armor_class(defender, attack)
+	await _dice_display.play_attack(attacker, defender, attack, damage, armor_class_text)
+	_log(_describe_attack(attacker, defender, attack, damage, armor_class_text))
+	_learn_from_attack(attacker, defender, attack)
 	_cards[defender].show_hit_points(defender_hit_points)
 	if _animations_enabled:
 		_show_attack_feedback(attacker, _cards[defender], attack, damage)
@@ -206,6 +210,21 @@ func _shake_layout() -> void:
 			_margin, "position", _layout_rest_position + offset, SHAKE_STEP_DURATION
 		)
 	_shake_tween.tween_property(_margin, "position", _layout_rest_position, SHAKE_STEP_DURATION)
+
+
+# Learned on reveal, not when Combat resolves the attack, so no card shows more than the rolls
+# the player has seen.
+func _learn_from_attack(attacker: Combatant, defender: Combatant, attack: AttackRoll) -> void:
+	var knowledge: EnemyKnowledge = RunState.enemy_knowledge
+	var enemy: Enemy = defender as Enemy
+	if enemy != null:
+		knowledge.record_player_attack(enemy.data.id, attack)
+	else:
+		enemy = attacker as Enemy
+		knowledge.record_enemy_attack(enemy.data.id, attack)
+	for card: CombatantCard in _enemy_cards:
+		if (card.combatant as Enemy).data.id == enemy.data.id:
+			card.show_enemy_knowledge(knowledge)
 
 
 func _play_defeat(combatant: Combatant) -> void:
@@ -259,25 +278,46 @@ func _describe_skill_button(skill: SkillData) -> String:
 	return "%s (%d)" % [skill.display_name, uses]
 
 
+# The player always knows their own armor class, an enemy's only as far as the rolls proved it.
+func _describe_known_armor_class(defender: Combatant, attack: AttackRoll) -> String:
+	var enemy: Enemy = defender as Enemy
+	if enemy == null:
+		return CombatantCard.describe_armor_class(
+			attack.target_armor_class, attack.target_armor_class
+		)
+	var knowledge: EnemyKnowledge = RunState.enemy_knowledge
+	return CombatantCard.describe_armor_class(
+		knowledge.lowest_armor_class(enemy.data.id), knowledge.highest_armor_class(enemy.data.id)
+	)
+
+
 func _describe_attack(
-	attacker: Combatant, defender: Combatant, attack: AttackRoll, damage: DamageRoll
+	attacker: Combatant,
+	defender: Combatant,
+	attack: AttackRoll,
+	damage: DamageRoll,
+	armor_class_text: String
 ) -> String:
 	var roll_text: String = (
-		"%s attacks %s: d20 %d %+d = %d vs AC %d"
+		"%s attacks %s: d20 %d %+d = %d vs %s"
 		% [
 			attacker.display_name,
 			defender.display_name,
 			attack.natural_roll,
 			attack.attack_bonus,
 			attack.total,
-			attack.target_armor_class,
+			armor_class_text,
 		]
 	)
 	if attack.is_natural_one:
 		return roll_text + " - natural 1, automatic miss."
 	if not attack.is_hit:
 		return roll_text + " - miss."
-	var hit_text: String = "critical hit!" if attack.is_crit else "hit,"
+	var hit_text: String = "hit,"
+	if attack.is_crit:
+		hit_text = "critical hit!"
+	elif attack.is_narrow_hit:
+		hit_text = "narrow hit,"
 	return roll_text + " - %s %d damage (%s)." % [hit_text, damage.total, _describe_damage(damage)]
 
 
