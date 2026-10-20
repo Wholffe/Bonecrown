@@ -1,5 +1,6 @@
 extends GutTest
-## Dice display without animations: outcome tier, text and color, and one reveal signal per roll.
+## Dice display without animations: outcome tier, text and color, one reveal signal per roll and
+## the second d20 of advantage and disadvantage.
 
 const DICE_DISPLAY_SCENE: PackedScene = preload("res://scenes/ui/dice_display.tscn")
 const GOBLIN: EnemyData = preload("res://scripts/data/enemies/goblin.tres")
@@ -19,6 +20,13 @@ const ATTACK_CASES: Array = [
 	[1, DiceDisplay.Outcome.NATURAL_ONE, "NATURAL 1"],
 ]
 const HEAL_TITLE: String = "Warrior: Second Wind"
+## Roll mode, kept d20, discarded d20 and the tag.
+const TWO_DICE_CASES: Array = [
+	[AttackRoll.RollMode.ADVANTAGE, 15, 4, "Advantage"],
+	[AttackRoll.RollMode.DISADVANTAGE, 4, 15, "Disadvantage"],
+]
+## Generous upper bound. An animated roll lands after DiceDisplay.ROLL_DURATION.
+const LANDING_TIMEOUT: float = 5.0
 
 
 func _create_display() -> DiceDisplay:
@@ -28,8 +36,15 @@ func _create_display() -> DiceDisplay:
 	return display
 
 
-func _play_attack(display: DiceDisplay, natural_roll: int) -> void:
-	var attack: AttackRoll = AttackRoll.new(natural_roll, ATTACK_BONUS, ARMOR_CLASS, CRIT_THRESHOLD)
+func _play_attack(
+	display: DiceDisplay,
+	natural_roll: int,
+	mode: AttackRoll.RollMode = AttackRoll.RollMode.NORMAL,
+	discarded_roll: int = 0
+) -> void:
+	var attack: AttackRoll = AttackRoll.new(
+		natural_roll, ATTACK_BONUS, ARMOR_CLASS, CRIT_THRESHOLD, mode, discarded_roll
+	)
 	var damage: DamageRoll = DamageRoll.new([3], 4) if attack.is_hit else null
 	await display.play_attack(
 		Enemy.new(GOBLIN), Enemy.new(GOBLIN), attack, damage, ARMOR_CLASS_TEXT
@@ -42,6 +57,18 @@ func _play_heal(display: DiceDisplay, restored: int) -> void:
 
 func _outcome_label(display: DiceDisplay) -> Label:
 	return display.get_node("%OutcomeLabel") as Label
+
+
+func _label_text(display: DiceDisplay, label_name: String) -> String:
+	return (display.get_node("%" + label_name) as Label).text
+
+
+func _discarded_die(display: DiceDisplay) -> Control:
+	return display.get_node("%DiscardedDie") as Control
+
+
+func _roll_mode_label(display: DiceDisplay) -> Label:
+	return display.get_node("%RollModeLabel") as Label
 
 
 func test_attack_reveal_emits_its_outcome(params: Array = use_parameters(ATTACK_CASES)) -> void:
@@ -158,4 +185,68 @@ func test_roll_slows_down_and_lasts_the_roll_duration() -> void:
 		if index > 0:
 			assert_gt(durations[index], durations[index - 1], "step %d" % index)
 	assert_almost_eq(total, DiceDisplay.ROLL_DURATION, 0.001)
+	assert_no_new_orphans()
+
+
+func test_two_dice_roll_shows_the_discarded_die_dimmed_next_to_the_kept_one(
+	params: Array = use_parameters(TWO_DICE_CASES)
+) -> void:
+	var display: DiceDisplay = _create_display()
+
+	await _play_attack(display, params[1], params[0], params[2])
+
+	assert_eq(_label_text(display, "DieLabel"), str(params[1]), "The kept die")
+	assert_true(_discarded_die(display).visible, "The discarded die is shown")
+	assert_eq(_label_text(display, "DiscardedDieLabel"), str(params[2]), "The discarded die")
+	assert_eq(_discarded_die(display).modulate, DiceDisplay.DISCARDED_DIE_MODULATE, "Dimmed")
+	assert_no_new_orphans()
+
+
+func test_two_dice_roll_shows_its_roll_mode_tag(
+	params: Array = use_parameters(TWO_DICE_CASES)
+) -> void:
+	var display: DiceDisplay = _create_display()
+
+	await _play_attack(display, params[1], params[0], params[2])
+
+	var tag: Label = _roll_mode_label(display)
+	assert_true(tag.visible, "The tag is shown")
+	assert_eq(tag.text, params[3])
+	assert_eq(tag.get_theme_color("font_color"), DiceDisplay.ROLL_MODE_COLORS[params[0]])
+	assert_no_new_orphans()
+
+
+func test_normal_roll_shows_one_die_and_no_tag() -> void:
+	var display: DiceDisplay = _create_display()
+
+	await _play_attack(display, 15)
+
+	assert_false(_discarded_die(display).visible, "No second die")
+	assert_false(_roll_mode_label(display).visible, "No tag")
+	assert_no_new_orphans()
+
+
+func test_normal_roll_after_advantage_hides_the_second_die_and_the_tag() -> void:
+	var display: DiceDisplay = _create_display()
+	await _play_attack(display, 15, AttackRoll.RollMode.ADVANTAGE, 4)
+
+	await _play_attack(display, 9)
+
+	assert_false(_discarded_die(display).visible, "No second die")
+	assert_false(_roll_mode_label(display).visible, "No tag")
+	assert_no_new_orphans()
+
+
+func test_discarded_die_rolls_undimmed_until_both_dice_land() -> void:
+	var display: DiceDisplay = _create_display()
+	display.animations_enabled = true
+
+	# Not awaited, so the dice can be looked at while they roll.
+	_play_attack(display, 15, AttackRoll.RollMode.ADVANTAGE, 4)
+
+	assert_true(_discarded_die(display).visible, "Both dice roll")
+	assert_eq(_discarded_die(display).modulate, Color.WHITE, "Not dimmed while rolling")
+	var has_landed: Callable = func() -> bool: return _outcome_label(display).text != ""
+	assert_true(await wait_until(has_landed, LANDING_TIMEOUT), "Precondition: the dice land")
+	assert_eq(_discarded_die(display).modulate, DiceDisplay.DISCARDED_DIE_MODULATE, "Dimmed")
 	assert_no_new_orphans()

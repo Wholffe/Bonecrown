@@ -7,7 +7,8 @@ signal attack_resolved(
 	attacker: Combatant, defender: Combatant, attack: AttackRoll, damage: DamageRoll
 )
 signal skill_used(user: Combatant, skill: SkillData)
-signal combatant_healed(combatant: Combatant, heal: HealRoll, restored: int)
+## The skill names the source of the heal.
+signal combatant_healed(combatant: Combatant, heal: HealRoll, restored: int, skill: SkillData)
 ## A natural 20 heals the attacker for half the damage rolled. Emitted right after attack_resolved.
 signal attacker_drained(attacker: Combatant, drained: int, restored: int)
 signal combatant_defeated(combatant: Combatant)
@@ -89,7 +90,7 @@ func use_skill(skill: SkillData) -> void:
 	_uses_spent[skill] = _uses_spent.get(skill, 0) + 1
 	skill_used.emit(player, skill)
 	for effect: EffectData in skill.effects:
-		_apply_effect(effect)
+		_apply_effect(effect, skill)
 	if skill.action_cost == SkillData.ActionCost.ACTION:
 		_finish_player_turn()
 	elif living_enemies().is_empty():
@@ -159,23 +160,23 @@ func _drain(attacker: Combatant, damage: DamageRoll) -> void:
 	attacker_drained.emit(attacker, drained, restored)
 
 
-func _apply_effect(effect: EffectData) -> void:
+func _apply_effect(effect: EffectData, skill: SkillData) -> void:
 	var heal_effect: HealEffect = effect as HealEffect
 	if heal_effect != null:
-		_heal_player(heal_effect)
+		_heal_player(heal_effect, skill)
 	elif effect is AdvantageEffect:
 		_player_has_advantage = true
 	else:
 		push_error("Effect %s has no rule for active skills" % effect.get_script().resource_path)
 
 
-func _heal_player(effect: HealEffect) -> void:
+func _heal_player(effect: HealEffect, skill: SkillData) -> void:
 	var bonus: int = player.level if effect.adds_level else 0
 	var heal: HealRoll = HealRoll.new(
 		_dice.roll_many(effect.die_count, effect.die_sides), effect.die_sides, bonus
 	)
 	var restored: int = player.heal(heal.total)
-	combatant_healed.emit(player, heal, restored)
+	combatant_healed.emit(player, heal, restored, skill)
 
 
 func _end(player_won: bool) -> void:

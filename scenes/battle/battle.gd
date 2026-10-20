@@ -25,7 +25,6 @@ var _skill_buttons: Dictionary[SkillData, Button] = {}
 # Combat resolves a whole turn at once, so its signals queue events that are played back in order.
 var _pending_events: Array[Callable] = []
 var _is_playing_back: bool = false
-var _used_skill: SkillData
 # Kept here, because tests set it before _ready(), when the dice display does not exist yet.
 var _animations_enabled: bool = true
 var _shake_tween: Tween
@@ -78,6 +77,7 @@ func _start_combat() -> void:
 	_combat.attack_resolved.connect(_on_attack_resolved)
 	_combat.skill_used.connect(_on_skill_used)
 	_combat.combatant_healed.connect(_on_combatant_healed)
+	_combat.attacker_drained.connect(_on_attacker_drained)
 	_combat.combatant_defeated.connect(_on_combatant_defeated)
 	_combat.combat_ended.connect(_on_combat_ended)
 	_create_cards(enemies)
@@ -148,6 +148,7 @@ func _play_pending_events() -> void:
 	_is_playing_back = false
 	_refresh_actions()
 	_refresh_player_info()
+	_refresh_roll_modes()
 	if _combat.is_over:
 		_main_menu_button.grab_focus()
 	else:
@@ -171,6 +172,8 @@ func _play_attack(
 	var armor_class_text: String = _describe_known_armor_class(defender, attack)
 	await _dice_display.play_attack(attacker, defender, attack, damage, armor_class_text)
 	_log(_describe_attack(attacker, defender, attack, damage, armor_class_text))
+	if attack.is_natural_one:
+		_log("Natural 1 – Off-Balance: next attack with disadvantage")
 	_learn_from_attack(attacker, defender, attack)
 	_cards[defender].show_hit_points(defender_hit_points)
 	if _animations_enabled:
@@ -186,6 +189,14 @@ func _play_heal(
 	_cards[combatant].show_hit_points(hit_points)
 	if _animations_enabled:
 		_popup_layer.show_heal(_cards[combatant], restored)
+	await _dice_display.hold()
+
+
+func _play_drain(attacker: Combatant, restored: int, hit_points: int) -> void:
+	_log("Natural 20 – Crit + Drain: +%d HP" % restored)
+	_cards[attacker].show_hit_points(hit_points)
+	if _animations_enabled:
+		_popup_layer.show_heal(_cards[attacker], restored)
 	await _dice_display.hold()
 
 
@@ -271,6 +282,15 @@ func _refresh_player_info() -> void:
 	_player_skills_label.text = "\n".join(lines)
 
 
+# Off-Balance ends with the fight, and a defeated enemy never attacks again.
+func _refresh_roll_modes() -> void:
+	for combatant: Combatant in _cards:
+		var mode: AttackRoll.RollMode = AttackRoll.RollMode.NORMAL
+		if not _combat.is_over and combatant.is_alive():
+			mode = _combat.next_roll_mode(combatant)
+		_cards[combatant].show_roll_mode(mode)
+
+
 func _describe_skill_button(skill: SkillData) -> String:
 	var uses: int = _combat.uses_left(skill)
 	if uses == Combat.UNLIMITED_USES:
@@ -299,11 +319,11 @@ func _describe_attack(
 	armor_class_text: String
 ) -> String:
 	var roll_text: String = (
-		"%s attacks %s: d20 %d %+d = %d vs %s"
+		"%s attacks %s: %s %+d = %d vs %s"
 		% [
 			attacker.display_name,
 			defender.display_name,
-			attack.natural_roll,
+			_describe_d20(attack),
 			attack.attack_bonus,
 			attack.total,
 			armor_class_text,
@@ -321,14 +341,25 @@ func _describe_attack(
 	return roll_text + " - %s %d damage (%s)." % [hit_text, damage.total, _describe_damage(damage)]
 
 
+# The kept d20 comes first, for example "d20 15 / 4 (advantage)".
+func _describe_d20(attack: AttackRoll) -> String:
+	if attack.roll_mode == AttackRoll.RollMode.NORMAL:
+		return "d20 %d" % attack.natural_roll
+	return (
+		"d20 %d / %d (%s)"
+		% [
+			attack.natural_roll,
+			attack.discarded_roll,
+			DiceDisplay.ROLL_MODE_TEXTS[attack.roll_mode].to_lower(),
+		]
+	)
+
+
 func _describe_damage(damage: DamageRoll) -> String:
 	return _describe_dice(damage.dice_results, damage.damage_bonus)
 
 
-# A heal without a preceding skill has no known source yet, see _on_combatant_healed().
 func _describe_heal_title(combatant: Combatant, skill: SkillData) -> String:
-	if skill == null:
-		return "%s heals" % combatant.display_name
 	return "%s: %s" % [combatant.display_name, skill.display_name]
 
 
@@ -368,15 +399,17 @@ func _on_attack_resolved(
 
 
 func _on_skill_used(user: Combatant, skill: SkillData) -> void:
-	_used_skill = skill
 	_pending_events.append(_log.bind("%s uses %s." % [user.display_name, skill.display_name]))
 
 
-# combatant_healed does not name its source, so the heal is shown with the skill just used.
-func _on_combatant_healed(combatant: Combatant, heal: HealRoll, restored: int) -> void:
-	_pending_events.append(
-		_play_heal.bind(combatant, _used_skill, heal, restored, combatant.hit_points)
-	)
+func _on_combatant_healed(
+	combatant: Combatant, heal: HealRoll, restored: int, skill: SkillData
+) -> void:
+	_pending_events.append(_play_heal.bind(combatant, skill, heal, restored, combatant.hit_points))
+
+
+func _on_attacker_drained(attacker: Combatant, _drained: int, restored: int) -> void:
+	_pending_events.append(_play_drain.bind(attacker, restored, attacker.hit_points))
 
 
 func _on_combatant_defeated(combatant: Combatant) -> void:

@@ -27,6 +27,7 @@ var _selected_style: StyleBoxFlat = _make_style(SELECTED_BORDER_COLOR, SELECTED_
 @onready var _hit_point_bar: ProgressBar = %HitPointBar
 @onready var _hit_point_label: Label = %HitPointLabel
 @onready var _stats_label: Label = %StatsLabel
+@onready var _roll_mode_label: Label = %RollModeLabel
 
 
 func _ready() -> void:
@@ -96,6 +97,14 @@ func show_hit_points(value: int) -> void:
 	_hit_point_bar.value = value
 	_hit_point_label.text = "HP %d/%d" % [value, combatant.max_hit_points]
 	_refresh_look()
+
+
+## Tags the card while the combatant's next attack roll has advantage or disadvantage.
+func show_roll_mode(mode: AttackRoll.RollMode) -> void:
+	_roll_mode_label.visible = mode != AttackRoll.RollMode.NORMAL
+	if _roll_mode_label.visible:
+		_roll_mode_label.text = DiceDisplay.ROLL_MODE_TEXTS[mode]
+		_roll_mode_label.add_theme_color_override("font_color", DiceDisplay.ROLL_MODE_COLORS[mode])
 
 
 func is_defeated() -> bool:

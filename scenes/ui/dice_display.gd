@@ -1,6 +1,7 @@
 class_name DiceDisplay
 extends PanelContainer
 ## Shows the current roll with a short animation: who rolls, the die, the total and the outcome.
+## Advantage and disadvantage show the discarded d20 dimmed next to the kept one.
 
 ## Emitted once per revealed result, also without animations, so feedback such as sound can follow.
 signal result_revealed(outcome: Outcome)
@@ -72,6 +73,19 @@ const SETTLED_SCALES: Dictionary[Outcome, float] = {
 	Outcome.NATURAL_ONE: 0.85,
 	Outcome.HEAL: 1.0,
 }
+## Tags of the rolls that keep one of two d20. Cards and the combat log use them too.
+const ROLL_MODE_TEXTS: Dictionary[AttackRoll.RollMode, String] = {
+	AttackRoll.RollMode.ADVANTAGE: "Advantage",
+	AttackRoll.RollMode.DISADVANTAGE: "Disadvantage",
+}
+const ROLL_MODE_COLORS: Dictionary[AttackRoll.RollMode, Color] = {
+	AttackRoll.RollMode.ADVANTAGE: Color(0.5, 0.9, 0.75),
+	AttackRoll.RollMode.DISADVANTAGE: Color(0.95, 0.5, 0.35),
+}
+## The d20 that advantage or disadvantage does not keep fades to this as soon as both have landed.
+const DISCARDED_DIE_MODULATE: Color = Color(1.0, 1.0, 1.0, 0.35)
+## The second d20 shows the faces this far ahead of the first, so the two never roll in step.
+const SECOND_DIE_FACE_OFFSET: int = 10
 
 ## When false, the play methods show the result at once and return without waiting.
 var animations_enabled: bool = true
@@ -80,8 +94,11 @@ var _roll_step_durations: Array[float] = _make_roll_step_durations()
 var _punch_tween: Tween
 
 @onready var _title_label: Label = %TitleLabel
+@onready var _roll_mode_label: Label = %RollModeLabel
 @onready var _die_face: PanelContainer = %DieFace
 @onready var _die_label: Label = %DieLabel
+@onready var _discarded_die: PanelContainer = %DiscardedDie
+@onready var _discarded_die_label: Label = %DiscardedDieLabel
 @onready var _detail_label: Label = %DetailLabel
 @onready var _outcome_label: Label = %OutcomeLabel
 @onready var _damage_label: Label = %DamageLabel
@@ -119,7 +136,11 @@ func play_attack(
 	armor_class_text: String
 ) -> void:
 	_start_roll("%s attacks %s" % [attacker.display_name, defender.display_name])
+	_show_second_die(attack.roll_mode)
 	await _roll_die(attack.natural_roll, AttackRoll.DIE_SIDES)
+	if _discarded_die.visible:
+		_discarded_die_label.text = str(attack.discarded_roll)
+		_discarded_die.modulate = DISCARDED_DIE_MODULATE
 	var outcome: Outcome = outcome_for(attack)
 	if outcome == Outcome.CRITICAL_HIT and animations_enabled:
 		await _wait(CRIT_FREEZE_DURATION)
@@ -151,10 +172,23 @@ func _start_roll(title: String) -> void:
 	_detail_label.text = ""
 	_outcome_label.text = ""
 	_damage_label.text = ""
+	_roll_mode_label.hide()
+	_discarded_die.hide()
+	_discarded_die.modulate = Color.WHITE
 	if _punch_tween != null:
 		_punch_tween.kill()
 	_die_face.scale = Vector2.ONE
 	_tint_die(NEUTRAL_DIE_TINT, NEUTRAL_DIE_NUMBER_COLOR)
+
+
+# Advantage and disadvantage roll a second d20 next to the kept one and name the roll mode.
+func _show_second_die(mode: AttackRoll.RollMode) -> void:
+	if mode == AttackRoll.RollMode.NORMAL:
+		return
+	_roll_mode_label.text = ROLL_MODE_TEXTS[mode]
+	_roll_mode_label.add_theme_color_override("font_color", ROLL_MODE_COLORS[mode])
+	_roll_mode_label.show()
+	_discarded_die.show()
 
 
 func _roll_die(final_value: int, highest_value: int) -> void:
@@ -165,6 +199,10 @@ func _roll_die(final_value: int, highest_value: int) -> void:
 		for step_duration: float in _roll_step_durations:
 			face = (face + ROLL_FACE_STEP - 1) % highest_value + 1
 			_die_label.text = str(face)
+			if _discarded_die.visible:
+				_discarded_die_label.text = str(
+					(face + SECOND_DIE_FACE_OFFSET - 1) % highest_value + 1
+				)
 			await _wait(step_duration)
 	_die_label.text = str(final_value)
 

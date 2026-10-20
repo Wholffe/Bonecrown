@@ -50,13 +50,25 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 
-[node name="DieSlot" type="Control" parent="Layout" unique_id=669794678]
+[node name="RollModeLabel" type="Label" parent="Layout" unique_id=1574032986]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="DiceRow" type="HBoxContainer" parent="Layout" unique_id=402816657]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 24
+
+[node name="DieSlot" type="Control" parent="Layout/DiceRow" unique_id=669794678]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 
-[node name="DieFace" type="PanelContainer" parent="Layout/DieSlot" unique_id=2093076050]
+[node name="DieFace" type="PanelContainer" parent="Layout/DiceRow/DieSlot" unique_id=2093076050]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -67,10 +79,28 @@ grow_vertical = 2
 pivot_offset_ratio = Vector2(0.5, 0.5)
 theme_override_styles/panel = SubResource("StyleBoxFlat_qk0t8")
 
-[node name="DieLabel" type="Label" parent="Layout/DieSlot/DieFace" unique_id=1236744870]
+[node name="DieLabel" type="Label" parent="Layout/DiceRow/DieSlot/DieFace" unique_id=1236744870]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DiscardedDie" type="PanelContainer" parent="Layout/DiceRow" unique_id=1893620447]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qk0t8")
+
+[node name="DiscardedDieLabel" type="Label" parent="Layout/DiceRow/DiscardedDie" unique_id=1102958364]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 text = "-"
 horizontal_alignment = 1

@@ -50,7 +50,7 @@ func _record_skill_signal_order(combat: Combat) -> Array[StringName]:
 		func(_user: Combatant, _skill: SkillData) -> void: order.append(&"skill_used")
 	)
 	combat.combatant_healed.connect(
-		func(_combatant: Combatant, _heal: HealRoll, _restored: int) -> void:
+		func(_combatant: Combatant, _heal: HealRoll, _restored: int, _skill: SkillData) -> void:
 			order.append(&"combatant_healed")
 	)
 	return order
@@ -113,6 +113,7 @@ func test_second_wind_heals_d10_plus_level() -> void:
 	assert_eq(heal.heal_bonus, 3, "The bonus is the current level")
 	assert_eq(heal.total, 10)
 	assert_eq(params[2], 10)
+	assert_eq(params[3], SECOND_WIND, "The heal names the skill that healed")
 
 
 func test_heal_without_level_bonus_adds_nothing() -> void:
@@ -124,10 +125,12 @@ func test_heal_without_level_bonus_adds_nothing() -> void:
 
 	combat.use_skill(skill)
 
-	var heal: HealRoll = get_signal_parameters(combat, "combatant_healed", 0)[1]
+	var params: Array = get_signal_parameters(combat, "combatant_healed", 0)
+	var heal: HealRoll = params[1]
 	assert_eq(heal.heal_bonus, 0, "adds_level = false must ignore the level")
 	assert_eq(heal.total, 3)
 	assert_eq(_player.hit_points, 12, "9 HP + 3")
+	assert_eq(params[3], skill, "The heal names the skill that healed")
 
 
 func test_healing_stops_at_max_hit_points() -> void:

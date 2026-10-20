@@ -1,5 +1,6 @@
 extends GutTest
-## Combatant card: exact player stats, hidden enemy stats and the known armor class text.
+## Combatant card: exact player stats, hidden enemy stats, the known armor class text and the
+## roll mode tag.
 
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -15,6 +16,11 @@ const ARMOR_CLASS_CASES: Array = [
 	[13, 15, "AC 13–15"],
 	[14, 14, "AC 14"],
 ]
+## Roll mode and the text of its tag.
+const TAGGED_ROLL_MODE_CASES: Array = [
+	[AttackRoll.RollMode.ADVANTAGE, "Advantage"],
+	[AttackRoll.RollMode.DISADVANTAGE, "Disadvantage"],
+]
 
 
 func _create_card() -> CombatantCard:
@@ -25,6 +31,10 @@ func _create_card() -> CombatantCard:
 
 func _stats_text(card: CombatantCard) -> String:
 	return (card.get_node("%StatsLabel") as Label).text
+
+
+func _roll_mode_label(card: CombatantCard) -> Label:
+	return card.get_node("%RollModeLabel") as Label
 
 
 func test_armor_class_text(params: Array = use_parameters(ARMOR_CLASS_CASES)) -> void:
@@ -65,4 +75,37 @@ func test_enemy_card_shows_what_was_learned_about_its_type() -> void:
 	card.show_enemy_knowledge(knowledge)
 
 	assert_eq(_stats_text(card), "AC 12–13   Attack +3")
+	assert_no_new_orphans()
+
+
+func test_card_starts_without_a_roll_mode_tag() -> void:
+	var card: CombatantCard = _create_card()
+
+	card.show_combatant(Enemy.new(GOBLIN), false)
+
+	assert_false(_roll_mode_label(card).visible)
+	assert_no_new_orphans()
+
+
+func test_roll_mode_tag_names_the_roll_mode(
+	params: Array = use_parameters(TAGGED_ROLL_MODE_CASES)
+) -> void:
+	var card: CombatantCard = _create_card()
+
+	card.show_roll_mode(params[0])
+
+	var tag: Label = _roll_mode_label(card)
+	assert_true(tag.visible, "The tag is shown")
+	assert_eq(tag.text, params[1])
+	assert_eq(tag.get_theme_color("font_color"), DiceDisplay.ROLL_MODE_COLORS[params[0]])
+	assert_no_new_orphans()
+
+
+func test_normal_roll_mode_removes_the_tag() -> void:
+	var card: CombatantCard = _create_card()
+	card.show_roll_mode(AttackRoll.RollMode.DISADVANTAGE)
+
+	card.show_roll_mode(AttackRoll.RollMode.NORMAL)
+
+	assert_false(_roll_mode_label(card).visible)
 	assert_no_new_orphans()
