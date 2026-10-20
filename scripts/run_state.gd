@@ -14,7 +14,7 @@ var enemy_knowledge: EnemyKnowledge
 func start_new_run(class_data: ClassData, seed_value: int) -> void:
 	run_seed = seed_value
 	dice = DiceRoller.new(seed_value)
-	player = Character.new(class_data, GAME_RULES.proficiency_bonus)
+	player = Character.new(class_data, GAME_RULES)
 	room_number = FIRST_ROOM
 	enemy_knowledge = EnemyKnowledge.new()
 

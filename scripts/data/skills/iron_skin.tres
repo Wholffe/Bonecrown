@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_8skwy"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_8x8il"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_mkqfw"]
+
+[sub_resource type="Resource" id="Resource_wyvbf"]
+script = ExtResource("2_8x8il")
+stat = 7
+amount = 1
+
+[resource]
+script = ExtResource("3_mkqfw")
+id = &"iron_skin"
+display_name = "Iron Skin"
+description = "Take 1 less damage from each hit (at least 1)."
+activation = 0
+effects = Array[ExtResource("1_8skwy")]([SubResource("Resource_wyvbf")])

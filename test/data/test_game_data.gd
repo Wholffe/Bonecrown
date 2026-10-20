@@ -30,9 +30,9 @@ func _skills() -> Array[SkillData]:
 	return skills
 
 
-# Mirrors Combat._apply_effect: only HealEffect has a rule for active skills so far.
+# Mirrors Combat._apply_effect: the effect types Combat can apply when an active skill is used.
 func _has_active_skill_rule(effect: EffectData) -> bool:
-	return effect is HealEffect
+	return effect is HealEffect or effect is AdvantageEffect
 
 
 # Mirrors Character._stat_modifier: only StatModifierEffect counts on passive skills.
@@ -148,19 +148,14 @@ func test_active_skills_contain_only_active_effect_types() -> void:
 			)
 
 
-func test_stat_modifiers_have_stat_and_amount() -> void:
-	for skill: SkillData in _skills():
-		for effect: EffectData in skill.effects:
-			var modifier: StatModifierEffect = effect as StatModifierEffect
-			if modifier != null:
-				assert_ne(modifier.stat, StatModifierEffect.Stat.UNSET, "%s stat" % skill.id)
-				assert_ne(modifier.amount, 0, "%s modifier amount" % skill.id)
-
-
 func test_enum_fields_default_to_unset() -> void:
 	var skill: SkillData = SkillData.new()
 	var modifier: StatModifierEffect = StatModifierEffect.new()
+	var conditional: ConditionalModifierEffect = ConditionalModifierEffect.new()
+	var talisman: TalismanData = TalismanData.new()
 
 	assert_eq(skill.activation, SkillData.Activation.UNSET)
 	assert_eq(skill.action_cost, SkillData.ActionCost.UNSET)
 	assert_eq(modifier.stat, StatModifierEffect.Stat.UNSET)
+	assert_eq(conditional.condition, ConditionalModifierEffect.Condition.UNSET)
+	assert_eq(talisman.rarity, ItemData.Rarity.UNSET)

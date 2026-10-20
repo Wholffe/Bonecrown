@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_iwns0"]
+[ext_resource type="Script" path="res://scripts/data/conditional_modifier_effect.gd" id="2_nvsko"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_4cbwi"]
+
+[sub_resource type="Resource" id="Resource_7nbwg"]
+script = ExtResource("2_nvsko")
+condition = 0
+stat = 1
+amount = 2
+
+[resource]
+script = ExtResource("3_4cbwi")
+id = &"adrenaline"
+display_name = "Adrenaline"
+description = "+2 damage while at or below half your maximum HP."
+activation = 0
+effects = Array[ExtResource("1_iwns0")]([SubResource("Resource_7nbwg")])
+min_level = 4

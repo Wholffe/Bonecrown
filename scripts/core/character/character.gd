@@ -3,17 +3,26 @@ extends Combatant
 ## The player character: class data plus run progress (level, equipment, skills, hit points).
 
 const STARTING_LEVEL: int = 1
+const ATTRIBUTE_STATS: Dictionary[Attributes.Kind, StatModifierEffect.Stat] = {
+	Attributes.Kind.STRENGTH: StatModifierEffect.Stat.STRENGTH,
+	Attributes.Kind.DEXTERITY: StatModifierEffect.Stat.DEXTERITY,
+	Attributes.Kind.CONSTITUTION: StatModifierEffect.Stat.CONSTITUTION,
+	Attributes.Kind.LUCK: StatModifierEffect.Stat.LUCK,
+}
 
 var class_data: ClassData
+## Base values from the class data. Values with skills and items come from attribute_value().
 var attributes: Attributes
 var level: int = STARTING_LEVEL
 var weapon: WeaponData
 var armor: ArmorData
+## Empty until the first talisman is equipped.
+var talisman: TalismanData
 var skills: Array[SkillData] = []
-var _proficiency_bonus: int
+var _rules: GameRulesData
 
 
-func _init(data: ClassData, proficiency_bonus: int) -> void:
+func _init(data: ClassData, rules: GameRulesData) -> void:
 	class_data = data
 	display_name = data.display_name
 	attributes = Attributes.new(data.strength, data.dexterity, data.constitution, data.luck)
@@ -21,14 +30,14 @@ func _init(data: ClassData, proficiency_bonus: int) -> void:
 	armor = data.starting_armor
 	# assign() copies, so learning skills later never changes the shared class data.
 	skills.assign(data.starting_skills)
-	_proficiency_bonus = proficiency_bonus
-	max_hit_points = data.base_hit_points + attributes.bonus_of(Attributes.Kind.CONSTITUTION)
+	_rules = rules
+	max_hit_points = _calculate_max_hit_points()
 	hit_points = max_hit_points
 
 
 func get_armor_class() -> int:
 	return (
-		CombatFormulas.armor_class(armor.armor_base, attributes.bonus_of(Attributes.Kind.DEXTERITY))
+		CombatFormulas.armor_class(armor.armor_base, attribute_bonus(Attributes.Kind.DEXTERITY))
 		+ _stat_modifier(StatModifierEffect.Stat.ARMOR_CLASS)
 	)
 
@@ -36,14 +45,14 @@ func get_armor_class() -> int:
 func get_attack_bonus() -> int:
 	return (
 		CombatFormulas.melee_attack_bonus(
-			attributes.bonus_of(Attributes.Kind.STRENGTH), _proficiency_bonus
+			attribute_bonus(Attributes.Kind.STRENGTH), _rules.proficiency_bonus
 		)
 		+ _stat_modifier(StatModifierEffect.Stat.ATTACK)
 	)
 
 
 func get_crit_threshold() -> int:
-	return CombatFormulas.crit_threshold(attributes.bonus_of(Attributes.Kind.LUCK))
+	return CombatFormulas.crit_threshold(attribute_bonus(Attributes.Kind.LUCK))
 
 
 func get_damage_die_count() -> int:
@@ -57,9 +66,30 @@ func get_damage_die_sides() -> int:
 # Every weapon is a melee weapon so far, so melee damage modifiers always apply.
 func get_damage_bonus() -> int:
 	return (
-		attributes.bonus_of(Attributes.Kind.STRENGTH)
+		attribute_bonus(Attributes.Kind.STRENGTH)
 		+ _stat_modifier(StatModifierEffect.Stat.MELEE_DAMAGE)
 	)
+
+
+## Damage taken off each hit the character receives.
+func get_damage_reduction() -> int:
+	return _stat_modifier(StatModifierEffect.Stat.DAMAGE_REDUCTION)
+
+
+## Base value plus the modifiers of passive skills and worn items, capped by the game rules.
+func attribute_value(kind: Attributes.Kind) -> int:
+	return mini(
+		attributes.value_of(kind) + _stat_modifier(ATTRIBUTE_STATS[kind]), _rules.attribute_cap
+	)
+
+
+func attribute_bonus(kind: Attributes.Kind) -> int:
+	return Attributes.bonus_for(attribute_value(kind))
+
+
+## True when skills and items cannot raise the attribute any further.
+func is_attribute_capped(kind: Attributes.Kind) -> bool:
+	return attribute_value(kind) >= _rules.attribute_cap
 
 
 func active_skills() -> Array[SkillData]:
@@ -70,13 +100,80 @@ func active_skills() -> Array[SkillData]:
 	return active
 
 
+## Stackable skills may be learned again, every copy counts.
+func learn_skill(skill: SkillData) -> void:
+	skills.append(skill)
+	_update_max_hit_points()
+
+
+## Puts the item into its slot and returns the item it replaces, or null for an empty slot.
+func equip(item: ItemData) -> ItemData:
+	var replaced: ItemData = null
+	match item.get_slot():
+		ItemData.Slot.WEAPON:
+			replaced = weapon
+			weapon = item as WeaponData
+		ItemData.Slot.ARMOR:
+			replaced = armor
+			armor = item as ArmorData
+		ItemData.Slot.TALISMAN:
+			replaced = talisman
+			talisman = item as TalismanData
+	_update_max_hit_points()
+	return replaced
+
+
+func level_up() -> void:
+	level += 1
+	_update_max_hit_points()
+
+
+# 5e formula: a Constitution change counts for every level reached so far, not only for later ones.
+func _calculate_max_hit_points() -> int:
+	var constitution_bonus: int = attribute_bonus(Attributes.Kind.CONSTITUTION)
+	return (
+		class_data.base_hit_points
+		+ constitution_bonus
+		+ (level - STARTING_LEVEL) * (class_data.hit_points_per_level + constitution_bonus)
+	)
+
+
+# A higher maximum raises current hit points by the gain, so missing hit points stay missing (no
+# full heal on level-up). A lower maximum only clamps them.
+func _update_max_hit_points() -> void:
+	var gain: int = _calculate_max_hit_points() - max_hit_points
+	max_hit_points += gain
+	hit_points = mini(hit_points + maxi(gain, 0), max_hit_points)
+
+
 func _stat_modifier(stat: StatModifierEffect.Stat) -> int:
 	var total: int = 0
-	for skill: SkillData in skills:
-		if skill.activation != SkillData.Activation.PASSIVE:
-			continue
-		for effect: EffectData in skill.effects:
-			var modifier: StatModifierEffect = effect as StatModifierEffect
-			if modifier != null and modifier.stat == stat:
-				total += modifier.amount
+	for effect: EffectData in _passive_effects():
+		var modifier: StatModifierEffect = effect as StatModifierEffect
+		if modifier != null and modifier.stat == stat and _modifier_applies(modifier):
+			total += modifier.amount
 	return total
+
+
+# Worn items count like passive skills.
+func _passive_effects() -> Array[EffectData]:
+	var effects: Array[EffectData] = []
+	for skill: SkillData in skills:
+		if skill.activation == SkillData.Activation.PASSIVE:
+			effects.append_array(skill.effects)
+	for item: ItemData in [weapon, armor, talisman]:
+		if item != null:
+			effects.append_array(item.effects)
+	return effects
+
+
+# Conditions read hit points, so a conditional Constitution modifier would change max HP and with
+# it its own condition. The data test rules that out.
+func _modifier_applies(modifier: StatModifierEffect) -> bool:
+	var conditional: ConditionalModifierEffect = modifier as ConditionalModifierEffect
+	if conditional == null:
+		return true
+	match conditional.condition:
+		ConditionalModifierEffect.Condition.OWN_HP_AT_MOST_HALF:
+			return hit_points * 2 <= max_hit_points
+	return false

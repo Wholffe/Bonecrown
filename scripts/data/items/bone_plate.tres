@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ArmorData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_jdl8e"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_8pxqf"]
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="3_lc41x"]
+
+[sub_resource type="Resource" id="Resource_gs68j"]
+script = ExtResource("2_8pxqf")
+stat = 2
+amount = 6
+
+[sub_resource type="Resource" id="Resource_agclh"]
+script = ExtResource("2_8pxqf")
+stat = 0
+amount = -2
+
+[sub_resource type="Resource" id="Resource_j1q6x"]
+script = ExtResource("2_8pxqf")
+stat = 1
+amount = -2
+
+[resource]
+script = ExtResource("3_lc41x")
+armor_base = 13
+id = &"bone_plate"
+display_name = "Bone Plate"
+description = "+6 AC, but −2 to attack rolls and −2 damage."
+rarity = 3
+effects = Array[ExtResource("1_jdl8e")]([SubResource("Resource_gs68j"), SubResource("Resource_agclh"), SubResource("Resource_j1q6x")])

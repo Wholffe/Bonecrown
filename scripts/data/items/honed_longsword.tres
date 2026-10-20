@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_rtt5p"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_0vgg2"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="3_ewg81"]
+
+[sub_resource type="Resource" id="Resource_i1aw4"]
+script = ExtResource("2_0vgg2")
+stat = 1
+amount = 1
+
+[resource]
+script = ExtResource("3_ewg81")
+damage_die_count = 1
+damage_die_sides = 8
+id = &"honed_longsword"
+display_name = "Honed Longsword"
+description = "+1 damage."
+rarity = 0
+effects = Array[ExtResource("1_rtt5p")]([SubResource("Resource_i1aw4")])

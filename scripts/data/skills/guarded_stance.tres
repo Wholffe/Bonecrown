@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_xccsu"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_ldlf3"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_0iyb6"]
+
+[sub_resource type="Resource" id="Resource_7bhfe"]
+script = ExtResource("2_ldlf3")
+stat = 2
+amount = 2
+
+[sub_resource type="Resource" id="Resource_0tm7m"]
+script = ExtResource("2_ldlf3")
+stat = 1
+amount = -1
+
+[resource]
+script = ExtResource("3_0iyb6")
+id = &"guarded_stance"
+display_name = "Guarded Stance"
+description = "+2 AC, but −1 damage."
+activation = 0
+effects = Array[ExtResource("1_xccsu")]([SubResource("Resource_7bhfe"), SubResource("Resource_0tm7m")])
+min_level = 4

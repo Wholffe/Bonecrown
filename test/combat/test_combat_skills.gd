@@ -15,7 +15,7 @@ var _dice: FixedDice
 
 
 func before_each() -> void:
-	_player = Character.new(WARRIOR, GAME_RULES.proficiency_bonus)
+	_player = Character.new(WARRIOR, GAME_RULES)
 	_goblin = Enemy.new(GOBLIN)
 
 

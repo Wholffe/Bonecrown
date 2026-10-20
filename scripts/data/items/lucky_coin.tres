@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TalismanData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_377g7"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_vpq6w"]
+[ext_resource type="Script" path="res://scripts/data/talisman_data.gd" id="3_ko8an"]
+
+[sub_resource type="Resource" id="Resource_t3ir4"]
+script = ExtResource("2_vpq6w")
+stat = 6
+amount = 2
+
+[resource]
+script = ExtResource("3_ko8an")
+id = &"lucky_coin"
+display_name = "Lucky Coin"
+description = "+2 Luck."
+rarity = 0
+effects = Array[ExtResource("1_377g7")]([SubResource("Resource_t3ir4")])

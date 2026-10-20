@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TalismanData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_l6f1h"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_ugjxo"]
+[ext_resource type="Script" path="res://scripts/data/talisman_data.gd" id="3_hcxu0"]
+
+[sub_resource type="Resource" id="Resource_3b74j"]
+script = ExtResource("2_ugjxo")
+stat = 0
+amount = 3
+
+[sub_resource type="Resource" id="Resource_q67ji"]
+script = ExtResource("2_ugjxo")
+stat = 1
+amount = 3
+
+[sub_resource type="Resource" id="Resource_k1ixj"]
+script = ExtResource("2_ugjxo")
+stat = 2
+amount = -3
+
+[resource]
+script = ExtResource("3_hcxu0")
+id = &"skull_idol"
+display_name = "Skull Idol"
+description = "+3 to attack rolls, +3 damage, but −3 AC."
+rarity = 3
+effects = Array[ExtResource("1_l6f1h")]([SubResource("Resource_3b74j"), SubResource("Resource_q67ji"), SubResource("Resource_k1ixj")])

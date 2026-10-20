@@ -9,7 +9,7 @@ var _warrior: Character
 
 
 func before_each() -> void:
-	_warrior = Character.new(WARRIOR, GAME_RULES.proficiency_bonus)
+	_warrior = Character.new(WARRIOR, GAME_RULES)
 
 
 func _modifier_skill(
@@ -56,7 +56,7 @@ func test_luck_bonus_of_2_extends_crit_range_to_19() -> void:
 	var lucky_class: ClassData = WARRIOR.duplicate()
 	lucky_class.luck = 14
 
-	var lucky: Character = Character.new(lucky_class, GAME_RULES.proficiency_bonus)
+	var lucky: Character = Character.new(lucky_class, GAME_RULES)
 
 	assert_eq(lucky.get_crit_threshold(), 19)
 
@@ -77,6 +77,26 @@ func test_learning_a_skill_leaves_class_data_untouched() -> void:
 	_warrior.skills.append(skill)
 
 	assert_eq(WARRIOR.starting_skills.size(), 2)
+
+
+func test_learn_skill_leaves_class_data_untouched() -> void:
+	_warrior.learn_skill(
+		_modifier_skill(StatModifierEffect.Stat.ATTACK, 1, SkillData.Activation.PASSIVE)
+	)
+
+	assert_eq(WARRIOR.starting_skills, [SECOND_WIND, WEAPON_MASTER] as Array[SkillData])
+
+
+func test_learning_a_skill_twice_keeps_both_copies() -> void:
+	var skill: SkillData = _modifier_skill(
+		StatModifierEffect.Stat.ATTACK, 1, SkillData.Activation.PASSIVE
+	)
+
+	_warrior.learn_skill(skill)
+	_warrior.learn_skill(skill)
+
+	assert_eq(_warrior.skills.count(skill), 2)
+	assert_eq(_warrior.get_attack_bonus(), 7, "5 + 1 per copy")
 
 
 func test_passive_attack_modifier_raises_attack_bonus() -> void:

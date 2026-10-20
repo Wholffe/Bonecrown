@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TalismanData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_3grhu"]
+[ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_3noqe"]
+[ext_resource type="Script" path="res://scripts/data/talisman_data.gd" id="3_3xhcm"]
+
+[sub_resource type="Resource" id="Resource_addr4"]
+script = ExtResource("2_3noqe")
+stat = 5
+amount = 2
+
+[resource]
+script = ExtResource("3_3xhcm")
+id = &"vigor_amulet"
+display_name = "Amulet of Vigor"
+description = "+2 Constitution."
+rarity = 1
+effects = Array[ExtResource("1_3grhu")]([SubResource("Resource_addr4")])

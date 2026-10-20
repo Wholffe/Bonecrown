@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="LootTableData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_bc1db"]
+[ext_resource type="Resource" path="res://scripts/data/items/honed_longsword.tres" id="2_vikam"]
+[ext_resource type="Resource" path="res://scripts/data/items/reinforced_chain_mail.tres" id="3_kxnuc"]
+[ext_resource type="Resource" path="res://scripts/data/items/lucky_coin.tres" id="4_k6psq"]
+[ext_resource type="Resource" path="res://scripts/data/items/balanced_longsword.tres" id="5_y7qpl"]
+[ext_resource type="Resource" path="res://scripts/data/items/knights_chain_mail.tres" id="6_gfacv"]
+[ext_resource type="Resource" path="res://scripts/data/items/vigor_amulet.tres" id="7_gcwqa"]
+[ext_resource type="Resource" path="res://scripts/data/items/runed_longsword.tres" id="8_ny7gr"]
+[ext_resource type="Resource" path="res://scripts/data/items/dwarven_chain_mail.tres" id="9_ykbln"]
+[ext_resource type="Resource" path="res://scripts/data/items/four_leaf_clover.tres" id="10_w4kv5"]
+[ext_resource type="Resource" path="res://scripts/data/items/headsmans_greatsword.tres" id="11_fc4lv"]
+[ext_resource type="Resource" path="res://scripts/data/items/bone_plate.tres" id="12_p2al1"]
+[ext_resource type="Resource" path="res://scripts/data/items/skull_idol.tres" id="13_hfwst"]
+[ext_resource type="Script" path="res://scripts/data/loot_table_data.gd" id="14_daxlm"]
+
+[resource]
+script = ExtResource("14_daxlm")
+uncommon_from = 10
+rare_from = 17
+legendary_from = 20
+legendary_from_room = 3
+blood_price_hit_points_per_level = 1
+blood_price_roll_bonus = 5
+blood_price_from_room = 2
+items = Array[ExtResource("1_bc1db")]([ExtResource("2_vikam"), ExtResource("3_kxnuc"), ExtResource("4_k6psq"), ExtResource("5_y7qpl"), ExtResource("6_gfacv"), ExtResource("7_gcwqa"), ExtResource("8_ny7gr"), ExtResource("9_ykbln"), ExtResource("10_w4kv5"), ExtResource("11_fc4lv"), ExtResource("12_p2al1"), ExtResource("13_hfwst")])
