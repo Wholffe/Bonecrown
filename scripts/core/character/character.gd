@@ -35,6 +35,20 @@ func _init(data: ClassData, rules: GameRulesData) -> void:
 	hit_points = max_hit_points
 
 
+## Independent copy for previews: learning or equipping on it never changes this character.
+func copy() -> Character:
+	# new() instead of Character.new(): naming its own class_name here leaks the script at exit.
+	var duplicate_character: Character = new(class_data, _rules)
+	duplicate_character.level = level
+	duplicate_character.skills.assign(skills)
+	duplicate_character.weapon = weapon
+	duplicate_character.armor = armor
+	duplicate_character.talisman = talisman
+	duplicate_character.max_hit_points = duplicate_character._calculate_max_hit_points()
+	duplicate_character.hit_points = hit_points
+	return duplicate_character
+
+
 func get_armor_class() -> int:
 	return (
 		CombatFormulas.armor_class(armor.armor_base, attribute_bonus(Attributes.Kind.DEXTERITY))
@@ -92,6 +106,43 @@ func is_attribute_capped(kind: Attributes.Kind) -> bool:
 	return attribute_value(kind) >= _rules.attribute_cap
 
 
+## The modifier stats of all capped attributes, for the skill offer.
+func capped_attribute_stats() -> Array[StatModifierEffect.Stat]:
+	var capped: Array[StatModifierEffect.Stat] = []
+	for kind: Attributes.Kind in ATTRIBUTE_STATS:
+		if is_attribute_capped(kind):
+			capped.append(ATTRIBUTE_STATS[kind])
+	return capped
+
+
+## Bonus on the loot roll from Luck.
+func loot_bonus() -> int:
+	return attribute_bonus(Attributes.Kind.LUCK)
+
+
+## Max HP gained with the next level-up at the current Constitution.
+func hit_points_per_level_up() -> int:
+	return class_data.hit_points_per_level + attribute_bonus(Attributes.Kind.CONSTITUTION)
+
+
+func worn_items() -> Array[ItemData]:
+	var worn: Array[ItemData] = []
+	for item: ItemData in [weapon, armor, talisman]:
+		if item != null:
+			worn.append(item)
+	return worn
+
+
+## The item worn in the slot, or null for an empty slot.
+func item_in_slot(slot: ItemData.Slot) -> ItemData:
+	match slot:
+		ItemData.Slot.WEAPON:
+			return weapon
+		ItemData.Slot.ARMOR:
+			return armor
+	return talisman
+
+
 func active_skills() -> Array[SkillData]:
 	var active: Array[SkillData] = []
 	for skill: SkillData in skills:
@@ -130,11 +181,10 @@ func level_up() -> void:
 
 # 5e formula: a Constitution change counts for every level reached so far, not only for later ones.
 func _calculate_max_hit_points() -> int:
-	var constitution_bonus: int = attribute_bonus(Attributes.Kind.CONSTITUTION)
 	return (
 		class_data.base_hit_points
-		+ constitution_bonus
-		+ (level - STARTING_LEVEL) * (class_data.hit_points_per_level + constitution_bonus)
+		+ attribute_bonus(Attributes.Kind.CONSTITUTION)
+		+ (level - STARTING_LEVEL) * hit_points_per_level_up()
 	)
 
 
@@ -161,9 +211,8 @@ func _passive_effects() -> Array[EffectData]:
 	for skill: SkillData in skills:
 		if skill.activation == SkillData.Activation.PASSIVE:
 			effects.append_array(skill.effects)
-	for item: ItemData in [weapon, armor, talisman]:
-		if item != null:
-			effects.append_array(item.effects)
+	for item: ItemData in worn_items():
+		effects.append_array(item.effects)
 	return effects
 
 

@@ -6,3 +6,4 @@
 script = ExtResource("1_wwbvg")
 proficiency_bonus = 2
 attribute_cap = 20
+room_count = 10

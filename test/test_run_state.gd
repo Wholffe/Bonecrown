@@ -43,3 +43,30 @@ func test_new_run_forgets_enemy_knowledge_of_the_last_run() -> void:
 
 	assert_eq(RunState.enemy_knowledge.highest_armor_class(GOBLIN_ID), EnemyKnowledge.UNKNOWN)
 	assert_false(RunState.enemy_knowledge.is_attack_bonus_known(GOBLIN_ID))
+
+
+func test_room_rewards_are_for_the_room_just_won() -> void:
+	RunState.start_new_run(WARRIOR, SEED)
+
+	var rewards: RoomRewards = RunState.start_room_rewards()
+
+	assert_eq(rewards.room_number, RunState.FIRST_ROOM)
+	assert_eq(rewards.player, RunState.player)
+
+
+func test_advance_room_moves_to_the_next_room() -> void:
+	RunState.start_new_run(WARRIOR, SEED)
+
+	RunState.advance_room()
+
+	assert_eq(RunState.room_number, 2)
+
+
+func test_last_fight_room_is_the_room_before_the_boss() -> void:
+	RunState.start_new_run(WARRIOR, SEED)
+	RunState.room_number = RunState.GAME_RULES.room_count - 2
+	assert_false(RunState.is_last_fight_room())
+
+	RunState.advance_room()
+
+	assert_true(RunState.is_last_fight_room())
