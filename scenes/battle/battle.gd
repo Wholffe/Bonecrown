@@ -11,6 +11,8 @@ const ENCOUNTER: Array[EnemyData] = [GOBLIN, GOBLIN]
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
 # A preload would form a cycle, because the main menu preloads this scene.
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
+# The post-fight screen leads back here, so a preload would form a cycle too.
+const LEVEL_UP_SCENE_PATH: String = "res://scenes/levelup/level_up.tscn"
 ## The layout steps through these offsets when a crit is revealed, then returns to its rest.
 const SHAKE_OFFSETS: Array[Vector2] = [
 	Vector2(10, -6), Vector2(-9, 5), Vector2(7, 4), Vector2(-5, -3), Vector2(2, 2)
@@ -40,13 +42,19 @@ var _layout_rest_position: Vector2 = Vector2.ZERO
 @onready var _combat_log: RichTextLabel = %CombatLog
 @onready var _attack_button: Button = %AttackButton
 @onready var _skill_buttons_box: VBoxContainer = %SkillButtons
+@onready var _character_button: Button = %CharacterButton
+@onready var _continue_button: Button = %ContinueButton
 @onready var _main_menu_button: Button = %MainMenuButton
+@onready var _character_sheet: CharacterSheet = %CharacterSheet
 
 
 func _ready() -> void:
 	_dice_display.animations_enabled = _animations_enabled
 	_attack_button.pressed.connect(_on_attack_button_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+	_continue_button.pressed.connect(_on_continue_button_pressed)
+	_character_sheet.character = RunState.player
+	_character_button.pressed.connect(_character_sheet.toggle)
 	_start_combat()
 
 
@@ -82,7 +90,7 @@ func _start_combat() -> void:
 	_combat.combat_ended.connect(_on_combat_ended)
 	_create_cards(enemies)
 	_create_skill_buttons()
-	_log("Run seed: %d" % RunState.run_seed)
+	_log("Room %d   ·   Run seed: %d" % [RunState.room_number, RunState.run_seed])
 	for enemy: Combatant in enemies:
 		_log("A %s appears." % enemy.display_name)
 	_select_target(_first_living_card())
@@ -149,7 +157,9 @@ func _play_pending_events() -> void:
 	_refresh_actions()
 	_refresh_player_info()
 	_refresh_roll_modes()
-	if _combat.is_over:
+	if _continue_button.visible:
+		_continue_button.grab_focus()
+	elif _combat.is_over:
 		_main_menu_button.grab_focus()
 	else:
 		_attack_button.grab_focus()
@@ -247,6 +257,8 @@ func _play_defeat(combatant: Combatant) -> void:
 func _play_combat_end(player_won: bool) -> void:
 	_log("")
 	_log("Victory!" if player_won else "You have fallen. The run is over.")
+	# Until the run end screen of milestone 11, a defeat only offers the main menu.
+	_continue_button.visible = player_won
 
 
 # The input handlers check this too, because a scripted pressed.emit() ignores disabled buttons.
@@ -266,6 +278,7 @@ func _refresh_actions() -> void:
 		button.text = _describe_skill_button(skill)
 		button.disabled = not can_act or not _combat.can_use_skill(skill)
 	_main_menu_button.disabled = _is_playing_back
+	_continue_button.disabled = _is_playing_back
 	for card: CombatantCard in _enemy_cards:
 		card.set_selectable(can_act)
 
@@ -442,3 +455,7 @@ func _on_skill_button_pressed(skill: SkillData) -> void:
 
 func _on_main_menu_button_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+
+func _on_continue_button_pressed() -> void:
+	get_tree().change_scene_to_file(LEVEL_UP_SCENE_PATH)

@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/combatant_card.tscn" id="2_0yh6x"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="3_h0kxc"]
 [ext_resource type="PackedScene" path="res://scenes/ui/popup_layer.tscn" id="4_sznow"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="5_chsht"]
 
 [node name="Battle" type="Control" unique_id=135838798]
 layout_mode = 3
@@ -105,6 +106,17 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
+[node name="CharacterButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1630492817]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Character (C)"
+
+[node name="ContinueButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1874022365]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Continue"
+
 [node name="MainMenuButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1495569792]
 unique_name_in_owner = true
 layout_mode = 2
@@ -113,3 +125,7 @@ text = "Main Menu"
 [node name="PopupLayer" parent="Margin" unique_id=886987079 instance=ExtResource("4_sznow")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="CharacterSheet" parent="." unique_id=1290736415 instance=ExtResource("5_chsht")]
+unique_name_in_owner = true
+layout_mode = 1
