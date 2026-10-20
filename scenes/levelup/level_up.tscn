@@ -1,0 +1,158 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/levelup/level_up.gd" id="1_vgq3v"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="2_xspm1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="4_mkauv"]
+
+[node name="LevelUp" type="Control" unique_id=1081191317]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vgq3v")
+
+[node name="Background" type="ColorRect" parent="." unique_id=24575927]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=126443470]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=44831789]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Margin/Layout" unique_id=626407027]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Layout/Header" unique_id=1279099974]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Room cleared"
+
+[node name="NextButton" type="Button" parent="Margin/Layout/Header" unique_id=1832637258]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Next Room"
+
+[node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=88215593]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Character (C)"
+
+[node name="LevelRow" type="HBoxContainer" parent="Margin/Layout" unique_id=1579513196]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="LevelUpLabel" type="Label" parent="Margin/Layout/LevelRow" unique_id=891729769]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Level"
+
+[node name="HitPointsLabel" type="Label" parent="Margin/Layout/LevelRow" unique_id=935583240]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "HP"
+
+[node name="LootSection" type="VBoxContainer" parent="Margin/Layout" unique_id=255899745]
+layout_mode = 2
+
+[node name="LootTitle" type="Label" parent="Margin/Layout/LootSection" unique_id=91263236]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Loot"
+
+[node name="LootInfoLabel" type="Label" parent="Margin/Layout/LootSection" unique_id=1154160824]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="LootButtons" type="HBoxContainer" parent="Margin/Layout/LootSection" unique_id=1086885770]
+layout_mode = 2
+
+[node name="RollButton" type="Button" parent="Margin/Layout/LootSection/LootButtons" unique_id=1822544457]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Roll"
+
+[node name="BloodPriceButton" type="Button" parent="Margin/Layout/LootSection/LootButtons" unique_id=795273441]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Pay HP"
+
+[node name="LootRow" type="HBoxContainer" parent="Margin/Layout/LootSection" unique_id=630572390]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="DiceDisplay" parent="Margin/Layout/LootSection/LootRow" unique_id=656307730 instance=ExtResource("2_xspm1")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FindBox" type="VBoxContainer" parent="Margin/Layout/LootSection/LootRow" unique_id=1571636859]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FindLabel" type="Label" parent="Margin/Layout/LootSection/LootRow/FindBox" unique_id=2144092221]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+
+[node name="FindDetailsLabel" type="Label" parent="Margin/Layout/LootSection/LootRow/FindBox" unique_id=933754259]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="FindButtons" type="HBoxContainer" parent="Margin/Layout/LootSection/LootRow/FindBox" unique_id=2047344928]
+layout_mode = 2
+
+[node name="TakeButton" type="Button" parent="Margin/Layout/LootSection/LootRow/FindBox/FindButtons" unique_id=1279895206]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Take"
+
+[node name="LeaveButton" type="Button" parent="Margin/Layout/LootSection/LootRow/FindBox/FindButtons" unique_id=1727459352]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Leave"
+
+[node name="SkillSection" type="VBoxContainer" parent="Margin/Layout" unique_id=606102488]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SkillTitle" type="Label" parent="Margin/Layout/SkillSection" unique_id=1482808724]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Choose a skill"
+
+[node name="SkillCards" type="HBoxContainer" parent="Margin/Layout/SkillSection" unique_id=1251146975]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CharacterSheet" parent="." unique_id=1890750440 instance=ExtResource("4_mkauv")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

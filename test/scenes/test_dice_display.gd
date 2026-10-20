@@ -250,3 +250,18 @@ func test_discarded_die_rolls_undimmed_until_both_dice_land() -> void:
 	assert_true(await wait_until(has_landed, LANDING_TIMEOUT), "Precondition: the dice land")
 	assert_eq(_discarded_die(display).modulate, DiceDisplay.DISCARDED_DIE_MODULATE, "Dimmed")
 	assert_no_new_orphans()
+
+
+func test_plain_roll_shows_die_detail_and_result() -> void:
+	var display: DiceDisplay = _create_display()
+	watch_signals(display)
+
+	await display.play_roll("Loot roll", 17, 20, "+1 = 18", "RARE", Color.BLUE)
+
+	assert_eq(_label_text(display, "TitleLabel"), "Loot roll")
+	assert_eq(_label_text(display, "DieLabel"), "17")
+	assert_eq(_label_text(display, "DetailLabel"), "+1 = 18")
+	assert_eq(_outcome_label(display).text, "RARE")
+	assert_eq(_outcome_label(display).get_theme_color("font_color"), Color.BLUE)
+	assert_false(_discarded_die(display).visible)
+	assert_signal_emitted_with_parameters(display, "roll_revealed", ["RARE"])

@@ -5,6 +5,8 @@ extends PanelContainer
 
 ## Emitted once per revealed result, also without animations, so feedback such as sound can follow.
 signal result_revealed(outcome: Outcome)
+## Emitted when a roll that is neither an attack nor a heal is revealed, such as the loot roll.
+signal roll_revealed(result_text: String)
 
 enum Outcome { CRITICAL_HIT, HIT, NARROW_HIT, MISS, NATURAL_ONE, HEAL }
 
@@ -159,6 +161,26 @@ func play_heal(title: String, heal: HealRoll, restored: int) -> void:
 	await _roll_die(dice_sum, heal.dice_results.size() * heal.die_sides)
 	_detail_label.text = "%+d = %d" % [heal.heal_bonus, heal.total]
 	_reveal(Outcome.HEAL, "%s %d" % [OUTCOME_TEXTS[Outcome.HEAL], restored])
+
+
+## Rolls one die for anything but an attack or a heal, such as the loot roll, and reveals the
+## result text in its color. Call hold() afterwards to keep the result on screen.
+func play_roll(
+	title: String,
+	natural_roll: int,
+	die_sides: int,
+	detail_text: String,
+	result_text: String,
+	result_color: Color
+) -> void:
+	_start_roll(title)
+	await _roll_die(natural_roll, die_sides)
+	_detail_label.text = detail_text
+	_outcome_label.text = result_text
+	_outcome_label.add_theme_color_override("font_color", result_color)
+	if animations_enabled:
+		_punch_die(REVEAL_SCALES[Outcome.HIT], SETTLED_SCALES[Outcome.HIT])
+	roll_revealed.emit(result_text)
 
 
 ## Keeps the revealed result on screen for a moment.
