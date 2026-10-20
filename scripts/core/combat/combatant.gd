@@ -14,6 +14,11 @@ var hit_points: int
 @abstract func get_damage_bonus() -> int
 
 
+## Damage taken off each hit. Only skills and items give it, so enemies have none so far.
+func get_damage_reduction() -> int:
+	return 0
+
+
 func is_alive() -> bool:
 	return hit_points > 0
 

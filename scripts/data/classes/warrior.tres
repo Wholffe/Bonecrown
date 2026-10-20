@@ -14,6 +14,7 @@
 [ext_resource type="Resource" path="res://scripts/data/skills/reckless_swings.tres" id="8_agwd8"]
 [ext_resource type="Resource" path="res://scripts/data/skills/guarded_stance.tres" id="9_m4cdq"]
 [ext_resource type="Resource" path="res://scripts/data/skills/adrenaline.tres" id="10_imw2t"]
+[ext_resource type="Resource" path="res://scripts/data/skills/focus.tres" id="11_focus"]
 
 [resource]
 script = ExtResource("1_0s5q5")
@@ -28,4 +29,4 @@ hit_points_per_level = 6
 starting_weapon = ExtResource("3_gg483")
 starting_armor = ExtResource("2_beihx")
 starting_skills = Array[ExtResource("3_ccsre")]([ExtResource("4_b6w27"), ExtResource("5_ei16b")])
-skill_pool = Array[ExtResource("3_ccsre")]([ExtResource("3_afwf4"), ExtResource("4_n4tux"), ExtResource("5_5skj8"), ExtResource("6_ibyqt"), ExtResource("7_8jqxc"), ExtResource("8_agwd8"), ExtResource("9_m4cdq"), ExtResource("10_imw2t")])
+skill_pool = Array[ExtResource("3_ccsre")]([ExtResource("3_afwf4"), ExtResource("4_n4tux"), ExtResource("5_5skj8"), ExtResource("6_ibyqt"), ExtResource("7_8jqxc"), ExtResource("8_agwd8"), ExtResource("9_m4cdq"), ExtResource("10_imw2t"), ExtResource("11_focus")])

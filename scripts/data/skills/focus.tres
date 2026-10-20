@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_ei421"]
+[ext_resource type="Script" path="res://scripts/data/advantage_effect.gd" id="2_tpbu8"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_v6phw"]
+
+[sub_resource type="Resource" id="Resource_u1bs1"]
+script = ExtResource("2_tpbu8")
+
+[resource]
+script = ExtResource("3_v6phw")
+id = &"focus"
+display_name = "Focus"
+description = "Once per fight, your next attack this turn rolls 2d20 and keeps the higher. Does not use your turn."
+activation = 1
+action_cost = 1
+uses_per_fight = 1
+effects = Array[ExtResource("1_ei421")]([SubResource("Resource_u1bs1")])
+min_level = 3
