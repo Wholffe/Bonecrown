@@ -1,0 +1,94 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/character_sheet.gd" id="1_7k4nd"]
+
+[node name="CharacterSheet" type="Control" unique_id=1890750440]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7k4nd")
+
+[node name="Dim" type="ColorRect" parent="." unique_id=1188545436]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.65)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=721966518]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Center" unique_id=1950024694]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=1176509916]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Layout" type="VBoxContainer" parent="Center/Panel/Margin" unique_id=206807411]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/Margin/Layout" unique_id=1798185672]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Character"
+
+[node name="Columns" type="HBoxContainer" parent="Center/Panel/Margin/Layout" unique_id=1962190740]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="StatsGrid" type="GridContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=2005319136]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 24
+columns = 2
+
+[node name="SkillsColumn" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=1057990975]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SkillsTitle" type="Label" parent="Center/Panel/Margin/Layout/Columns/SkillsColumn" unique_id=597808492]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Skills"
+
+[node name="SkillsBox" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns/SkillsColumn" unique_id=204381962]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ItemsColumn" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=1231291236]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemsTitle" type="Label" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=78484589]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Items"
+
+[node name="ItemsBox" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=1202352172]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Center/Panel/Margin/Layout" unique_id=252733242]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Close (C)"
