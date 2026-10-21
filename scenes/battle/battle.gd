@@ -9,6 +9,8 @@ const GOBLIN: EnemyData = preload("res://scripts/data/enemies/goblin.tres")
 # Placeholder encounter until the room sequence exists (milestone 7).
 const ENCOUNTER: Array[EnemyData] = [GOBLIN, GOBLIN]
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
+const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
+const EQUIPMENT_ICON_SIZE: float = 36.0
 # A preload would form a cycle, because the main menu preloads this scene.
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
 # The post-fight screen leads back here, so a preload would form a cycle too.
@@ -35,6 +37,7 @@ var _layout_rest_position: Vector2 = Vector2.ZERO
 @onready var _margin: MarginContainer = %Margin
 @onready var _popup_layer: PopupLayer = %PopupLayer
 @onready var _player_card: CombatantCard = %PlayerCard
+@onready var _equipment_strip: HBoxContainer = %EquipmentStrip
 @onready var _player_level_label: Label = %PlayerLevelLabel
 @onready var _player_skills_label: Label = %PlayerSkillsLabel
 @onready var _enemy_cards_box: HBoxContainer = %EnemyCards
@@ -55,6 +58,7 @@ func _ready() -> void:
 	_continue_button.pressed.connect(_on_continue_button_pressed)
 	_character_sheet.character = RunState.player
 	_character_button.pressed.connect(_character_sheet.toggle)
+	_create_equipment_strip()
 	_start_combat()
 
 
@@ -76,6 +80,18 @@ func set_animations_enabled(enabled: bool) -> void:
 	_animations_enabled = enabled
 	if is_node_ready():
 		_dice_display.animations_enabled = enabled
+
+
+# The equipment cannot change during a fight, so the strip is built once.
+func _create_equipment_strip() -> void:
+	for slot: ItemData.Slot in PaperDoll.SLOT_SIDES:
+		var item_slot: ItemSlot = ITEM_SLOT_SCENE.instantiate() as ItemSlot
+		item_slot.icon_size = EQUIPMENT_ICON_SIZE
+		item_slot.caption_visible = false
+		item_slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		item_slot.show_item(slot, RunState.player.item_in_slot(slot))
+		item_slot.clicked.connect(_character_sheet.open)
+		_equipment_strip.add_child(item_slot)
 
 
 func _start_combat() -> void:

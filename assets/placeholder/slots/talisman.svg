@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Empty slot: talisman -->
+  <path d="M13,5 Q32,34 51,5" fill="none" stroke="#c8ccd4" stroke-width="2.6" stroke-dasharray="3 1.6"/>
+  <circle cx="32" cy="25" r="3.2" fill="#c8ccd4"/>
+  <circle cx="32" cy="42" r="15" fill="#c8ccd4"/>
+</svg>

@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_swwob"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_rxfbq"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="3_cnlga"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/balanced_longsword.svg" id="4_8yayz"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/balanced_longsword.svg" id="5_uo4zz"]
 
 [sub_resource type="Resource" id="Resource_w6pu6"]
 script = ExtResource("2_rxfbq")
@@ -18,3 +20,5 @@ display_name = "Balanced Longsword"
 description = "+2 to attack rolls."
 rarity = 1
 effects = Array[ExtResource("1_swwob")]([SubResource("Resource_w6pu6")])
+icon = ExtResource("4_8yayz")
+figure_layer = ExtResource("5_uo4zz")

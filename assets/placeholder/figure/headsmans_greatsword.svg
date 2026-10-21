@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Figure layer: headsmans greatsword -->
+  <g transform="rotate(-16 39 127)" stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <circle cx="39" cy="149" r="4.5" fill="#5a5f66"/>
+    <rect x="35.5" y="121" width="7" height="26" rx="1.5" fill="#5a1a16"/>
+    <path d="M35.5,126 H42.5 M35.5,132 H42.5 M35.5,138 H42.5" stroke="#2a0c0a" stroke-width="1.2" fill="none"/>
+    <path d="M32.5,116 V22 Q39,10 45.5,22 V116 Z" fill="#8d939c"/>
+    <path d="M39,110 V28" stroke="#5f656d" stroke-width="2" fill="none"/>
+    <path d="M44,22 Q41.5,17 39,16 L39.5,21 Q42,24 44,32 Z" fill="#a82a20" stroke="none"/>
+    <path d="M33.8,40 L33.8,52 L35.6,47 Z M43.8,60 L43.8,70 L42,66 Z" fill="#a82a20" stroke="none"/>
+    <rect x="24" y="115" width="30" height="6" rx="2" fill="#5a5f66"/>
+  </g>
+  <circle cx="39" cy="127" r="6.5" fill="#c49a74" stroke="#1b1814" stroke-width="1.5"/>
+</svg>

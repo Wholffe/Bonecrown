@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_mfwbu"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_c1qft"]
 [ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="3_mqng5"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/dwarven_chain_mail.svg" id="4_kwa9x"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/dwarven_chain_mail.svg" id="5_r7gjg"]
 
 [sub_resource type="Resource" id="Resource_evdyk"]
 script = ExtResource("2_c1qft")
@@ -22,3 +24,5 @@ display_name = "Dwarven Chain Mail"
 description = "+3 AC, +2 Constitution."
 rarity = 2
 effects = Array[ExtResource("1_mfwbu")]([SubResource("Resource_evdyk"), SubResource("Resource_rjb25")])
+icon = ExtResource("4_kwa9x")
+figure_layer = ExtResource("5_r7gjg")

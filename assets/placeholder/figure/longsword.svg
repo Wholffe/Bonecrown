@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Figure layer: longsword -->
+  <g transform="rotate(-20 39 127)" stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <circle cx="39" cy="140" r="3.5" fill="#7d8590"/>
+    <rect x="36.5" y="120" width="5" height="18" rx="1" fill="#6b4a2b"/>
+    <path d="M35.5,116 V48 L39,38 L42.5,48 V116 Z" fill="#c8cdd4"/>
+    <rect x="29" y="115.5" width="20" height="5" rx="2" fill="#7d8590"/>
+    <path d="M39,111 V50" stroke="#8d939c" stroke-width="1.5" fill="none"/>
+  </g>
+  <circle cx="39" cy="127" r="6.5" fill="#c49a74" stroke="#1b1814" stroke-width="1.5"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Item icon: reinforced chain mail -->
+  <path d="M20,8 L26,8 Q32,15 38,8 L44,8 L56,16 L58,30 L48,32 L47,25 L47,57 L17,57 L17,25 L16,32 L6,30 L8,16 Z" fill="#7c838c" stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M14.5,13 H49.5 M11.3,17 H54.5 M9.5,21 H54.5 M10.8,25 H55 M9,29 H55 M21.3,33 H44.5 M19.5,37 H44.5 M21.3,41 H44.5 M19.5,45 H44.5 M21.3,49 H44.5 M19.5,53 H44.5" fill="none" stroke="#4c535c" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="1.8 1.8"/>
+  <g stroke-linecap="round">
+    <path d="M20,12 L44,43 M44,12 L20,43" stroke="#1b1814" stroke-width="6"/>
+    <path d="M20,12 L44,43 M44,12 L20,43" stroke="#7a5232" stroke-width="4"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="17" y="45" width="30" height="5" fill="#7a5232"/>
+    <rect x="28.5" y="44" width="7" height="7" rx="1" fill="none" stroke="#d8c08a" stroke-width="1.6"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <circle cx="32" cy="27.5" r="3.5" fill="#d8c08a"/>
+    <path d="M4,22 Q6,10 16,8.5 L22,9 L20,17 Q11,16 4,22 Z" fill="#7a5232"/>
+    <path d="M60,22 Q58,10 48,8.5 L42,9 L44,17 Q53,16 60,22 Z" fill="#7a5232"/>
+  </g>
+</svg>

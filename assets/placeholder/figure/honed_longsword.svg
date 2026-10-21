@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Figure layer: honed longsword -->
+  <g transform="rotate(-20 39 127)" stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <circle cx="39" cy="140" r="3.5" fill="#9fb4c8"/>
+    <rect x="36.5" y="120" width="5" height="18" rx="1" fill="#4a3222"/>
+    <path d="M35.5,116 V48 L39,38 L42.5,48 V116 Z" fill="#e4ecf2"/>
+    <rect x="29" y="115.5" width="20" height="5" rx="2" fill="#9fb4c8"/>
+    <path d="M39,111 V50" stroke="#9fb0bf" stroke-width="1.5" fill="none"/>
+    <path d="M41.3,113 V48.5 L39.2,42" stroke="#ffffff" stroke-width="1.2" fill="none"/>
+    <path d="M39,52 L40.6,57.4 L46,59 L40.6,60.6 L39,66 L37.4,60.6 L32,59 L37.4,57.4 Z" fill="#ffffff" stroke="none"/>
+  </g>
+  <circle cx="39" cy="127" r="6.5" fill="#c49a74" stroke="#1b1814" stroke-width="1.5"/>
+</svg>

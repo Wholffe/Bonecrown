@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_377g7"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_vpq6w"]
 [ext_resource type="Script" path="res://scripts/data/talisman_data.gd" id="3_ko8an"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/lucky_coin.svg" id="4_646wl"]
 
 [sub_resource type="Resource" id="Resource_t3ir4"]
 script = ExtResource("2_vpq6w")
@@ -16,3 +17,4 @@ display_name = "Lucky Coin"
 description = "+2 Luck."
 rarity = 0
 effects = Array[ExtResource("1_377g7")]([SubResource("Resource_t3ir4")])
+icon = ExtResource("4_646wl")

@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_rtt5p"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_0vgg2"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="3_ewg81"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/honed_longsword.svg" id="4_beq7p"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/honed_longsword.svg" id="5_uqulc"]
 
 [sub_resource type="Resource" id="Resource_i1aw4"]
 script = ExtResource("2_0vgg2")
@@ -18,3 +20,5 @@ display_name = "Honed Longsword"
 description = "+1 damage."
 rarity = 0
 effects = Array[ExtResource("1_rtt5p")]([SubResource("Resource_i1aw4")])
+icon = ExtResource("4_beq7p")
+figure_layer = ExtResource("5_uqulc")

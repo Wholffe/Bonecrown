@@ -107,3 +107,15 @@ func test_item_effects_are_stat_modifiers() -> void:
 	for item: ItemData in _items:
 		for effect: EffectData in item.effects:
 			assert_true(effect is StatModifierEffect, "%s has an effect without a rule" % item.id)
+
+
+func test_items_have_an_icon() -> void:
+	for item: ItemData in _items:
+		assert_not_null(item.icon, "%s has no icon" % item.id)
+
+
+# Talismans may leave the figure unchanged, but the worn weapon and armor always show on it.
+func test_weapons_and_armor_have_a_figure_layer() -> void:
+	for item: ItemData in _items:
+		if item is WeaponData or item is ArmorData:
+			assert_not_null(item.figure_layer, "%s has no figure layer" % item.id)

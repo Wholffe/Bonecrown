@@ -1,9 +1,13 @@
 [gd_resource type="Resource" script_class="ArmorData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_hkfmc"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/chain_mail.svg" id="2_tqljj"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/chain_mail.svg" id="3_hdhdq"]
 
 [resource]
 script = ExtResource("1_hkfmc")
 armor_base = 13
 id = &"chain_mail"
 display_name = "Chain Mail"
+icon = ExtResource("2_tqljj")
+figure_layer = ExtResource("3_hdhdq")

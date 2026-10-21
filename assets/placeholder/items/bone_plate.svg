@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Item icon: bone plate -->
+  <path d="M20,8 L26,8 Q32,15 38,8 L44,8 L56,16 L58,30 L48,32 L47,25 L47,57 L17,57 L17,25 L16,32 L6,30 L8,16 Z" fill="#3b332a" stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M20,20 Q32,26 44,20 M20,27 Q32,33 44,27 M20,34 Q32,40 44,34 M20,41 Q32,47 44,41" stroke="#1b1814" stroke-width="6"/>
+    <path d="M20,20 Q32,26 44,20 M20,27 Q32,33 44,27 M20,34 Q32,40 44,34 M20,41 Q32,47 44,41" stroke="#e9e0c8" stroke-width="4"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round" fill="#e9e0c8">
+    <rect x="29" y="14" width="6" height="34" rx="2"/>
+    <rect x="18" y="49" width="8" height="10" rx="2"/>
+    <rect x="28" y="49" width="8" height="12" rx="2"/>
+    <rect x="38" y="49" width="8" height="10" rx="2"/>
+    <circle cx="11" cy="18" r="7.5"/>
+    <circle cx="53" cy="18" r="7.5"/>
+  </g>
+  <g fill="#1b1814">
+    <circle cx="8.5" cy="17.5" r="1.9"/><circle cx="13.5" cy="17.5" r="1.9"/>
+    <circle cx="50.5" cy="17.5" r="1.9"/><circle cx="55.5" cy="17.5" r="1.9"/>
+  </g>
+</svg>

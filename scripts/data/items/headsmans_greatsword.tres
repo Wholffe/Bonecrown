@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_h224n"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_rl2dx"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="3_exsq6"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/headsmans_greatsword.svg" id="4_zgy1n"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/headsmans_greatsword.svg" id="5_akv9r"]
 
 [sub_resource type="Resource" id="Resource_jrqrt"]
 script = ExtResource("2_rl2dx")
@@ -28,3 +30,5 @@ display_name = "Headsman's Greatsword"
 description = "Rolls 2d6 for damage. +1 to attack rolls, +3 damage, but −2 AC."
 rarity = 3
 effects = Array[ExtResource("1_h224n")]([SubResource("Resource_jrqrt"), SubResource("Resource_1lx6a"), SubResource("Resource_774v4")])
+icon = ExtResource("4_zgy1n")
+figure_layer = ExtResource("5_akv9r")

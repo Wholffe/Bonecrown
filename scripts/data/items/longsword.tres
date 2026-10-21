@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_e4pbs"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/longsword.svg" id="2_onda9"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/longsword.svg" id="3_3nlji"]
 
 [resource]
 script = ExtResource("1_e4pbs")
@@ -8,3 +10,5 @@ damage_die_count = 1
 damage_die_sides = 8
 id = &"longsword"
 display_name = "Longsword"
+icon = ExtResource("2_onda9")
+figure_layer = ExtResource("3_3nlji")

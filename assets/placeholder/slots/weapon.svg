@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Empty slot: weapon -->
+  <g transform="rotate(45 32 32)" fill="#c8ccd4">
+    <circle cx="32" cy="60.5" r="3.6"/>
+    <rect x="29.5" y="48" width="5" height="10.5"/>
+    <path d="M28.5,44.5 V11 L32,4 L35.5,11 V44.5 Z"/>
+    <rect x="21" y="44" width="22" height="4.5" rx="2"/>
+  </g>
+</svg>

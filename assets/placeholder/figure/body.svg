@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Placeholder figure. Every figure layer shares this viewBox, so the layers stack aligned. -->
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="52" y="114" width="16" height="72" rx="4" fill="#4d4a5a"/>
+    <rect x="72" y="114" width="16" height="72" rx="4" fill="#4d4a5a"/>
+    <path d="M51,178 H69 V196 H45 Q45,188 51,186 Z" fill="#6b4a32"/>
+    <path d="M89,178 H71 V196 H95 Q95,188 89,186 Z" fill="#6b4a32"/>
+    <rect x="33" y="54" width="12" height="70" rx="6" fill="#c49a74"/>
+    <rect x="95" y="54" width="12" height="70" rx="6" fill="#c49a74"/>
+    <circle cx="39" cy="127" r="6.5" fill="#c49a74"/>
+    <circle cx="101" cy="127" r="6.5" fill="#c49a74"/>
+    <rect x="32" y="52" width="14" height="20" rx="5" fill="#6b5a48"/>
+    <rect x="94" y="52" width="14" height="20" rx="5" fill="#6b5a48"/>
+    <rect x="65" y="40" width="10" height="14" fill="#c49a74"/>
+    <path d="M48,51 H92 L97,62 L91,118 H49 L43,62 Z" fill="#6b5a48"/>
+    <rect x="49" y="110" width="42" height="7" fill="#3b2a1c"/>
+    <circle cx="70" cy="30" r="15" fill="#c49a74"/>
+    <path d="M55,29 Q55,14 70,14 Q85,14 85,29 Q79,21 70,22 Q61,21 55,29 Z" fill="#5a3a22"/>
+  </g>
+  <circle cx="64" cy="32" r="1.8" fill="#1b1814"/>
+  <circle cx="76" cy="32" r="1.8" fill="#1b1814"/>
+</svg>

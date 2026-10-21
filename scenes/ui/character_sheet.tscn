@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/character_sheet.gd" id="1_7k4nd"]
+[ext_resource type="PackedScene" path="res://scenes/ui/paper_doll.tscn" id="2_pd7lx"]
 
 [node name="CharacterSheet" type="Control" unique_id=1890750440]
 layout_mode = 3
@@ -53,6 +54,18 @@ text = "Character"
 layout_mode = 2
 theme_override_constants/separation = 32
 
+[node name="ItemsColumn" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=1231291236]
+layout_mode = 2
+
+[node name="ItemsTitle" type="Label" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=78484589]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Items"
+
+[node name="PaperDoll" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=1269284049 instance=ExtResource("2_pd7lx")]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="StatsGrid" type="GridContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=2005319136]
 unique_name_in_owner = true
 layout_mode = 2
@@ -70,20 +83,6 @@ theme_override_font_sizes/font_size = 20
 text = "Skills"
 
 [node name="SkillsBox" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns/SkillsColumn" unique_id=204381962]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="ItemsColumn" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns" unique_id=1231291236]
-custom_minimum_size = Vector2(280, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ItemsTitle" type="Label" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=78484589]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Items"
-
-[node name="ItemsBox" type="VBoxContainer" parent="Center/Panel/Margin/Layout/Columns/ItemsColumn" unique_id=1202352172]
 unique_name_in_owner = true
 layout_mode = 2
 

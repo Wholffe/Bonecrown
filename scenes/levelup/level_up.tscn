@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scenes/levelup/level_up.gd" id="1_vgq3v"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="2_xspm1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="4_mkauv"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_slot.tscn" id="5_itsl2"]
 
 [node name="LevelUp" type="Control" unique_id=1081191317]
 layout_mode = 3
@@ -115,6 +116,30 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
+
+[node name="FindComparison" type="HBoxContainer" parent="Margin/Layout/LootSection/LootRow/FindBox" unique_id=1427237786]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="WornSlot" parent="Margin/Layout/LootSection/LootRow/FindBox/FindComparison" unique_id=461036084 instance=ExtResource("5_itsl2")]
+unique_name_in_owner = true
+layout_mode = 2
+icon_size = 64.0
+
+[node name="ArrowLabel" type="Label" parent="Margin/Layout/LootSection/LootRow/FindBox/FindComparison" unique_id=1461442196]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "→"
+vertical_alignment = 1
+
+[node name="FoundSlot" parent="Margin/Layout/LootSection/LootRow/FindBox/FindComparison" unique_id=170245137 instance=ExtResource("5_itsl2")]
+unique_name_in_owner = true
+layout_mode = 2
+icon_size = 64.0
 
 [node name="FindDetailsLabel" type="Label" parent="Margin/Layout/LootSection/LootRow/FindBox" unique_id=933754259]
 unique_name_in_owner = true

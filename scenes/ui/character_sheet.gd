@@ -1,14 +1,9 @@
 class_name CharacterSheet
 extends Control
 ## Overlay with the character's values, skills and items. The C key or its button toggles it.
+## The items are shown on a paper doll, the figure wearing them.
 
 const TOGGLE_KEY: Key = KEY_C
-const SLOT_NAMES: Dictionary[ItemData.Slot, String] = {
-	ItemData.Slot.WEAPON: "Weapon",
-	ItemData.Slot.ARMOR: "Armor",
-	ItemData.Slot.TALISMAN: "Talisman",
-}
-const EMPTY_SLOT_TEXT: String = "(empty)"
 const HIT_POINTS_LABEL: String = "HP"
 const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
 
@@ -17,7 +12,7 @@ var character: Character
 
 @onready var _stats_grid: GridContainer = %StatsGrid
 @onready var _skills_box: VBoxContainer = %SkillsBox
-@onready var _items_box: VBoxContainer = %ItemsBox
+@onready var _paper_doll: PaperDoll = %PaperDoll
 @onready var _close_button: Button = %CloseButton
 
 
@@ -47,7 +42,7 @@ func open() -> void:
 	assert(character != null, "Set the character before opening the sheet")
 	_show_stats()
 	_show_skills()
-	_show_items()
+	_paper_doll.show_character(character)
 	show()
 
 
@@ -59,12 +54,15 @@ func stat_text(label: String) -> String:
 	return ""
 
 
-## Every text in the skill and item lists, for tests and later tooltips.
+## Every text in the skill list and the names of the worn items, for tests.
 func listed_texts() -> Array[String]:
 	var texts: Array[String] = []
-	for box: VBoxContainer in [_skills_box, _items_box]:
-		for child: Node in box.get_children():
-			texts.append((child as Label).text)
+	for child: Node in _skills_box.get_children():
+		texts.append((child as Label).text)
+	for slot: ItemData.Slot in PaperDoll.SLOT_SIDES:
+		var item: ItemData = _paper_doll.item_slot(slot).item
+		if item != null:
+			texts.append(item.display_name)
 	return texts
 
 
@@ -90,18 +88,6 @@ func _show_skills() -> void:
 		if counts[skill.id] > 1:
 			title += " ×%d" % counts[skill.id]
 		_add_entry(_skills_box, title, skill.description)
-
-
-func _show_items() -> void:
-	_clear(_items_box)
-	for slot: ItemData.Slot in SLOT_NAMES:
-		var item: ItemData = character.item_in_slot(slot)
-		if item == null:
-			_add_entry(_items_box, "%s: %s" % [SLOT_NAMES[slot], EMPTY_SLOT_TEXT], "")
-		else:
-			_add_entry(
-				_items_box, "%s: %s" % [SLOT_NAMES[slot], item.display_name], item.description
-			)
 
 
 func _add_stat(label: String, value: String) -> void:

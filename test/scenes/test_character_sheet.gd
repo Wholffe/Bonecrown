@@ -1,5 +1,6 @@
 extends GutTest
-## Character sheet overlay: values, skills and items of the character, toggling and closing.
+## Character sheet overlay: values, skills and the paper doll of the character, toggling and
+## closing.
 
 const CHARACTER_SHEET_SCENE: PackedScene = preload("res://scenes/ui/character_sheet.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -62,13 +63,15 @@ func test_stacked_skill_is_listed_once_with_its_count() -> void:
 	assert_does_not_have(texts, "Strength Training")
 
 
-func test_open_lists_the_items_per_slot() -> void:
+func test_open_shows_the_worn_items_on_the_paper_doll() -> void:
 	_sheet.open()
 
 	var texts: Array[String] = _sheet.listed_texts()
-	assert_has(texts, "Weapon: Longsword")
-	assert_has(texts, "Armor: Chain Mail")
-	assert_has(texts, "Talisman: (empty)")
+	assert_has(texts, "Longsword")
+	assert_has(texts, "Chain Mail")
+	var paper_doll: PaperDoll = _sheet.get_node("%PaperDoll") as PaperDoll
+	assert_eq(paper_doll.figure_layers().size(), 2, "Longsword and Chain Mail on the figure")
+	assert_null(paper_doll.item_slot(ItemData.Slot.TALISMAN).item, "No talisman at the start")
 
 
 func test_reopening_shows_the_current_character() -> void:
@@ -78,7 +81,7 @@ func test_reopening_shows_the_current_character() -> void:
 
 	_sheet.open()
 
-	assert_has(_sheet.listed_texts(), "Talisman: Lucky Coin")
+	assert_has(_sheet.listed_texts(), "Lucky Coin")
 	assert_eq(_sheet.stat_text(StatSheet.LOOT_ROLL), "d20+1")
 
 

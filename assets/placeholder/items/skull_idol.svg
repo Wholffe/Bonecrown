@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Item icon: skull idol -->
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="15" y="52" width="34" height="9" rx="2" fill="#5b4636"/>
+    <rect x="22" y="34" width="20" height="17" rx="4" fill="#e6dcc2"/>
+    <circle cx="32" cy="26" r="18" fill="#e6dcc2"/>
+  </g>
+  <rect x="23" y="36" width="18" height="6" fill="#e6dcc2"/>
+  <g fill="#1b1814">
+    <circle cx="25" cy="28" r="5"/>
+    <circle cx="39" cy="28" r="5"/>
+    <path d="M32,34 L29.5,39.5 H34.5 Z"/>
+  </g>
+  <path d="M27,44 V50 M32,44 V50 M37,44 V50" stroke="#1b1814" stroke-width="1.5"/>
+  <circle cx="25" cy="28" r="1.7" fill="#e04030"/>
+  <circle cx="39" cy="28" r="1.7" fill="#e04030"/>
+</svg>

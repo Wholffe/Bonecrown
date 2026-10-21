@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Figure layer: bone plate -->
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="30" y="51" width="18" height="27" rx="6" fill="#3b332a"/>
+    <rect x="92" y="51" width="18" height="27" rx="6" fill="#3b332a"/>
+    <path d="M46,50 H94 L100,62 L93,126 H47 L40,62 Z" fill="#3b332a"/>
+  </g>
+  <g fill="none" stroke-linecap="round">
+    <path d="M44,61 Q70,70 96,61 M44.5,71 Q70,80 95.5,71 M45.6,81 Q70,90 94.4,81 M46.7,91 Q70,100 93.3,91 M47.8,101 Q70,110 92.2,101" stroke="#1b1814" stroke-width="8"/>
+    <path d="M44,61 Q70,70 96,61 M44.5,71 Q70,80 95.5,71 M45.6,81 Q70,90 94.4,81 M46.7,91 Q70,100 93.3,91 M47.8,101 Q70,110 92.2,101" stroke="#e9e0c8" stroke-width="5.5"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round" fill="#e9e0c8">
+    <rect x="65" y="53" width="10" height="56" rx="3"/>
+    <rect x="47.5" y="113" width="13" height="19" rx="3"/>
+    <rect x="63.5" y="114" width="13" height="21" rx="3"/>
+    <rect x="79.5" y="113" width="13" height="19" rx="3"/>
+    <circle cx="39" cy="58" r="10.5"/>
+    <rect x="34" y="63" width="10" height="7" rx="2"/>
+    <circle cx="101" cy="58" r="10.5"/>
+    <rect x="96" y="63" width="10" height="7" rx="2"/>
+  </g>
+  <g fill="#1b1814">
+    <circle cx="35.3" cy="57.5" r="2.6"/><circle cx="42.7" cy="57.5" r="2.6"/>
+    <circle cx="97.3" cy="57.5" r="2.6"/><circle cx="104.7" cy="57.5" r="2.6"/>
+  </g>
+</svg>

@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_54vul"]
 [ext_resource type="Script" path="res://scripts/data/stat_modifier_effect.gd" id="2_1y0eh"]
 [ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="3_621y8"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/reinforced_chain_mail.svg" id="4_9t1o4"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/figure/reinforced_chain_mail.svg" id="5_6x2dj"]
 
 [sub_resource type="Resource" id="Resource_ktudg"]
 script = ExtResource("2_1y0eh")
@@ -17,3 +19,5 @@ display_name = "Reinforced Chain Mail"
 description = "+1 AC."
 rarity = 0
 effects = Array[ExtResource("1_54vul")]([SubResource("Resource_ktudg")])
+icon = ExtResource("4_9t1o4")
+figure_layer = ExtResource("5_6x2dj")

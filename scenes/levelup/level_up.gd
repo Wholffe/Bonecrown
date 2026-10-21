@@ -2,23 +2,6 @@ class_name LevelUp
 extends Control
 ## Post-fight screen: the level-up, then the loot roll with its find, then the skill choice.
 
-const RARITY_NAMES: Dictionary[ItemData.Rarity, String] = {
-	ItemData.Rarity.COMMON: "Common",
-	ItemData.Rarity.UNCOMMON: "Uncommon",
-	ItemData.Rarity.RARE: "Rare",
-	ItemData.Rarity.LEGENDARY: "Legendary",
-}
-const RARITY_COLORS: Dictionary[ItemData.Rarity, Color] = {
-	ItemData.Rarity.COMMON: Color(0.8, 0.8, 0.82),
-	ItemData.Rarity.UNCOMMON: Color(0.45, 0.85, 0.45),
-	ItemData.Rarity.RARE: Color(0.45, 0.65, 1.0),
-	ItemData.Rarity.LEGENDARY: Color(1.0, 0.6, 0.15),
-}
-const SLOT_NAMES: Dictionary[ItemData.Slot, String] = {
-	ItemData.Slot.WEAPON: "Weapon",
-	ItemData.Slot.ARMOR: "Armor",
-	ItemData.Slot.TALISMAN: "Talisman",
-}
 const NOTHING_FOUND_TEXT: String = "Nothing new this time."
 const SKILL_CARD_WIDTH: float = 300.0
 const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
@@ -40,6 +23,9 @@ var _animations_enabled: bool = true
 @onready var _blood_price_button: Button = %BloodPriceButton
 @onready var _dice_display: DiceDisplay = %DiceDisplay
 @onready var _find_label: Label = %FindLabel
+@onready var _find_comparison: HBoxContainer = %FindComparison
+@onready var _worn_slot: ItemSlot = %WornSlot
+@onready var _found_slot: ItemSlot = %FoundSlot
 @onready var _find_details_label: Label = %FindDetailsLabel
 @onready var _take_button: Button = %TakeButton
 @onready var _leave_button: Button = %LeaveButton
@@ -139,29 +125,33 @@ func _on_roll_pressed(pay_blood_price: bool) -> void:
 		loot.natural_roll,
 		LootRoll.DIE_SIDES,
 		"%+d = %d" % [bonus, loot.total],
-		RARITY_NAMES[loot.rarity].to_upper(),
-		RARITY_COLORS[loot.rarity]
+		ItemSlot.RARITY_NAMES[loot.rarity].to_upper(),
+		ItemSlot.RARITY_COLORS[loot.rarity]
 	)
 	_show_find(loot)
 
 
 func _show_find(loot: LootRoll) -> void:
-	var rarity_text: String = RARITY_NAMES[loot.rarity]
+	var rarity_text: String = ItemSlot.RARITY_NAMES[loot.rarity]
 	if loot.is_downgraded():
 		rarity_text = (
 			"%s (legendary finds start in room %d)"
 			% [rarity_text, RunState.LOOT_TABLE.legendary_from_room]
 		)
-	_find_label.add_theme_color_override("font_color", RARITY_COLORS[loot.rarity])
+	_find_label.add_theme_color_override("font_color", ItemSlot.RARITY_COLORS[loot.rarity])
 	if loot.item == null:
 		_find_label.text = "%s: %s" % [rarity_text, NOTHING_FOUND_TEXT]
 		_find_details_label.text = ""
 		_show_skill_offer()
 		return
 	var item: ItemData = loot.item
+	var slot: ItemData.Slot = item.get_slot()
 	_find_label.text = (
-		"%s find: %s (%s)" % [rarity_text, item.display_name, SLOT_NAMES[item.get_slot()]]
+		"%s find: %s (%s)" % [rarity_text, item.display_name, ItemSlot.SLOT_NAMES[slot]]
 	)
+	_worn_slot.show_item(slot, RunState.player.item_in_slot(slot))
+	_found_slot.show_item(slot, item)
+	_find_comparison.show()
 	_find_details_label.text = "\n".join(_find_detail_lines(item))
 	_take_button.show()
 	_leave_button.show()
@@ -173,7 +163,7 @@ func _find_detail_lines(item: ItemData) -> Array[String]:
 		lines.append("%s %s → %s" % [change.label, change.before, change.after])
 	var worn: ItemData = RunState.player.item_in_slot(item.get_slot())
 	if worn == null:
-		lines.append("Your %s slot is empty." % SLOT_NAMES[item.get_slot()].to_lower())
+		lines.append("Your %s slot is empty." % ItemSlot.SLOT_NAMES[item.get_slot()].to_lower())
 	else:
 		lines.append("Replaces %s. A find you leave is lost." % worn.display_name)
 	return lines

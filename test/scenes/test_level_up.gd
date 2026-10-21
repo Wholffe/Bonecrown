@@ -12,6 +12,8 @@ const STRENGTH_TRAINING: SkillData = preload("res://scripts/data/skills/strength
 const SEED: int = 7
 ## Loot d20 5 (common), first common item, then the first candidate for each of the 3 cards.
 const COMMON_FIND_ROLLS: Array[int] = [5, 1, 1, 1, 1]
+## Loot d20 5 (common), third common item: the Lucky Coin for the empty talisman slot.
+const TALISMAN_FIND_ROLLS: Array[int] = [5, 3]
 
 
 func before_each() -> void:
@@ -32,6 +34,10 @@ func _label_text(level_up: LevelUp, node_name: String) -> String:
 
 func _button(level_up: LevelUp, node_name: String) -> Button:
 	return level_up.get_node("%" + node_name) as Button
+
+
+func _item_slot(level_up: LevelUp, node_name: String) -> ItemSlot:
+	return level_up.get_node("%" + node_name) as ItemSlot
 
 
 func _press(level_up: LevelUp, node_name: String) -> void:
@@ -94,6 +100,29 @@ func test_roll_shows_the_find_with_its_value_changes() -> void:
 	assert_string_contains(details, "Replaces Longsword.")
 	assert_true(_button(level_up, "TakeButton").visible)
 	assert_true(_button(level_up, "RollButton").disabled)
+
+
+func test_find_is_shown_next_to_the_worn_item() -> void:
+	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
+	assert_false(level_up.get_node("%FindComparison").visible, "Hidden before the roll")
+
+	await _press(level_up, "RollButton")
+
+	assert_true(level_up.get_node("%FindComparison").visible)
+	assert_eq(_item_slot(level_up, "WornSlot").item, WARRIOR.starting_weapon)
+	assert_eq(_item_slot(level_up, "FoundSlot").item, HONED_LONGSWORD)
+
+
+func test_find_for_an_empty_slot_is_shown_next_to_the_empty_slot() -> void:
+	var level_up: LevelUp = _create(TALISMAN_FIND_ROLLS)
+
+	await _press(level_up, "RollButton")
+
+	var worn_slot: ItemSlot = _item_slot(level_up, "WornSlot")
+	assert_eq(worn_slot.slot, ItemData.Slot.TALISMAN)
+	assert_null(worn_slot.item)
+	assert_eq(_item_slot(level_up, "FoundSlot").item, LUCKY_COIN)
+	assert_string_contains(_label_text(level_up, "FindDetailsLabel"), "talisman slot is empty")
 
 
 func test_take_equips_the_find_and_opens_the_skill_choice() -> void:

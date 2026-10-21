@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 64 64">
+  <!-- Item icon: four leaf clover -->
+  <path d="M32,29 Q34,46 42,59" fill="none" stroke="#1b1814" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M32,29 Q34,46 42,59" fill="none" stroke="#3f7f3a" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#4caf50" stroke="#1f4f22" stroke-width="1.5" stroke-linejoin="round">
+    <path transform="translate(32 27) rotate(0)" d="M0,0 C-3,-4 -13,-6 -12,-15 C-11,-21 -3,-21 0,-15 C3,-21 11,-21 12,-15 C13,-6 3,-4 0,0 Z"/>
+    <path transform="translate(32 27) rotate(90)" d="M0,0 C-3,-4 -13,-6 -12,-15 C-11,-21 -3,-21 0,-15 C3,-21 11,-21 12,-15 C13,-6 3,-4 0,0 Z"/>
+    <path transform="translate(32 27) rotate(180)" d="M0,0 C-3,-4 -13,-6 -12,-15 C-11,-21 -3,-21 0,-15 C3,-21 11,-21 12,-15 C13,-6 3,-4 0,0 Z"/>
+    <path transform="translate(32 27) rotate(270)" d="M0,0 C-3,-4 -13,-6 -12,-15 C-11,-21 -3,-21 0,-15 C3,-21 11,-21 12,-15 C13,-6 3,-4 0,0 Z"/>
+  </g>
+  <circle cx="32" cy="27" r="2.5" fill="#9be08f"/>
+</svg>

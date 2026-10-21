@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
+  <!-- Figure layer: reinforced chain mail -->
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="30" y="51" width="18" height="27" rx="6" fill="#7c838c"/>
+    <rect x="92" y="51" width="18" height="27" rx="6" fill="#7c838c"/>
+    <path d="M46,50 H94 L100,62 L93,126 H47 L40,62 Z" fill="#7c838c"/>
+  </g>
+  <path d="M46,55 H94 M45.9,59.5 H96.2 M42.7,64 H97.3 M45.3,68.5 H96.8 M43.7,73 H96.3 M46.3,77.5 H95.8 M44.7,82 H95.3 M47.3,86.5 H94.8 M45.7,91 H94.3 M48.3,95.5 H93.8 M46.7,100 H93.3 M49.2,104.5 H92.9 M47.6,109 H92.4 M50.2,113.5 H91.9 M48.6,118 H91.4 M51.2,122.5 H90.9 M32.5,56 H41.5 M34.3,60.5 H39.2 M32.5,65 H38.8 M34.3,69.5 H39.3 M32.5,74 H39.8 M98.5,56 H107.5 M102.5,60.5 H107.5 M101.2,65 H107.5 M102.5,69.5 H107.5 M100.2,74 H107.5" fill="none" stroke="#4c535c" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2 2.2"/>
+  <g stroke-linecap="round">
+    <path d="M51,55 L89,106 M89,55 L51,106" stroke="#1b1814" stroke-width="7.5"/>
+    <path d="M51,55 L89,106 M89,55 L51,106" stroke="#7a5232" stroke-width="5"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <rect x="45.5" y="108" width="48.9" height="7" fill="#7a5232"/>
+    <rect x="65" y="107" width="10" height="9" rx="1.5" fill="none" stroke="#d8c08a" stroke-width="2"/>
+  </g>
+  <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <circle cx="70" cy="80.5" r="5.5" fill="#d8c08a"/>
+    <path d="M27,64 Q26,48 39,47 Q48,47 51,55 L49,62 Q38,58 27,64 Z" fill="#7a5232"/>
+    <path d="M113,64 Q114,48 101,47 Q92,47 89,55 L91,62 Q102,58 113,64 Z" fill="#7a5232"/>
+  </g>
+  <g fill="#d8c08a">
+    <circle cx="33" cy="56" r="1.4"/><circle cx="39" cy="52" r="1.4"/><circle cx="45" cy="53" r="1.4"/>
+    <circle cx="107" cy="56" r="1.4"/><circle cx="101" cy="52" r="1.4"/><circle cx="95" cy="53" r="1.4"/>
+  </g>
+</svg>

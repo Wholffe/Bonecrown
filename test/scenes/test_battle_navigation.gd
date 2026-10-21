@@ -1,5 +1,5 @@
 extends GutTest
-## Battle scene: the way on after a fight and the character sheet.
+## Battle scene: the way on after a fight, the character sheet and the equipment strip.
 
 const BATTLE_SCENE: PackedScene = preload("res://scenes/battle/battle.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -78,3 +78,25 @@ func test_character_button_shows_the_player_on_the_sheet() -> void:
 	assert_true(sheet.visible)
 	assert_eq(sheet.character, RunState.player)
 	assert_eq(sheet.stat_text(StatSheet.ATTACK), "+5")
+
+
+func test_equipment_strip_shows_every_slot_without_captions() -> void:
+	var battle: Battle = _start_battle([])
+
+	var strip: Node = battle.get_node("%EquipmentStrip")
+	assert_eq(strip.get_child_count(), PaperDoll.SLOT_SIDES.size())
+	for child: Node in strip.get_children():
+		var item_slot: ItemSlot = child as ItemSlot
+		assert_eq(item_slot.item, RunState.player.item_in_slot(item_slot.slot))
+		assert_false((item_slot.get_node("%CaptionLabel") as Label).visible, "Icons only")
+
+
+func test_clicking_the_equipment_strip_opens_the_sheet() -> void:
+	var battle: Battle = _start_battle([])
+	var click: InputEventMouseButton = InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+
+	(battle.get_node("%EquipmentStrip").get_child(0) as ItemSlot)._gui_input(click)
+
+	assert_true((battle.get_node("%CharacterSheet") as CharacterSheet).visible)
