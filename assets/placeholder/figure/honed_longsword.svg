@@ -9,5 +9,6 @@
     <path d="M41.3,113 V48.5 L39.2,42" stroke="#ffffff" stroke-width="1.2" fill="none"/>
     <path d="M39,52 L40.6,57.4 L46,59 L40.6,60.6 L39,66 L37.4,60.6 L32,59 L37.4,57.4 Z" fill="#ffffff" stroke="none"/>
   </g>
-  <circle cx="39" cy="127" r="6.5" fill="#c49a74" stroke="#1b1814" stroke-width="1.5"/>
+  <circle cx="39" cy="127" r="6.5" fill="#b0773a" stroke="#1b1814" stroke-width="1.5"/>
+  <path d="M34,130 l-1.5,5 l3.5,-3 Z M38,132 l0,5.5 l2.5,-4.5 Z M42,131 l2.5,5 l0.5,-4.5 Z" fill="#ece2c8" stroke="#1b1814" stroke-width="1"/>
 </svg>

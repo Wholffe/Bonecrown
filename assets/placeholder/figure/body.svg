@@ -1,22 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 140 210">
-  <!-- Placeholder figure. Every figure layer shares this viewBox, so the layers stack aligned. -->
+  <!-- Placeholder Dragonborn figure. Every figure layer shares this viewBox, so the layers stack aligned. -->
   <g stroke="#1b1814" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M84,110 C102,122 106,148 113,168 C117,179 123,188 131,193 C121,196 112,189 107,178 C99,161 95,140 79,120 Z" fill="#b0773a"/>
+    <path d="M60,20 Q49,14 45,1 Q55,9 65,15 Z" fill="#ece2c8"/>
+    <path d="M80,20 Q91,14 95,1 Q85,9 75,15 Z" fill="#ece2c8"/>
     <rect x="52" y="114" width="16" height="72" rx="4" fill="#4d4a5a"/>
     <rect x="72" y="114" width="16" height="72" rx="4" fill="#4d4a5a"/>
     <path d="M51,178 H69 V196 H45 Q45,188 51,186 Z" fill="#6b4a32"/>
     <path d="M89,178 H71 V196 H95 Q95,188 89,186 Z" fill="#6b4a32"/>
-    <rect x="33" y="54" width="12" height="70" rx="6" fill="#c49a74"/>
-    <rect x="95" y="54" width="12" height="70" rx="6" fill="#c49a74"/>
-    <circle cx="39" cy="127" r="6.5" fill="#c49a74"/>
-    <circle cx="101" cy="127" r="6.5" fill="#c49a74"/>
+    <rect x="33" y="54" width="12" height="70" rx="6" fill="#b0773a"/>
+    <rect x="95" y="54" width="12" height="70" rx="6" fill="#b0773a"/>
+    <circle cx="39" cy="127" r="6.5" fill="#b0773a"/>
+    <circle cx="101" cy="127" r="6.5" fill="#b0773a"/>
     <rect x="32" y="52" width="14" height="20" rx="5" fill="#6b5a48"/>
     <rect x="94" y="52" width="14" height="20" rx="5" fill="#6b5a48"/>
-    <rect x="65" y="40" width="10" height="14" fill="#c49a74"/>
+    <rect x="62" y="38" width="16" height="16" fill="#b0773a"/>
+    <rect x="66" y="44" width="8" height="10" fill="#e0c27a"/>
     <path d="M48,51 H92 L97,62 L91,118 H49 L43,62 Z" fill="#6b5a48"/>
     <rect x="49" y="110" width="42" height="7" fill="#3b2a1c"/>
-    <circle cx="70" cy="30" r="15" fill="#c49a74"/>
-    <path d="M55,29 Q55,14 70,14 Q85,14 85,29 Q79,21 70,22 Q61,21 55,29 Z" fill="#5a3a22"/>
+    <path d="M55,29 L47,34 L56,37 Z" fill="#7e5226"/>
+    <path d="M85,29 L93,34 L84,37 Z" fill="#7e5226"/>
+    <path d="M54,26 Q54,11 70,11 Q86,11 86,26 L82,40 Q78,48 70,48 Q62,48 58,40 Z" fill="#b0773a"/>
+    <path d="M66,12 L70,4 L74,12 Z" fill="#7e5226"/>
+    <path d="M63,34 Q70,31 77,34 L75,44 Q70,47 65,44 Z" fill="#e0c27a"/>
+    <ellipse cx="63" cy="28" rx="3.2" ry="2.2" fill="#f2c94c"/>
+    <ellipse cx="77" cy="28" rx="3.2" ry="2.2" fill="#f2c94c"/>
   </g>
-  <circle cx="64" cy="32" r="1.8" fill="#1b1814"/>
-  <circle cx="76" cy="32" r="1.8" fill="#1b1814"/>
+  <path d="M57,23.5 L66,25.5 M83,23.5 L74,25.5" stroke="#1b1814" stroke-width="2" stroke-linecap="round"/>
+  <rect x="62.5" y="26.2" width="1" height="3.6" fill="#1b1814"/>
+  <rect x="76.5" y="26.2" width="1" height="3.6" fill="#1b1814"/>
+  <circle cx="67.5" cy="41" r="1" fill="#1b1814"/>
+  <circle cx="72.5" cy="41" r="1" fill="#1b1814"/>
+  <path d="M35,92 q2,2.5 4,0 M38,101 q2,2.5 4,0 M35,110 q2,2.5 4,0" fill="none" stroke="#7e5226" stroke-width="1" stroke-linecap="round"/>
+  <path d="M97,92 q2,2.5 4,0 M100,101 q2,2.5 4,0 M97,110 q2,2.5 4,0" fill="none" stroke="#7e5226" stroke-width="1" stroke-linecap="round"/>
+  <path d="M34,130 l-1.5,5 l3.5,-3 Z M38,132 l0,5.5 l2.5,-4.5 Z M42,131 l2.5,5 l0.5,-4.5 Z" fill="#ece2c8" stroke="#1b1814" stroke-width="1"/>
+  <path d="M96,130 l-1.5,5 l3.5,-3 Z M100,132 l0,5.5 l2.5,-4.5 Z M104,131 l2.5,5 l0.5,-4.5 Z" fill="#ece2c8" stroke="#1b1814" stroke-width="1"/>
 </svg>
