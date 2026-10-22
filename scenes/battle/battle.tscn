@@ -122,20 +122,26 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="CharacterButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1630492817]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Character (C)"
-
 [node name="ContinueButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1874022365]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "Continue"
 
-[node name="MainMenuButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1495569792]
+[node name="MenuRow" type="HBoxContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551303]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CharacterButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar/MenuRow" unique_id=1630492817]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+text = "Character (C)"
+
+[node name="MainMenuButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar/MenuRow" unique_id=1495569792]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Main Menu"
 
 [node name="PopupLayer" parent="Margin" unique_id=886987079 instance=ExtResource("4_sznow")]
