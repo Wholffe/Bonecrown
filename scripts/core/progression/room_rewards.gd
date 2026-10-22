@@ -10,6 +10,8 @@ var max_hit_points_before_level_up: int = 0
 ## Null until roll_loot().
 var loot: LootRoll = null
 var skill_offer: Array[SkillData] = []
+## The reward of the door chosen before the fight, or null.
+var door_reward: DoorRewardData = null
 var _room_loot_bonus: int
 var _loot_table: LootTableData
 var _loot_roller: LootRoller
@@ -21,14 +23,28 @@ func _init(
 	won_room: int,
 	room_loot_bonus: int,
 	dice: DiceRoller,
-	loot_table: LootTableData
+	loot_table: LootTableData,
+	chosen_door_reward: DoorRewardData = null
 ) -> void:
 	player = run_player
 	room_number = won_room
+	door_reward = chosen_door_reward
+	# The door's loot bonus counts as part of the room's own bonus, like the elite room's.
 	_room_loot_bonus = room_loot_bonus
+	if door_reward != null:
+		_room_loot_bonus += door_reward.loot_bonus
 	_loot_table = loot_table
 	_loot_roller = LootRoller.new(dice, loot_table)
 	_skill_offer_roller = SkillOfferRoller.new(dice)
+
+
+## Heals the door reward's share of the max hit points, rounded down. The screen calls it once,
+## before the level-up. Returns the hit points actually restored.
+func heal_from_door_reward() -> int:
+	if door_reward == null:
+		return 0
+	var amount: int = floori(player.max_hit_points * door_reward.heal_percent / 100.0)
+	return player.heal(amount)
 
 
 func level_up() -> void:
@@ -52,7 +68,7 @@ func blood_price_roll_bonus() -> int:
 	return _loot_table.blood_price_roll_bonus
 
 
-## Loot roll bonus without the Blood Price: Luck plus the room's own bonus.
+## Loot roll bonus without the Blood Price: Luck plus the room's own bonus and the door's.
 func loot_roll_bonus() -> int:
 	return player.loot_bonus() + _room_loot_bonus
 

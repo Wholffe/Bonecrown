@@ -7,7 +7,7 @@ const SKILL_CARD_WIDTH: float = 300.0
 const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
 # Paths instead of preloads, because the battle scene leads here and a preload would form a cycle.
 const BATTLE_SCENE_PATH: String = "res://scenes/battle/battle.tscn"
-const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
+const DOOR_CHOICE_SCENE_PATH: String = "res://scenes/doors/door_choice.tscn"
 
 var _rewards: RoomRewards
 var _skill_buttons: Array[Button] = []
@@ -18,6 +18,7 @@ var _animations_enabled: bool = true
 @onready var _character_button: Button = %CharacterButton
 @onready var _level_up_label: Label = %LevelUpLabel
 @onready var _hit_points_label: Label = %HitPointsLabel
+@onready var _door_reward_label: Label = %DoorRewardLabel
 @onready var _loot_info_label: Label = %LootInfoLabel
 @onready var _roll_button: Button = %RollButton
 @onready var _blood_price_button: Button = %BloodPriceButton
@@ -45,6 +46,8 @@ func _ready() -> void:
 	_leave_button.pressed.connect(_on_leave_pressed)
 	_next_button.pressed.connect(_on_next_pressed)
 	_rewards = RunState.start_room_rewards()
+	# The door's heal comes first, so the level-up line shows only the gain of the level.
+	var door_healed: int = _rewards.heal_from_door_reward()
 	_rewards.level_up()
 	_title_label.text = "Room %d cleared" % _rewards.room_number
 	_level_up_label.text = (
@@ -57,7 +60,13 @@ func _ready() -> void:
 		]
 	)
 	_show_hit_points()
+	_show_door_heal(door_healed)
 	_show_loot_offer()
+
+
+## The scene of the current room: the door choice before a door room's fight, else the battle.
+static func room_scene_path() -> String:
+	return DOOR_CHOICE_SCENE_PATH if RunState.is_door_room() else BATTLE_SCENE_PATH
 
 
 ## Tests and a later fast mode turn the roll animation off. Works before and after _ready().
@@ -84,6 +93,13 @@ func _show_hit_points() -> void:
 	_hit_points_label.text = (
 		"HP %d / %d" % [RunState.player.hit_points, RunState.player.max_hit_points]
 	)
+
+
+func _show_door_heal(healed: int) -> void:
+	var reward: DoorRewardData = _rewards.door_reward
+	_door_reward_label.visible = reward != null and reward.heal_percent > 0
+	if _door_reward_label.visible:
+		_door_reward_label.text = "%s: +%d HP" % [reward.display_name, healed]
 
 
 func _show_loot_offer() -> void:
@@ -233,17 +249,9 @@ func _skill_card_lines(skill: SkillData) -> Array[String]:
 
 func _show_next_step() -> void:
 	_next_button.show()
-	if RunState.is_last_fight_room():
-		_title_label.text = "Run complete – all fight rooms cleared"
-		_next_button.text = "Main Menu"
-	else:
-		_next_button.text = "Next Room"
 	_next_button.grab_focus()
 
 
 func _on_next_pressed() -> void:
-	if RunState.is_last_fight_room():
-		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
-		return
 	RunState.advance_room()
-	get_tree().change_scene_to_file(BATTLE_SCENE_PATH)
+	get_tree().change_scene_to_file(room_scene_path())

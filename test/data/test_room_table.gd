@@ -1,5 +1,6 @@
 extends GutTest
-## Content rules of the room table: tiers, encounters, the elite room and the scaling values.
+## Content rules of the room table: tiers, encounters, the elite room, the scaling values, the doors
+## and the boss room.
 
 const ROOM_TABLE: RoomTableData = preload("res://scripts/data/rooms/room_table.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
@@ -82,3 +83,25 @@ func test_scaling_values_are_positive() -> void:
 	assert_gt(ROOM_TABLE.scaling_room_step, 0, "scaling_room_step")
 	assert_gt(ROOM_TABLE.scaling_attack_bonus, 0, "scaling_attack_bonus")
 	assert_gt(ROOM_TABLE.scaling_hit_point_percent, 0, "scaling_hit_point_percent")
+
+
+func test_first_room_has_no_door_choice() -> void:
+	assert_gt(ROOM_TABLE.first_door_room, FIRST_ROOM, "first_door_room")
+	assert_lte(ROOM_TABLE.first_door_room, _last_fight_room(), "first_door_room")
+
+
+func test_door_values_are_positive() -> void:
+	assert_gt(ROOM_TABLE.doors_per_room, 1, "doors_per_room: a choice needs two doors")
+	assert_between(ROOM_TABLE.door_reward_chance_percent, 1, 100, "door_reward_chance_percent")
+	assert_false(ROOM_TABLE.door_rewards.is_empty(), "The doors have no rewards")
+	assert_does_not_have(ROOM_TABLE.door_rewards, null, "door_rewards has an empty slot")
+
+
+func test_boss_room_is_the_last_room_of_the_run() -> void:
+	assert_eq(ROOM_TABLE.boss_room, GAME_RULES.room_count)
+
+
+func test_boss_encounter_has_exactly_one_enemy() -> void:
+	assert_not_null(ROOM_TABLE.boss_encounter, "The boss room has no encounter")
+	assert_eq(ROOM_TABLE.boss_encounter.enemies.size(), 1)
+	assert_does_not_have(ROOM_TABLE.boss_encounter.enemies, null)

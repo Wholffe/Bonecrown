@@ -24,6 +24,10 @@ signal player_blocked(player: Character)
 ## Emitted when an enemy starts to carry out its intent, before its attacks.
 signal intent_started(enemy: Enemy, intent: EnemyIntentData)
 signal player_turn_ended
+## Emitted when a boss reaches the threshold of its next phase, before its summons appear.
+signal phase_started(boss: Enemy, phase: BossPhaseData)
+## The summon has joined enemies and chosen its intent. It acts in the current round.
+signal enemy_summoned(summon: Enemy)
 
 enum MomentumReason { FIGHT_START, NEW_ROUND, SPENT, FENDED_OFF, KILL, DRAINED, RALLIED }
 
@@ -176,7 +180,7 @@ func _begin_round() -> void:
 	for enemy: Combatant in living_enemies():
 		var enemy_in_fight: Enemy = enemy as Enemy
 		_change_momentum(
-			enemy_in_fight, enemy_in_fight.data.momentum_per_round, MomentumReason.NEW_ROUND
+			enemy_in_fight, enemy_in_fight.momentum_per_round(), MomentumReason.NEW_ROUND
 		)
 		enemy_in_fight.choose_intent()
 	intents_announced.emit()
@@ -247,7 +251,33 @@ func _attack(attacker: Combatant, defender: Combatant, intent: EnemyIntentData =
 		_drain(attacker, damage)
 	if not defender.is_alive():
 		combatant_defeated.emit(defender)
+		_defeat_summons_of(defender)
+	elif defender is Enemy:
+		_enter_phases(defender as Enemy)
 	_gain_momentum_from_attack(attacker, defender, attack, intent)
+
+
+func _enter_phases(boss: Enemy) -> void:
+	var phase: BossPhaseData = boss.enter_next_phase()
+	while phase != null:
+		phase_started.emit(boss, phase)
+		for summon: Combatant in Enemy.create_group(phase.summons):
+			var summoned_enemy: Enemy = summon as Enemy
+			summoned_enemy.summoner = boss
+			summoned_enemy.choose_intent()
+			enemies.append(summoned_enemy)
+			enemy_summoned.emit(summoned_enemy)
+		# The intent announced at the start of the round may not exist in the new phase.
+		boss.choose_intent()
+		intents_announced.emit()
+		phase = boss.enter_next_phase()
+
+
+func _defeat_summons_of(summoner: Combatant) -> void:
+	for enemy: Combatant in living_enemies():
+		if (enemy as Enemy).summoner == summoner:
+			enemy.take_damage(enemy.hit_points)
+			combatant_defeated.emit(enemy)
 
 
 func _gain_momentum_from_attack(
@@ -275,7 +305,7 @@ func _change_momentum(combatant: Combatant, change: int, reason: MomentumReason)
 	var cap: int = _rules.momentum_cap
 	var enemy: Enemy = combatant as Enemy
 	if enemy != null:
-		cap = enemy.data.momentum_cap
+		cap = enemy.momentum_cap()
 	var before: int = combatant.momentum
 	combatant.momentum = clampi(before + change, 0, cap)
 	if combatant.momentum != before:

@@ -1,5 +1,6 @@
 extends GutTest
-## RoomRewards: level-up, Blood Price, loot roll and swap, skill offer and choice after a fight.
+## RoomRewards: door reward, level-up, Blood Price, loot roll and swap, skill offer and choice after
+## a fight.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
@@ -7,6 +8,9 @@ const LOOT_TABLE: LootTableData = preload("res://scripts/data/loot/loot_table.tr
 const STRENGTH_TRAINING: SkillData = preload("res://scripts/data/skills/strength_training.tres")
 const HONED_LONGSWORD: WeaponData = preload("res://scripts/data/items/honed_longsword.tres")
 const LUCKY_COIN: TalismanData = preload("res://scripts/data/items/lucky_coin.tres")
+const TREASURE: DoorRewardData = preload("res://scripts/data/doors/treasure.tres")
+const HEALING_SPRING: DoorRewardData = preload("res://scripts/data/doors/healing_spring.tres")
+const ELITE_LOOT_BONUS: int = 3
 const FIRST_ROOM: int = 1
 const BLOOD_PRICE_ROOM: int = 2
 const SEED: int = 99
@@ -23,6 +27,49 @@ func before_each() -> void:
 func _rewards(room_number: int, rolls: Array[int]) -> RoomRewards:
 	_dice = FixedDice.new(rolls)
 	return RoomRewards.new(_player, room_number, 0, _dice, LOOT_TABLE)
+
+
+func _door_rewards(reward: DoorRewardData) -> RoomRewards:
+	return RoomRewards.new(_player, FIRST_ROOM, 0, FixedDice.new([]), LOOT_TABLE, reward)
+
+
+func test_treasure_adds_to_the_room_loot_bonus() -> void:
+	_dice = FixedDice.new([5, 1])
+	var rewards: RoomRewards = RoomRewards.new(
+		_player, FIRST_ROOM, ELITE_LOOT_BONUS, _dice, LOOT_TABLE, TREASURE
+	)
+
+	var loot: LootRoll = rewards.roll_loot(false)
+
+	assert_eq(rewards.loot_roll_bonus(), 6, "Elite +3 and Treasure +3")
+	assert_eq(loot.room_bonus, 6)
+	assert_eq(loot.total, 11)
+
+
+func test_healing_spring_heals_a_quarter_of_max_hit_points_rounded_down() -> void:
+	_player.take_damage(10)
+	var rewards: RoomRewards = _door_rewards(HEALING_SPRING)
+
+	var healed: int = rewards.heal_from_door_reward()
+
+	assert_eq(healed, 3, "25% of 14 HP is 3.5")
+	assert_eq(_player.hit_points, 7)
+
+
+func test_healing_spring_heals_only_the_missing_hit_points() -> void:
+	_player.take_damage(1)
+	var rewards: RoomRewards = _door_rewards(HEALING_SPRING)
+
+	assert_eq(rewards.heal_from_door_reward(), 1)
+	assert_eq(_player.hit_points, _player.max_hit_points)
+
+
+func test_door_rewards_without_a_heal_heal_nothing() -> void:
+	_player.take_damage(10)
+
+	assert_eq(_door_rewards(TREASURE).heal_from_door_reward(), 0, "Treasure")
+	assert_eq(_door_rewards(null).heal_from_door_reward(), 0, "No door reward")
+	assert_eq(_player.hit_points, 4)
 
 
 func test_level_up_raises_level_and_reports_the_gain() -> void:

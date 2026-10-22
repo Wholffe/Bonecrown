@@ -75,6 +75,14 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "HP"
 
+[node name="DoorRewardLabel" type="Label" parent="Margin/Layout/LevelRow" unique_id=1349920731]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "Door reward"
+
 [node name="LootSection" type="VBoxContainer" parent="Margin/Layout" unique_id=255899745]
 layout_mode = 2
 

@@ -1,9 +1,11 @@
 extends GutTest
-## EncounterRoller: encounters by room tier, the elite room, room scaling and the room loot bonus.
+## EncounterRoller: encounters by room tier, the elite room, room scaling, the room loot bonus and
+## the boss room.
 
 const ROOM_TABLE: RoomTableData = preload("res://scripts/data/rooms/room_table.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
 const SKELETON: EnemyData = preload("res://scripts/data/enemies/skeleton.tres")
+const BONE_KING: EnemyData = preload("res://scripts/data/enemies/bone_king.tres")
 const FIRST_ROOM: int = 1
 const ELITE_ROOM: int = 5
 const ELITE_LOOT_BONUS: int = 3
@@ -12,10 +14,10 @@ const SPARE_ROLL: int = 1
 const MAX_ENEMIES_PER_ENCOUNTER: int = 3
 const SEED: int = 4711
 const ROLL_COUNT: int = 20
-## [room] of the room table's tier of rooms 2–3.
-const GOBLIN_PAIR_ROOM_CASES: Array = [[2], [3]]
-## [room, roll, display names] in the room table's tiers of rooms 4–6 and 7–9.
+## [room, roll, display names] in the room table's tiers of rooms 2–3, 4–6 and 7–9.
 const TIER_PICK_CASES: Array = [
+	[2, 1, ["Goblin 1", "Goblin 2"]],
+	[3, 2, ["Goblin"]],
 	[4, 1, ["Skeleton"]],
 	[4, 2, ["Orc"]],
 	[6, 5, ["Skeleton 1", "Skeleton 2"]],
@@ -79,15 +81,6 @@ func test_first_room_has_one_goblin_without_rolling() -> void:
 	var enemies: Array[Combatant] = _roller([SPARE_ROLL]).roll_enemies(FIRST_ROOM)
 
 	assert_eq(_display_names(enemies), ["Goblin"] as Array[String])
-	assert_eq(_dice.remaining_rolls(), 1, "A pool of one encounter needs no roll")
-
-
-func test_rooms_two_and_three_have_two_goblins_without_rolling(
-	params: Array = use_parameters(GOBLIN_PAIR_ROOM_CASES)
-) -> void:
-	var enemies: Array[Combatant] = _roller([SPARE_ROLL]).roll_enemies(params[0])
-
-	assert_eq(_display_names(enemies), ["Goblin 1", "Goblin 2"] as Array[String])
 	assert_eq(_dice.remaining_rolls(), 1, "A pool of one encounter needs no roll")
 
 
@@ -162,13 +155,36 @@ func test_only_the_elite_room_adds_a_loot_bonus() -> void:
 
 
 func test_room_without_a_tier_reports_an_error() -> void:
-	var boss_room: int = GAME_RULES.room_count
+	var room_after_the_run: int = GAME_RULES.room_count + 1
 
-	var enemies: Array[Combatant] = _roller([SPARE_ROLL]).roll_enemies(boss_room)
+	var enemies: Array[Combatant] = _roller([SPARE_ROLL]).roll_enemies(room_after_the_run)
 
-	assert_push_error_count(1, "The boss room has no tier in the room table")
+	assert_push_error_count(1, "No tier covers a room after the boss room")
 	assert_eq(enemies.size(), 0)
 	assert_eq(_dice.remaining_rolls(), 1)
+
+
+func test_boss_room_has_the_unscaled_boss_without_rolling() -> void:
+	var enemies: Array[Combatant] = _roller([SPARE_ROLL]).roll_enemies(GAME_RULES.room_count)
+
+	assert_eq(enemies.size(), 1)
+	var boss: Enemy = enemies[0] as Enemy
+	assert_eq(boss.data, BONE_KING)
+	assert_eq(boss.display_name, BONE_KING.display_name, "No elite prefix and no number")
+	assert_eq(boss.get_attack_bonus(), BONE_KING.attack_bonus, "No room scaling on the attack")
+	assert_eq(boss.max_hit_points, BONE_KING.max_hit_points, "No room scaling on the hit points")
+	assert_eq(_dice.remaining_rolls(), 1, "The boss room needs no roll")
+
+
+func test_boss_room_without_a_boss_encounter_reports_an_error() -> void:
+	var table: RoomTableData = _scaling_table()
+	table.boss_room = 10
+	_dice = FixedDice.new([])
+
+	var enemies: Array[Combatant] = EncounterRoller.new(_dice, table).roll_enemies(10)
+
+	assert_push_error_count(1, "The boss room has no boss encounter")
+	assert_eq(enemies.size(), 0)
 
 
 func test_every_fight_room_rolls_one_to_three_living_enemies() -> void:

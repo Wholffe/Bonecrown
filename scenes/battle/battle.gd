@@ -12,6 +12,8 @@ const EQUIPMENT_ICON_SIZE: float = 36.0
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
 # The post-fight screen leads back here, so a preload would form a cycle too.
 const LEVEL_UP_SCENE_PATH: String = "res://scenes/levelup/level_up.tscn"
+# The run end screen starts new runs here.
+const RUN_END_SCENE_PATH: String = "res://scenes/run_end/run_end.tscn"
 ## The layout steps through these offsets when a crit is revealed, then returns to its rest.
 const SHAKE_OFFSETS: Array[Vector2] = [
 	Vector2(10, -6), Vector2(-9, 5), Vector2(7, 4), Vector2(-5, -3), Vector2(2, 2)
@@ -84,6 +86,14 @@ func wait_for_playback() -> void:
 		await get_tree().process_frame
 
 
+## Where Continue leads once the fight is over: after a won fight before the boss room the
+## post-fight screen follows, after the boss fight or a death the run end screen.
+func next_scene_path() -> String:
+	if _combat.player.is_alive() and not RunState.is_boss_room():
+		return LEVEL_UP_SCENE_PATH
+	return RUN_END_SCENE_PATH
+
+
 ## Tests and a later fast mode turn the roll animation off. Works before and after _ready().
 func set_animations_enabled(enabled: bool) -> void:
 	_animations_enabled = enabled
@@ -117,6 +127,8 @@ func _start_combat() -> void:
 	_combat.intents_announced.connect(_on_intents_announced)
 	_combat.player_blocked.connect(_on_player_blocked)
 	_combat.intent_started.connect(_on_intent_started)
+	_combat.phase_started.connect(_on_phase_started)
+	_combat.enemy_summoned.connect(_on_enemy_summoned)
 	_create_cards(enemies)
 	_create_action_buttons()
 	_log("Room %d   ·   Run seed: %d" % [RunState.room_number, RunState.run_seed])
@@ -133,13 +145,17 @@ func _create_cards(enemies: Array[Combatant]) -> void:
 	_player_card.show_momentum(0, RunState.GAME_RULES.momentum_cap)
 	_cards[player] = _player_card
 	for enemy: Combatant in enemies:
-		var card: CombatantCard = COMBATANT_CARD_SCENE.instantiate() as CombatantCard
-		_enemy_cards_box.add_child(card)
-		card.show_combatant(enemy, false)
-		card.show_momentum(enemy.momentum, (enemy as Enemy).data.momentum_cap)
-		card.selected.connect(_on_enemy_card_selected)
-		_cards[enemy] = card
-		_enemy_cards.append(card)
+		_add_enemy_card(enemy as Enemy)
+
+
+func _add_enemy_card(enemy: Enemy) -> void:
+	var card: CombatantCard = COMBATANT_CARD_SCENE.instantiate() as CombatantCard
+	_enemy_cards_box.add_child(card)
+	card.show_combatant(enemy, false)
+	card.show_momentum(enemy.momentum, enemy.momentum_cap())
+	card.selected.connect(_on_enemy_card_selected)
+	_cards[enemy] = card
+	_enemy_cards.append(card)
 
 
 func _create_action_buttons() -> void:
@@ -279,12 +295,8 @@ func _shake_layout() -> void:
 
 
 func _play_momentum_change(
-	combatant: Combatant, momentum: int, change: int, reason: Combat.MomentumReason
+	combatant: Combatant, momentum: int, cap: int, change: int, reason: Combat.MomentumReason
 ) -> void:
-	var cap: int = RunState.GAME_RULES.momentum_cap
-	var enemy: Enemy = combatant as Enemy
-	if enemy != null:
-		cap = enemy.data.momentum_cap
 	_cards[combatant].show_momentum(momentum, cap)
 	var reason_text: String = MOMENTUM_REASON_TEXTS.get(reason, "")
 	if reason_text != "":
@@ -301,8 +313,28 @@ func _play_intent_start(enemy: Enemy, intent: EnemyIntentData) -> void:
 	_cards[enemy].show_intent(null)
 
 
+func _play_phase_start(
+	boss: Enemy, phase: BossPhaseData, armor_class: int, momentum: int, momentum_cap: int
+) -> void:
+	_log(phase.announcement)
+	var card: CombatantCard = _cards[boss]
+	card.show_stats(armor_class, boss.get_attack_bonus())
+	card.show_momentum(momentum, momentum_cap)
+	if _animations_enabled:
+		_shake_layout()
+	await _dice_display.hold()
+
+
+func _play_summon(summon: Enemy) -> void:
+	_add_enemy_card(summon)
+	_log("A %s appears." % summon.display_name)
+	await _dice_display.hold()
+
+
 func _play_defeat(combatant: Combatant) -> void:
 	_log("%s is defeated." % combatant.display_name)
+	# A summon falls with its summoner without an attack that showed its hit points.
+	_cards[combatant].show_hit_points(0)
 	var enemy: Enemy = combatant as Enemy
 	if enemy != null:
 		_cards[enemy].show_intent(null)
@@ -313,8 +345,7 @@ func _play_defeat(combatant: Combatant) -> void:
 func _play_combat_end(player_won: bool) -> void:
 	_log("")
 	_log("Victory!" if player_won else "You have fallen. The run is over.")
-	# Until the run end screen of milestone 11, a defeat only offers the main menu.
-	_continue_button.visible = player_won
+	_continue_button.visible = true
 
 
 # The input handlers check this too, because a scripted pressed.emit() ignores disabled buttons.
@@ -471,7 +502,12 @@ func _on_attack_resolved(
 func _on_momentum_changed(
 	combatant: Combatant, momentum: int, change: int, reason: Combat.MomentumReason
 ) -> void:
-	_pending_events.append(_play_momentum_change.bind(combatant, momentum, change, reason))
+	# A boss phase can change the cap later in the same turn, so it is kept now.
+	var cap: int = RunState.GAME_RULES.momentum_cap
+	var enemy: Enemy = combatant as Enemy
+	if enemy != null:
+		cap = enemy.momentum_cap()
+	_pending_events.append(_play_momentum_change.bind(combatant, momentum, cap, change, reason))
 
 
 # Intents can change before playback reaches this point, so they are copied now.
@@ -495,6 +531,19 @@ func _on_player_blocked(player: Character) -> void:
 
 func _on_intent_started(enemy: Enemy, intent: EnemyIntentData) -> void:
 	_pending_events.append(_play_intent_start.bind(enemy, intent))
+
+
+# The phase changes the boss's values right away, so the ones shown at playback are kept now.
+func _on_phase_started(boss: Enemy, phase: BossPhaseData) -> void:
+	_pending_events.append(
+		_play_phase_start.bind(
+			boss, phase, boss.get_armor_class(), boss.momentum, boss.momentum_cap()
+		)
+	)
+
+
+func _on_enemy_summoned(summon: Enemy) -> void:
+	_pending_events.append(_play_summon.bind(summon))
 
 
 func _on_skill_used(user: Combatant, skill: SkillData) -> void:
@@ -566,4 +615,4 @@ func _on_main_menu_button_pressed() -> void:
 
 
 func _on_continue_button_pressed() -> void:
-	get_tree().change_scene_to_file(LEVEL_UP_SCENE_PATH)
+	get_tree().change_scene_to_file(next_scene_path())

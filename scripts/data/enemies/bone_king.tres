@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="1_bossd"]
+[ext_resource type="Script" path="res://scripts/data/enemy_intent_data.gd" id="2_g7int"]
+[ext_resource type="Script" path="res://scripts/data/boss_phase_data.gd" id="3_bphas"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="4_oevm7"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/skeleton.tres" id="5_skltn"]
+
+[sub_resource type="Resource" id="Resource_royal_strike"]
+script = ExtResource("2_g7int")
+id = &"royal_strike"
+display_name = "Royal Strike"
+attack_count = 1
+
+[sub_resource type="Resource" id="Resource_crushing_blow"]
+script = ExtResource("2_g7int")
+id = &"crushing_blow"
+display_name = "Crushing Blow"
+momentum_cost = 2
+attack_count = 1
+extra_damage_dice = 1
+
+[sub_resource type="Resource" id="Resource_command"]
+script = ExtResource("2_g7int")
+id = &"command"
+display_name = "Command"
+momentum_to_allies = 1
+
+[sub_resource type="Resource" id="Resource_frenzy"]
+script = ExtResource("2_g7int")
+id = &"frenzy"
+display_name = "Frenzy"
+attack_count = 2
+
+[sub_resource type="Resource" id="Resource_raise_the_dead"]
+script = ExtResource("3_bphas")
+hit_points_at_most = 60
+announcement = "The Bone King raises the dead!"
+momentum_per_round = 1
+momentum_cap = 2
+intents = Array[ExtResource("2_g7int")]([SubResource("Resource_command"), SubResource("Resource_crushing_blow")])
+summons = Array[ExtResource("4_oevm7")]([ExtResource("5_skltn"), ExtResource("5_skltn")])
+
+[sub_resource type="Resource" id="Resource_frenzy_phase"]
+script = ExtResource("3_bphas")
+hit_points_at_most = 30
+announcement = "The Bone King flies into a frenzy, his guard drops!"
+armor_class = 14
+intents = Array[ExtResource("2_g7int")]([SubResource("Resource_frenzy")])
+
+[resource]
+script = ExtResource("1_bossd")
+phases = Array[ExtResource("3_bphas")]([SubResource("Resource_raise_the_dead"), SubResource("Resource_frenzy_phase")])
+id = &"bone_king"
+display_name = "The Bone King"
+armor_class = 16
+max_hit_points = 90
+attack_bonus = 9
+damage_die_count = 1
+damage_die_sides = 10
+damage_bonus = 6
+momentum_per_round = 1
+momentum_cap = 2
+intents = Array[ExtResource("2_g7int")]([SubResource("Resource_royal_strike"), SubResource("Resource_crushing_blow")])

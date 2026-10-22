@@ -1,0 +1,65 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/run_end/run_end.gd" id="1_rnend"]
+
+[node name="RunEnd" type="Control" unique_id=1592048311]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rnend")
+
+[node name="Center" type="CenterContainer" parent="." unique_id=482915377]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="Center" unique_id=1840266951]
+custom_minimum_size = Vector2(720, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="Center/Layout" unique_id=736201588]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+
+[node name="SummaryLabel" type="Label" parent="Center/Layout" unique_id=1203398870]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="EquipmentStrip" type="HBoxContainer" parent="Center/Layout" unique_id=95518243]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="SkillsLabel" type="Label" parent="Center/Layout" unique_id=1311472960]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="Center/Layout" unique_id=2017764301]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="NewRunButton" type="Button" parent="Center/Layout/ButtonRow" unique_id=1655502834]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+text = "New Run"
+
+[node name="MainMenuButton" type="Button" parent="Center/Layout/ButtonRow" unique_id=877316945]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+text = "Main Menu"

@@ -8,6 +8,10 @@
 [ext_resource type="Script" path="res://scripts/data/encounter_data.gd" id="6_encnt"]
 [ext_resource type="Script" path="res://scripts/data/room_tier_data.gd" id="7_rtier"]
 [ext_resource type="Script" path="res://scripts/data/room_table_data.gd" id="8_rtabl"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/bone_king.tres" id="9_bking"]
+[ext_resource type="Script" path="res://scripts/data/door_reward_data.gd" id="10_drwrd"]
+[ext_resource type="Resource" path="res://scripts/data/doors/treasure.tres" id="11_trsre"]
+[ext_resource type="Resource" path="res://scripts/data/doors/healing_spring.tres" id="12_hlspr"]
 
 [sub_resource type="Resource" id="Resource_goblin"]
 script = ExtResource("6_encnt")
@@ -69,6 +73,10 @@ enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn")])
 script = ExtResource("6_encnt")
 enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k")])
 
+[sub_resource type="Resource" id="Resource_bone_king"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("9_bking")])
+
 [sub_resource type="Resource" id="Resource_rooms_1"]
 script = ExtResource("7_rtier")
 first_room = 1
@@ -79,7 +87,7 @@ encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_goblin")])
 script = ExtResource("7_rtier")
 first_room = 2
 last_room = 3
-encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_goblin_pair")])
+encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_goblin_pair"), SubResource("Resource_goblin")])
 
 [sub_resource type="Resource" id="Resource_rooms_4_6"]
 script = ExtResource("7_rtier")
@@ -105,3 +113,9 @@ elite_loot_bonus = 3
 scaling_room_step = 3
 scaling_attack_bonus = 1
 scaling_hit_point_percent = 10
+first_door_room = 2
+doors_per_room = 2
+door_reward_chance_percent = 75
+door_rewards = Array[ExtResource("10_drwrd")]([ExtResource("11_trsre"), ExtResource("12_hlspr")])
+boss_room = 10
+boss_encounter = SubResource("Resource_bone_king")

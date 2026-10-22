@@ -59,7 +59,10 @@ static func describe_intent(enemy: Enemy, intent: EnemyIntentData) -> String:
 	)
 	if intent.attack_count > 1:
 		dice = "%d× %s" % [intent.attack_count, dice]
-	var parts: PackedStringArray = [dice]
+	var parts: PackedStringArray = []
+	# An intent without attacks, such as a boss's Command, only shows its other effects.
+	if intent.attack_count > 0:
+		parts.append(dice)
 	if intent.momentum_drain > 0:
 		parts.append("−%d Momentum on a hit" % intent.momentum_drain)
 	if intent.momentum_to_allies > 0:
@@ -71,12 +74,14 @@ func show_combatant(shown_combatant: Combatant, is_player: bool) -> void:
 	combatant = shown_combatant
 	_body.color = PLAYER_BODY_COLOR if is_player else ENEMY_BODY_COLOR
 	_name_label.text = shown_combatant.display_name
-	_stats_label.text = (
-		"AC %d   Attack %+d"
-		% [shown_combatant.get_armor_class(), shown_combatant.get_attack_bonus()]
-	)
+	show_stats(shown_combatant.get_armor_class(), shown_combatant.get_attack_bonus())
 	_hit_point_bar.max_value = shown_combatant.max_hit_points
 	show_hit_points(shown_combatant.hit_points)
+
+
+## Takes explicit values, because a boss phase changes them during the battle playback.
+func show_stats(armor_class: int, attack_bonus: int) -> void:
+	_stats_label.text = "AC %d   Attack %+d" % [armor_class, attack_bonus]
 
 
 ## Takes an explicit value, so the battle playback can show hit points from before later events.

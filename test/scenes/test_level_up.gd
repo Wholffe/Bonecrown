@@ -14,6 +14,8 @@ const SEED: int = 7
 const COMMON_FIND_ROLLS: Array[int] = [5, 1, 1, 1, 1]
 ## Loot d20 5 (common), third common item: the Lucky Coin for the empty talisman slot.
 const TALISMAN_FIND_ROLLS: Array[int] = [5, 3]
+## [room after advance_room()] with a door choice before the fight.
+const DOOR_ROOM_CASES: Array = [[2], [3], [4], [5], [6], [7], [8], [9]]
 
 
 func before_each() -> void:
@@ -198,16 +200,19 @@ func test_choosing_a_skill_learns_it_and_offers_the_next_room() -> void:
 	assert_eq(next.text, "Next Room")
 
 
-func test_last_fight_room_completes_the_run() -> void:
-	RunState.room_number = RunState.GAME_RULES.room_count - 1
-	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
-	await _press(level_up, "RollButton")
-	await _press(level_up, "LeaveButton")
+# The scene change itself would replace the running GUT scene, so only its target is checked.
+func test_next_room_with_doors_opens_the_door_choice(
+	params: Array = use_parameters(DOOR_ROOM_CASES)
+) -> void:
+	RunState.room_number = params[0]
 
-	level_up.choose_skill(STRENGTH_TRAINING)
+	assert_eq(LevelUp.room_scene_path(), LevelUp.DOOR_CHOICE_SCENE_PATH, "room %d" % params[0])
 
-	assert_eq(_label_text(level_up, "TitleLabel"), "Run complete – all fight rooms cleared")
-	assert_eq(_button(level_up, "NextButton").text, "Main Menu")
+
+func test_boss_room_opens_the_battle() -> void:
+	RunState.room_number = RunState.GAME_RULES.room_count
+
+	assert_eq(LevelUp.room_scene_path(), LevelUp.BATTLE_SCENE_PATH)
 
 
 func test_character_button_toggles_the_sheet() -> void:
@@ -220,4 +225,4 @@ func test_character_button_toggles_the_sheet() -> void:
 
 func test_scene_paths_point_to_existing_scenes() -> void:
 	assert_true(ResourceLoader.exists(LevelUp.BATTLE_SCENE_PATH))
-	assert_true(ResourceLoader.exists(LevelUp.MAIN_MENU_SCENE_PATH))
+	assert_true(ResourceLoader.exists(LevelUp.DOOR_CHOICE_SCENE_PATH))

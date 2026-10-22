@@ -13,8 +13,9 @@ const DEFEAT_ROLLS: Array[int] = [2, 13, 6, 13, 6]
 
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
-	# Room 2 holds two goblins and picks them without a roll.
+	# Room 2 behind a door of two goblins, so the fight starts without a roll.
 	RunState.advance_room()
+	RunState.choose_door(GoblinPairDoor.create())
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
 	battle.set_animations_enabled(false)
@@ -48,14 +49,16 @@ func test_victory_offers_continue() -> void:
 	assert_true(_continue_button(battle).visible)
 	assert_false(_continue_button(battle).disabled)
 	assert_true(_continue_button(battle).has_focus())
+	assert_eq(battle.next_scene_path(), Battle.LEVEL_UP_SCENE_PATH)
 
 
-func test_defeat_offers_no_continue() -> void:
+func test_defeat_offers_continue_to_the_run_end() -> void:
 	var battle: Battle = _start_battle(DEFEAT_ROLLS)
 
 	await _attack(battle)
 
-	assert_false(_continue_button(battle).visible)
+	assert_true(_continue_button(battle).visible)
+	assert_eq(battle.next_scene_path(), Battle.RUN_END_SCENE_PATH)
 
 
 # The scene change itself would replace the running GUT scene, so only its target is checked.
