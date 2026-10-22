@@ -184,5 +184,5 @@ func test_healing_spring_door_heals_after_the_fight() -> void:
 	var rewards: RoomRewards = RunState.start_room_rewards()
 
 	assert_eq(rewards.door_reward, HEALING_SPRING)
-	assert_eq(rewards.heal_from_door_reward(), 3, "25% of 14 HP, rounded down")
-	assert_eq(RunState.player.hit_points, 7)
+	assert_eq(rewards.heal_from_door_reward(), 1, "10% of 14 HP, rounded down")
+	assert_eq(RunState.player.hit_points, 5)

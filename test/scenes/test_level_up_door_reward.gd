@@ -34,8 +34,8 @@ func test_healing_spring_heals_before_the_level_up() -> void:
 
 	var label: Label = _door_reward_label(level_up)
 	assert_true(label.visible)
-	assert_eq(label.text, "Healing Spring: +3 HP", "25% of 14 HP, rounded down")
-	assert_eq((level_up.get_node("%HitPointsLabel") as Label).text, "HP 15 / 22", "4 + 3 + 8")
+	assert_eq(label.text, "Healing Spring: +1 HP", "10% of 14 HP, rounded down")
+	assert_eq((level_up.get_node("%HitPointsLabel") as Label).text, "HP 13 / 22", "4 + 1 + 8")
 	assert_eq((level_up.get_node("%LevelUpLabel") as Label).text, "Level 2!   Max HP 14 → 22 (+8)")
 
 

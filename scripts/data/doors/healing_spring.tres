@@ -6,5 +6,5 @@
 script = ExtResource("1_gjex1")
 id = &"healing_spring"
 display_name = "Healing Spring"
-description = "Heal 25% of your max HP after this fight."
-heal_percent = 25
+description = "Heal 10% of your max HP after this fight."
+heal_percent = 10

@@ -46,14 +46,14 @@ func test_treasure_adds_to_the_room_loot_bonus() -> void:
 	assert_eq(loot.total, 11)
 
 
-func test_healing_spring_heals_a_quarter_of_max_hit_points_rounded_down() -> void:
+func test_healing_spring_heals_its_share_of_max_hit_points_rounded_down() -> void:
 	_player.take_damage(10)
 	var rewards: RoomRewards = _door_rewards(HEALING_SPRING)
 
 	var healed: int = rewards.heal_from_door_reward()
 
-	assert_eq(healed, 3, "25% of 14 HP is 3.5")
-	assert_eq(_player.hit_points, 7)
+	assert_eq(healed, 1, "10% of 14 HP is 1.4")
+	assert_eq(_player.hit_points, 5)
 
 
 func test_healing_spring_heals_only_the_missing_hit_points() -> void:

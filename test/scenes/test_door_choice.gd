@@ -83,7 +83,7 @@ func test_reward_line_can_show_on_the_right_door() -> void:
 
 	assert_eq(_card_texts(door_choice, 0), ["Left Door", GOBLIN_LINE] as Array[String])
 	assert_has(
-		_card_texts(door_choice, 1), "Healing Spring: Heal 25% of your max HP after this fight."
+		_card_texts(door_choice, 1), "Healing Spring: Heal 10% of your max HP after this fight."
 	)
 
 
