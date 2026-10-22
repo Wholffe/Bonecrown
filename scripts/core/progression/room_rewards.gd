@@ -10,12 +10,15 @@ var max_hit_points_before_level_up: int = 0
 ## Null until roll_loot().
 var loot: LootRoll = null
 var skill_offer: Array[SkillData] = []
+## Null until choose_skill().
+var chosen_skill: SkillData = null
 ## The reward of the door chosen before the fight, or null.
 var door_reward: DoorRewardData = null
 var _room_loot_bonus: int
 var _loot_table: LootTableData
 var _loot_roller: LootRoller
 var _skill_offer_roller: SkillOfferRoller
+var _has_leveled_up: bool = false
 
 
 func _init(
@@ -50,6 +53,7 @@ func heal_from_door_reward() -> int:
 func level_up() -> void:
 	max_hit_points_before_level_up = player.max_hit_points
 	player.level_up()
+	_has_leveled_up = true
 
 
 func hit_points_gained() -> int:
@@ -73,8 +77,14 @@ func loot_roll_bonus() -> int:
 	return player.loot_bonus() + _room_loot_bonus
 
 
+## The table the loot is rolled on, for showing its thresholds.
+func loot_table() -> LootTableData:
+	return _loot_table
+
+
 ## Pays the Blood Price first when pay_blood_price is true and it is offered.
 func roll_loot(pay_blood_price: bool) -> LootRoll:
+	assert(_has_leveled_up, "The level-up comes before the loot roll")
 	assert(loot == null, "The loot of a room is rolled once")
 	var pays: bool = pay_blood_price and is_blood_price_offered()
 	if pays:
@@ -94,6 +104,7 @@ func take_item() -> ItemData:
 
 
 func roll_skill_offer() -> Array[SkillData]:
+	assert(_has_leveled_up, "The level-up comes before the skill offer")
 	skill_offer = _skill_offer_roller.roll_offer(
 		player.class_data.skill_pool, player.level, player.skills, player.capped_attribute_stats()
 	)
@@ -101,5 +112,7 @@ func roll_skill_offer() -> Array[SkillData]:
 
 
 func choose_skill(skill: SkillData) -> void:
+	assert(chosen_skill == null, "A room gives one skill")
 	assert(skill in skill_offer, "Only an offered skill can be chosen")
+	chosen_skill = skill
 	player.learn_skill(skill)

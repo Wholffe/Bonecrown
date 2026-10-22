@@ -4,7 +4,7 @@ extends Control
 
 const NOTHING_FOUND_TEXT: String = "Nothing new this time."
 const SKILL_CARD_WIDTH: float = 300.0
-const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
+const SKILL_NAME_FONT_SIZE: int = 20
 # Paths instead of preloads, because the battle scene leads here and a preload would form a cycle.
 const BATTLE_SCENE_PATH: String = "res://scenes/battle/battle.tscn"
 const DOOR_CHOICE_SCENE_PATH: String = "res://scenes/doors/door_choice.tscn"
@@ -82,6 +82,9 @@ func offered_skills() -> Array[SkillData]:
 
 
 func choose_skill(skill: SkillData) -> void:
+	# Only the first choice counts, even if a disabled card button still gets a pressed signal.
+	if _rewards.chosen_skill != null:
+		return
 	_rewards.choose_skill(skill)
 	for button: Button in _skill_buttons:
 		button.disabled = true
@@ -103,7 +106,7 @@ func _show_door_heal(healed: int) -> void:
 
 
 func _show_loot_offer() -> void:
-	var table: LootTableData = RunState.LOOT_TABLE
+	var table: LootTableData = _rewards.loot_table()
 	var bonus: int = _rewards.loot_roll_bonus()
 	var legendary_text: String = "%d+ Legendary" % table.legendary_from
 	if _rewards.room_number < table.legendary_from_room:
@@ -152,7 +155,7 @@ func _show_find(loot: LootRoll) -> void:
 	if loot.is_downgraded():
 		rarity_text = (
 			"%s (legendary finds start in room %d)"
-			% [rarity_text, RunState.LOOT_TABLE.legendary_from_room]
+			% [rarity_text, _rewards.loot_table().legendary_from_room]
 		)
 	_find_label.add_theme_color_override("font_color", ItemSlot.RARITY_COLORS[loot.rarity])
 	if loot.item == null:
@@ -216,7 +219,7 @@ func _create_skill_card(skill: SkillData) -> PanelContainer:
 	card.add_child(layout)
 	var name_label: Label = Label.new()
 	name_label.text = skill.display_name
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", SKILL_NAME_FONT_SIZE)
 	layout.add_child(name_label)
 	var lines: Array[String] = _skill_card_lines(skill)
 	for index: int in lines.size():
@@ -225,7 +228,7 @@ func _create_skill_card(skill: SkillData) -> PanelContainer:
 		line_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		# The first line is the skill's description, the others are value changes.
 		if index == 0:
-			line_label.add_theme_color_override("font_color", DESCRIPTION_COLOR)
+			line_label.add_theme_color_override("font_color", CharacterSheet.DESCRIPTION_COLOR)
 		layout.add_child(line_label)
 	var button: Button = Button.new()
 	button.text = "Choose"
@@ -239,6 +242,7 @@ func _create_skill_card(skill: SkillData) -> PanelContainer:
 ## The description first, then the changes to the player's own values. Never chances.
 func _skill_card_lines(skill: SkillData) -> Array[String]:
 	var lines: Array[String] = [skill.description]
+	# preview_skill() keeps its copy to itself, and the notes need the max HP after learning.
 	var after: Character = RunState.player.copy()
 	after.learn_skill(skill)
 	for change: StatSheet.Change in StatSheet.preview_skill(RunState.player, skill):
@@ -253,5 +257,7 @@ func _show_next_step() -> void:
 
 
 func _on_next_pressed() -> void:
+	# Disabled first, so a second press cannot advance the room twice.
+	_next_button.disabled = true
 	RunState.advance_room()
 	get_tree().change_scene_to_file(room_scene_path())

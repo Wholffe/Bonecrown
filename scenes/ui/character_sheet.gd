@@ -5,6 +5,7 @@ extends Control
 
 const TOGGLE_KEY: Key = KEY_C
 const HIT_POINTS_LABEL: String = "HP"
+## Shared with the skill cards of the post-fight screen.
 const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
 
 ## Set once by the scene that adds the sheet. The content is rebuilt on every open().

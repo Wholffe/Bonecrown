@@ -140,7 +140,10 @@ func item_in_slot(slot: ItemData.Slot) -> ItemData:
 			return weapon
 		ItemData.Slot.ARMOR:
 			return armor
-	return talisman
+		ItemData.Slot.TALISMAN:
+			return talisman
+	push_error("There is no item slot %d" % slot)
+	return null
 
 
 func active_skills() -> Array[SkillData]:

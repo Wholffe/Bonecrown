@@ -38,6 +38,7 @@ func test_treasure_adds_to_the_room_loot_bonus() -> void:
 	var rewards: RoomRewards = RoomRewards.new(
 		_player, FIRST_ROOM, ELITE_LOOT_BONUS, _dice, LOOT_TABLE, TREASURE
 	)
+	rewards.level_up()
 
 	var loot: LootRoll = rewards.roll_loot(false)
 
@@ -121,6 +122,7 @@ func test_blood_price_is_not_paid_when_it_is_not_offered() -> void:
 func test_loot_roll_adds_the_luck_bonus() -> void:
 	_player.equip(LUCKY_COIN)
 	var rewards: RoomRewards = _rewards(FIRST_ROOM, [9, 1])
+	rewards.level_up()
 
 	var loot: LootRoll = rewards.roll_loot(false)
 
@@ -131,6 +133,7 @@ func test_loot_roll_adds_the_luck_bonus() -> void:
 
 func test_take_item_equips_the_find_and_returns_the_replaced_item() -> void:
 	var rewards: RoomRewards = _rewards(FIRST_ROOM, [5, 1])
+	rewards.level_up()
 	var loot: LootRoll = rewards.roll_loot(false)
 
 	var replaced: ItemData = rewards.take_item()
@@ -142,6 +145,7 @@ func test_take_item_equips_the_find_and_returns_the_replaced_item() -> void:
 
 func test_leaving_the_find_keeps_the_worn_item() -> void:
 	var rewards: RoomRewards = _rewards(FIRST_ROOM, [5, 1])
+	rewards.level_up()
 
 	rewards.roll_loot(false)
 
@@ -151,6 +155,7 @@ func test_leaving_the_find_keeps_the_worn_item() -> void:
 func test_worn_item_is_not_found_again() -> void:
 	_player.equip(HONED_LONGSWORD)
 	var rewards: RoomRewards = _rewards(FIRST_ROOM, [5, 1])
+	rewards.level_up()
 
 	var loot: LootRoll = rewards.roll_loot(false)
 
@@ -174,12 +179,14 @@ func test_skill_offer_has_only_skills_of_the_new_level() -> void:
 
 
 func test_skill_offer_leaves_out_skills_of_a_capped_attribute() -> void:
-	_player.learn_skill(STRENGTH_TRAINING)
-	_player.learn_skill(STRENGTH_TRAINING)
 	for seed_value: int in SEED_COUNT:
+		_player = Character.new(WARRIOR, GAME_RULES)
+		_player.learn_skill(STRENGTH_TRAINING)
+		_player.learn_skill(STRENGTH_TRAINING)
 		var rewards: RoomRewards = RoomRewards.new(
 			_player, FIRST_ROOM, 0, DiceRoller.new(seed_value), LOOT_TABLE
 		)
+		rewards.level_up()
 
 		assert_does_not_have(rewards.roll_skill_offer(), STRENGTH_TRAINING, "seed %d" % seed_value)
 
@@ -194,3 +201,4 @@ func test_chosen_skill_is_learned() -> void:
 	rewards.choose_skill(offer[0])
 
 	assert_has(_player.skills, offer[0])
+	assert_eq(rewards.chosen_skill, offer[0])

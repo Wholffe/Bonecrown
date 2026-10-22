@@ -110,16 +110,16 @@ static func condition_notes(max_hit_points: int, effects: Array[EffectData]) -> 
 	return notes
 
 
+func value_of(label: String) -> String:
+	return _values[label]
+
+
 static func _compare_at_full_hit_points(before: Character, after: Character) -> Array[Change]:
 	var full_before: Character = before.copy()
 	full_before.hit_points = full_before.max_hit_points
 	after.hit_points = after.max_hit_points
 	# new() instead of StatSheet.new(): naming its own class_name here leaks the script at exit.
 	return changes(new(full_before), new(after))
-
-
-func value_of(label: String) -> String:
-	return _values[label]
 
 
 func _add(label: String, value: String) -> void:

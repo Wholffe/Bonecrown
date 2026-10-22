@@ -12,10 +12,12 @@ const LEVEL: int = 3
 ## 3 levels at 2 hit points each.
 const COST: int = 6
 const PLENTY_OF_HIT_POINTS: int = 30
-const NO_WORN_ITEMS: Array[StringName] = []
 
 var _common: ItemData
 var _uncommon: ItemData
+# Not a const: Godot merges equal constant literals, so another empty typed const array in this
+# script would share this instance and with it the element type.
+var _no_worn_items: Array[StringName] = []
 
 
 func before_each() -> void:
@@ -77,7 +79,7 @@ func test_offered_when_hit_points_exceed_cost() -> void:
 func test_paid_blood_price_adds_its_bonus_to_the_total() -> void:
 	var roller: LootRoller = _roller([8, 1])
 
-	var loot: LootRoll = roller.roll(BLOOD_PRICE_ROOM, 0, 0, true, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(BLOOD_PRICE_ROOM, 0, 0, true, _no_worn_items)
 
 	assert_eq(loot.blood_price_bonus, ROLL_BONUS)
 	assert_eq(loot.total, 13)
@@ -87,7 +89,7 @@ func test_paid_blood_price_adds_its_bonus_to_the_total() -> void:
 func test_roll_without_blood_price_has_no_bonus() -> void:
 	var roller: LootRoller = _roller([8, 1])
 
-	var loot: LootRoll = roller.roll(BLOOD_PRICE_ROOM, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(BLOOD_PRICE_ROOM, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.blood_price_bonus, 0)
 	assert_eq(loot.total, 8)

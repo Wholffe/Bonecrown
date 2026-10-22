@@ -5,8 +5,11 @@ const DATA_ROOT: String = "res://scripts/data"
 const RECKLESS_SWINGS: SkillData = preload("res://scripts/data/skills/reckless_swings.tres")
 const GUARDED_STANCE: SkillData = preload("res://scripts/data/skills/guarded_stance.tres")
 const ADRENALINE: SkillData = preload("res://scripts/data/skills/adrenaline.tres")
+const FOCUS: SkillData = preload("res://scripts/data/skills/focus.tres")
 ## Skills with a drawback or a condition are offered from this level on (DECISIONS 2026-10-20).
 const DRAWBACK_MIN_LEVEL: int = 4
+## Focus is offered from this level on (DECISIONS 2026-10-20).
+const FOCUS_MIN_LEVEL: int = 3
 
 var _classes: Array[ClassData] = []
 
@@ -129,3 +132,7 @@ func test_drawback_and_condition_skills_of_the_test_pool_unlock_at_level_4() -> 
 	assert_eq(RECKLESS_SWINGS.min_level, DRAWBACK_MIN_LEVEL, "Reckless Swings")
 	assert_eq(GUARDED_STANCE.min_level, DRAWBACK_MIN_LEVEL, "Guarded Stance")
 	assert_eq(ADRENALINE.min_level, DRAWBACK_MIN_LEVEL, "Adrenaline")
+
+
+func test_focus_unlocks_at_level_3() -> void:
+	assert_eq(FOCUS.min_level, FOCUS_MIN_LEVEL)

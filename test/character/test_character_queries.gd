@@ -79,6 +79,13 @@ func test_item_in_slot_returns_the_worn_items() -> void:
 	assert_null(_warrior.item_in_slot(ItemData.Slot.TALISMAN))
 
 
+func test_item_in_slot_reports_an_unknown_slot() -> void:
+	var unknown_slot: ItemData.Slot = ItemData.Slot.size() as ItemData.Slot
+
+	assert_null(_warrior.item_in_slot(unknown_slot))
+	assert_push_error_count(1, "One past the last slot")
+
+
 func test_worn_items_leave_out_the_empty_slot() -> void:
 	assert_eq(
 		_warrior.worn_items(), [WARRIOR.starting_weapon, WARRIOR.starting_armor] as Array[ItemData]

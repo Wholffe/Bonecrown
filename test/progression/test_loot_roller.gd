@@ -9,7 +9,6 @@ const SEED: int = 4242
 const ROLL_COUNT: int = 300
 ## FixedDice result for the item pick when a rarity has a single candidate.
 const ONLY_CANDIDATE: int = 1
-const NO_WORN_ITEMS: Array[StringName] = []
 ## [natural roll, luck bonus, room bonus, expected rarity], rolled in the legendary room.
 const RARITY_CASES: Array = [
 	[9, 0, 0, ItemData.Rarity.COMMON],
@@ -43,6 +42,9 @@ var _uncommon: ItemData
 var _rare: ItemData
 var _legendary: ItemData
 var _dice: FixedDice
+# Not a const: Godot merges equal constant literals, so another empty typed const array in this
+# script would share this instance and with it the element type.
+var _no_worn_items: Array[StringName] = []
 
 
 func before_each() -> void:
@@ -81,7 +83,7 @@ func _roller(rolls: Array[int], table: LootTableData) -> LootRoller:
 func test_rarity_follows_thresholds(params: Array = use_parameters(RARITY_CASES)) -> void:
 	var roller: LootRoller = _roller([params[0], ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, params[1], params[2], false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, params[1], params[2], false, _no_worn_items)
 
 	assert_eq(loot.rarity, params[3], "%d + %d + %d" % [params[0], params[1], params[2]])
 
@@ -89,7 +91,7 @@ func test_rarity_follows_thresholds(params: Array = use_parameters(RARITY_CASES)
 func test_total_adds_natural_roll_and_bonuses() -> void:
 	var roller: LootRoller = _roller([7, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 1, 3, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 1, 3, false, _no_worn_items)
 
 	assert_eq(loot.natural_roll, 7)
 	assert_eq(loot.luck_bonus, 1)
@@ -100,7 +102,7 @@ func test_total_adds_natural_roll_and_bonuses() -> void:
 func test_total_below_one_is_common() -> void:
 	var roller: LootRoller = _roller([1, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, -1, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, -1, 0, false, _no_worn_items)
 
 	assert_eq(loot.total, 0)
 	assert_eq(loot.rarity, ItemData.Rarity.COMMON)
@@ -110,7 +112,7 @@ func test_total_below_one_is_common() -> void:
 func test_natural_twenty_is_not_legendary_by_itself() -> void:
 	var roller: LootRoller = _roller([20, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, -1, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, -1, 0, false, _no_worn_items)
 
 	assert_eq(loot.rarity, ItemData.Rarity.RARE, "20 - 1 = 19 stays below the threshold")
 
@@ -118,7 +120,7 @@ func test_natural_twenty_is_not_legendary_by_itself() -> void:
 func test_natural_one_is_not_common_by_itself() -> void:
 	var roller: LootRoller = _roller([1, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 2, 8, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 2, 8, false, _no_worn_items)
 
 	assert_eq(loot.rarity, ItemData.Rarity.UNCOMMON, "1 + 2 + 8 = 11")
 
@@ -126,7 +128,7 @@ func test_natural_one_is_not_common_by_itself() -> void:
 func test_legendary_before_legendary_room_gives_rare() -> void:
 	var roller: LootRoller = _roller([20, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM - 1, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM - 1, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.rolled_rarity, ItemData.Rarity.LEGENDARY)
 	assert_eq(loot.rarity, ItemData.Rarity.RARE)
@@ -137,7 +139,7 @@ func test_legendary_before_legendary_room_gives_rare() -> void:
 func test_legendary_from_legendary_room_stays_legendary() -> void:
 	var roller: LootRoller = _roller([20, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.rarity, ItemData.Rarity.LEGENDARY)
 	assert_false(loot.is_downgraded())
@@ -147,7 +149,7 @@ func test_legendary_from_legendary_room_stays_legendary() -> void:
 func test_rare_before_legendary_room_is_not_downgraded() -> void:
 	var roller: LootRoller = _roller([18, ONLY_CANDIDATE], _one_item_per_rarity())
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM - 1, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM - 1, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.rarity, ItemData.Rarity.RARE)
 	assert_false(loot.is_downgraded())
@@ -157,7 +159,7 @@ func test_dice_pick_the_item_among_its_rarity() -> void:
 	var second_common: ItemData = _item(&"test_second_common", ItemData.Rarity.COMMON)
 	var roller: LootRoller = _roller([5, 2], _table([_common, _rare, second_common]))
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.item, second_common, "The second of the two common items")
 
@@ -199,7 +201,7 @@ func test_no_item_when_every_item_of_the_rarity_is_worn() -> void:
 func test_no_item_when_the_table_has_none_of_the_rarity() -> void:
 	var roller: LootRoller = _roller([20], _table([_common, _uncommon, _rare]))
 
-	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, NO_WORN_ITEMS)
+	var loot: LootRoll = roller.roll(LEGENDARY_ROOM, 0, 0, false, _no_worn_items)
 
 	assert_eq(loot.rarity, ItemData.Rarity.LEGENDARY)
 	assert_null(loot.item)

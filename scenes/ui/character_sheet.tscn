@@ -3,6 +3,18 @@
 [ext_resource type="Script" path="res://scenes/ui/character_sheet.gd" id="1_7k4nd"]
 [ext_resource type="PackedScene" path="res://scenes/ui/paper_doll.tscn" id="2_pd7lx"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shpnl"]
+bg_color = Color(0.1, 0.1, 0.13, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32, 0.32, 0.38, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="CharacterSheet" type="Control" unique_id=1890750440]
 layout_mode = 3
 anchors_preset = 15
@@ -33,6 +45,7 @@ mouse_filter = 2
 [node name="Panel" type="PanelContainer" parent="Center" unique_id=1950024694]
 custom_minimum_size = Vector2(900, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shpnl")
 
 [node name="Margin" type="MarginContainer" parent="Center/Panel" unique_id=1176509916]
 layout_mode = 2
