@@ -26,6 +26,16 @@ const MOMENTUM_REASON_TEXTS: Dictionary[Combat.MomentumReason, String] = {
 	Combat.MomentumReason.DRAINED: "drained",
 	Combat.MomentumReason.RALLIED: "rallied",
 }
+## Short notes next to the Momentum bar. Spending shows the change only.
+const MOMENTUM_BAR_NOTES: Dictionary[Combat.MomentumReason, String] = {
+	Combat.MomentumReason.NEW_ROUND: "new round",
+	Combat.MomentumReason.FENDED_OFF: "fended off",
+	Combat.MomentumReason.KILL: "kill",
+	Combat.MomentumReason.DRAINED: "drained",
+}
+const OUT_OF_MOMENTUM_LOG: String = "Out of Momentum – your turn ends."
+const END_TURN_HIGHLIGHT_COLOR: Color = Color(1.0, 0.78, 0.25)
+const END_TURN_HIGHLIGHT_BORDER_WIDTH: int = 3
 
 var _combat: Combat
 var _cards: Dictionary[Combatant, CombatantCard] = {}
@@ -39,6 +49,9 @@ var _is_playing_back: bool = false
 var _animations_enabled: bool = true
 var _shake_tween: Tween
 var _layout_rest_position: Vector2 = Vector2.ZERO
+# Set while the End Turn button ends the turn, so the playback can tell it from an automatic end.
+var _is_ending_turn_by_hand: bool = false
+var _is_end_turn_highlighted: bool = false
 
 @onready var _margin: MarginContainer = %Margin
 @onready var _popup_layer: PopupLayer = %PopupLayer
@@ -57,10 +70,12 @@ var _layout_rest_position: Vector2 = Vector2.ZERO
 @onready var _continue_button: Button = %ContinueButton
 @onready var _main_menu_button: Button = %MainMenuButton
 @onready var _character_sheet: CharacterSheet = %CharacterSheet
+@onready var _momentum_bar: MomentumBar = %MomentumBar
+@onready var _turn_banner: TurnBanner = %TurnBanner
 
 
 func _ready() -> void:
-	_dice_display.animations_enabled = _animations_enabled
+	_apply_animations_enabled()
 	_attack_button.pressed.connect(_on_attack_button_pressed)
 	_block_button.pressed.connect(_on_block_button_pressed)
 	_end_turn_button.pressed.connect(_on_end_turn_button_pressed)
@@ -98,7 +113,18 @@ func next_scene_path() -> String:
 func set_animations_enabled(enabled: bool) -> void:
 	_animations_enabled = enabled
 	if is_node_ready():
-		_dice_display.animations_enabled = enabled
+		_apply_animations_enabled()
+
+
+## Whether End Turn glows because it is the obvious next action.
+func is_end_turn_highlighted() -> bool:
+	return _is_end_turn_highlighted
+
+
+func _apply_animations_enabled() -> void:
+	_dice_display.animations_enabled = _animations_enabled
+	_momentum_bar.animations_enabled = _animations_enabled
+	_turn_banner.animations_enabled = _animations_enabled
 
 
 # The equipment cannot change during a fight, so the strip is built once.
@@ -129,6 +155,7 @@ func _start_combat() -> void:
 	_combat.intent_started.connect(_on_intent_started)
 	_combat.phase_started.connect(_on_phase_started)
 	_combat.enemy_summoned.connect(_on_enemy_summoned)
+	_combat.player_turn_ended.connect(_on_player_turn_ended)
 	_create_cards(enemies)
 	_create_action_buttons()
 	_log("Room %d   ·   Run seed: %d" % [RunState.room_number, RunState.run_seed])
@@ -142,7 +169,8 @@ func _start_combat() -> void:
 func _create_cards(enemies: Array[Combatant]) -> void:
 	var player: Combatant = _combat.player
 	_player_card.show_combatant(player, true)
-	_player_card.show_momentum(0, RunState.GAME_RULES.momentum_cap)
+	_player_card.set_momentum_visible(false)
+	_momentum_bar.show_momentum(0, RunState.GAME_RULES.momentum_cap)
 	_cards[player] = _player_card
 	for enemy: Combatant in enemies:
 		_add_enemy_card(enemy as Enemy)
@@ -162,6 +190,8 @@ func _create_action_buttons() -> void:
 	var rules: GameRulesData = RunState.GAME_RULES
 	_attack_button.text = "Attack · %d" % rules.attack_momentum_cost
 	_attack_button.tooltip_text = _describe_cost(rules.attack_momentum_cost)
+	_connect_cost_preview(_attack_button, rules.attack_momentum_cost)
+	_connect_cost_preview(_block_button, rules.block_momentum_cost)
 	_block_button.text = "Block · %d" % rules.block_momentum_cost
 	_block_button.tooltip_text = (
 		"Enemy attacks roll with disadvantage until your next turn.\n"
@@ -173,8 +203,19 @@ func _create_action_buttons() -> void:
 		button.name = skill.id.to_pascal_case() + "Button"
 		button.tooltip_text = "%s\n%s" % [skill.description, _describe_cost(skill.momentum_cost)]
 		button.pressed.connect(_on_skill_button_pressed.bind(skill))
+		_connect_cost_preview(button, skill.momentum_cost)
 		_skill_buttons_box.add_child(button)
 		_skill_buttons[skill] = button
+
+
+# Hovering an action makes the orbs it would spend pulse on the Momentum bar.
+func _connect_cost_preview(button: Button, momentum_cost: int) -> void:
+	button.mouse_entered.connect(_preview_cost.bind(button, momentum_cost))
+	button.mouse_exited.connect(_momentum_bar.preview_cost.bind(0))
+
+
+func _preview_cost(button: Button, momentum_cost: int) -> void:
+	_momentum_bar.preview_cost(0 if button.disabled else momentum_cost)
 
 
 func _select_target(card: CombatantCard) -> void:
@@ -232,6 +273,17 @@ func _focus_default_action() -> void:
 func _play_round_start(round_number: int) -> void:
 	_log("")
 	_log("Round %d" % round_number)
+	# Not awaited: the player may act while it fades. Only the way into the enemy turn pauses.
+	_turn_banner.play(TurnBanner.YOUR_TURN_TEXT, TurnBanner.YOUR_TURN_COLOR)
+
+
+func _play_turn_end(by_hand: bool) -> void:
+	_momentum_bar.preview_cost(0)
+	if not by_hand:
+		_log(OUT_OF_MOMENTUM_LOG)
+		await _turn_banner.play(TurnBanner.OUT_OF_MOMENTUM_TEXT, TurnBanner.OUT_OF_MOMENTUM_COLOR)
+	_log("Enemy turn")
+	await _turn_banner.play(TurnBanner.ENEMY_TURN_TEXT, TurnBanner.ENEMY_TURN_COLOR)
 
 
 func _play_attack(
@@ -297,7 +349,11 @@ func _shake_layout() -> void:
 func _play_momentum_change(
 	combatant: Combatant, momentum: int, cap: int, change: int, reason: Combat.MomentumReason
 ) -> void:
-	_cards[combatant].show_momentum(momentum, cap)
+	if combatant == _combat.player:
+		_momentum_bar.show_momentum(momentum, cap)
+		_momentum_bar.show_change(change, MOMENTUM_BAR_NOTES.get(reason, ""))
+	else:
+		_cards[combatant].show_momentum(momentum, cap)
 	var reason_text: String = MOMENTUM_REASON_TEXTS.get(reason, "")
 	if reason_text != "":
 		_log("%s %+d Momentum (%s)" % [combatant.display_name, change, reason_text])
@@ -375,8 +431,25 @@ func _refresh_actions() -> void:
 		button.disabled = not can_act or not _combat.can_use_skill(skill)
 	_main_menu_button.disabled = _is_playing_back
 	_continue_button.disabled = _is_playing_back
+	# Without enough Momentum to attack, ending the turn is usually what is left to do.
+	_set_end_turn_highlight(can_act and not _combat.can_attack())
 	for card: CombatantCard in _enemy_cards:
 		card.set_selectable(can_act)
+
+
+func _set_end_turn_highlight(value: bool) -> void:
+	_is_end_turn_highlighted = value
+	if not value:
+		_end_turn_button.remove_theme_color_override("font_color")
+		_end_turn_button.remove_theme_stylebox_override("normal")
+		return
+	var style: StyleBoxFlat = _end_turn_button.get_theme_stylebox("normal") as StyleBoxFlat
+	if style != null:
+		style = style.duplicate() as StyleBoxFlat
+		style.border_color = END_TURN_HIGHLIGHT_COLOR
+		style.set_border_width_all(END_TURN_HIGHLIGHT_BORDER_WIDTH)
+		_end_turn_button.add_theme_stylebox_override("normal", style)
+	_end_turn_button.add_theme_color_override("font_color", END_TURN_HIGHLIGHT_COLOR)
 
 
 func _refresh_player_info() -> void:
@@ -546,6 +619,10 @@ func _on_enemy_summoned(summon: Enemy) -> void:
 	_pending_events.append(_play_summon.bind(summon))
 
 
+func _on_player_turn_ended() -> void:
+	_pending_events.append(_play_turn_end.bind(_is_ending_turn_by_hand))
+
+
 func _on_skill_used(user: Combatant, skill: SkillData) -> void:
 	_pending_events.append(_log.bind("%s uses %s." % [user.display_name, skill.display_name]))
 
@@ -591,7 +668,9 @@ func _on_block_button_pressed() -> void:
 func _on_end_turn_button_pressed() -> void:
 	if not _can_act():
 		return
+	_is_ending_turn_by_hand = true
 	_combat.end_turn()
+	_is_ending_turn_by_hand = false
 	_play_pending_events()
 
 
@@ -615,4 +694,6 @@ func _on_main_menu_button_pressed() -> void:
 
 
 func _on_continue_button_pressed() -> void:
+	# Disabled first, so a second press cannot change the scene twice.
+	_continue_button.disabled = true
 	get_tree().change_scene_to_file(next_scene_path())

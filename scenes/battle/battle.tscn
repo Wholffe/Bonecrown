@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/dice_display.tscn" id="3_h0kxc"]
 [ext_resource type="PackedScene" path="res://scenes/ui/popup_layer.tscn" id="4_sznow"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="5_chsht"]
+[ext_resource type="PackedScene" path="res://scenes/ui/momentum_bar.tscn" id="6_mmbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/turn_banner.tscn" id="7_tbnnr"]
 
 [node name="Battle" type="Control" unique_id=135838798]
 layout_mode = 3
@@ -71,11 +73,22 @@ horizontal_scroll_mode = 0
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="DiceDisplay" parent="Margin/Layout/Arena" unique_id=656307730 instance=ExtResource("3_h0kxc")]
+[node name="CenterColumn" type="VBoxContainer" parent="Margin/Layout/Arena" unique_id=1597734412]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="DiceDisplay" parent="Margin/Layout/Arena/CenterColumn" unique_id=656307730 instance=ExtResource("3_h0kxc")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 6
-size_flags_vertical = 4
+size_flags_horizontal = 4
+
+[node name="MomentumBar" parent="Margin/Layout/Arena/CenterColumn" unique_id=1733805521 instance=ExtResource("6_mmbar")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="EnemyCards" type="HBoxContainer" parent="Margin/Layout/Arena" unique_id=241325945]
 unique_name_in_owner = true
@@ -107,14 +120,20 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Attack"
 
-[node name="BlockButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551301]
+[node name="TurnRow" type="HBoxContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551304]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BlockButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar/TurnRow" unique_id=1923551301]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Block"
 
-[node name="EndTurnButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551302]
+[node name="EndTurnButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar/TurnRow" unique_id=1923551302]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "End Turn"
 
 [node name="SkillButtonsScroll" type="ScrollContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1521657191]
@@ -153,6 +172,10 @@ text = "Main Menu"
 [node name="PopupLayer" parent="Margin" unique_id=886987079 instance=ExtResource("4_sznow")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="TurnBanner" parent="." unique_id=1406257915 instance=ExtResource("7_tbnnr")]
+unique_name_in_owner = true
+layout_mode = 1
 
 [node name="CharacterSheet" parent="." unique_id=1290736415 instance=ExtResource("5_chsht")]
 unique_name_in_owner = true

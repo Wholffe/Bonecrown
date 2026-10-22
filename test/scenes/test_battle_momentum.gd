@@ -39,8 +39,8 @@ func _button(battle: Battle, button_name: String) -> Button:
 	return battle.get_node("%" + button_name) as Button
 
 
-func _player_card(battle: Battle) -> CombatantCard:
-	return battle.get_node("%PlayerCard") as CombatantCard
+func _momentum_bar(battle: Battle) -> MomentumBar:
+	return battle.get_node("%MomentumBar") as MomentumBar
 
 
 func _enemy_card(battle: Battle, index: int) -> CombatantCard:
@@ -54,7 +54,7 @@ func _log_text(battle: Battle) -> String:
 func test_cards_show_the_momentum_at_the_start() -> void:
 	var battle: Battle = _start_battle([])
 
-	assert_eq(_player_card(battle).shown_momentum(), 2, "Player")
+	assert_eq(_momentum_bar(battle).shown_momentum(), 2, "Player")
 	assert_eq(_enemy_card(battle, 0).shown_momentum(), 1, "Goblin 1")
 	assert_no_new_orphans()
 
@@ -85,7 +85,7 @@ func test_attack_and_misses_update_the_player_pips() -> void:
 
 	await _press(battle, "AttackButton")
 
-	assert_eq(_player_card(battle).shown_momentum(), 4, "0 + 2 fended off + 2 for round 2")
+	assert_eq(_momentum_bar(battle).shown_momentum(), 4, "0 + 2 fended off + 2 for round 2")
 	assert_string_contains(_log_text(battle), "Warrior +1 Momentum (attack fended off)")
 	assert_no_new_orphans()
 
@@ -127,7 +127,7 @@ func test_end_turn_keeps_the_momentum() -> void:
 
 	await _press(battle, "EndTurnButton")
 
-	assert_eq(_player_card(battle).shown_momentum(), 4, "2 kept + 2 fended off + 2, capped")
+	assert_eq(_momentum_bar(battle).shown_momentum(), 4, "2 kept + 2 fended off + 2, capped")
 	assert_no_new_orphans()
 
 

@@ -33,6 +33,7 @@ var _selected_style: StyleBoxFlat = _make_style(SELECTED_BORDER_COLOR, SELECTED_
 @onready var _hit_point_label: Label = %HitPointLabel
 @onready var _stats_label: Label = %StatsLabel
 @onready var _roll_mode_label: Label = %RollModeLabel
+@onready var _momentum_row: HBoxContainer = %MomentumRow
 @onready var _momentum_pips: HBoxContainer = %MomentumPips
 @onready var _intent_label: Label = %IntentLabel
 
@@ -105,6 +106,11 @@ func show_momentum(value: int, cap: int) -> void:
 		var pip: ColorRect = _momentum_pips.get_child(index) as ColorRect
 		pip.color = MOMENTUM_FILLED_COLOR if index < value else MOMENTUM_EMPTY_COLOR
 	_momentum_pips.tooltip_text = "Momentum %d/%d" % [value, cap]
+
+
+## The player's Momentum has its own large bar in the battle, so the player card hides the pips.
+func set_momentum_visible(value: bool) -> void:
+	_momentum_row.visible = value
 
 
 ## Number of filled Momentum pips, for tests and later effects.
