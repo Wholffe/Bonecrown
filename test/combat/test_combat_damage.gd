@@ -1,5 +1,5 @@
 extends GutTest
-## Damage rules of Combat: damage reduction and the Drain of a natural 20.
+## Damage rules of Combat: damage reduction, crit resistance and the Drain of a natural 20.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
@@ -21,7 +21,7 @@ func before_each() -> void:
 func _start_combat(rolls: Array[int]) -> Combat:
 	_dice = FixedDice.new(rolls)
 	var enemies: Array[Combatant] = [_goblin]
-	var combat: Combat = Combat.new(_player, enemies, _dice)
+	var combat: Combat = Combat.new(_player, enemies, _dice, GAME_RULES)
 	watch_signals(combat)
 	combat.start()
 	return combat
@@ -148,3 +148,17 @@ func test_plain_hit_does_not_drain() -> void:
 	combat.player_attack(_goblin)
 
 	assert_signal_not_emitted(combat, "attacker_drained")
+
+
+func test_crit_against_a_crit_resistant_enemy_rolls_the_dice_once() -> void:
+	var data: EnemyData = GOBLIN.duplicate()
+	data.crit_resistant = true
+	_goblin = Enemy.new(data)
+	var combat: Combat = _start_combat([20, 3, 2])
+
+	combat.player_attack(_goblin)
+
+	var damage: DamageRoll = get_signal_parameters(combat, "attack_resolved", 0)[3]
+	assert_eq(damage.dice_results, [3] as Array[int], "One d8 instead of two")
+	assert_eq(_goblin.hit_points, 1, "3 + 4 damage")
+	assert_true(get_signal_parameters(combat, "attack_resolved", 0)[2].is_crit, "Still a crit")

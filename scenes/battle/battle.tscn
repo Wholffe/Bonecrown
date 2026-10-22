@@ -101,6 +101,16 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Attack"
 
+[node name="BlockButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551301]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Block"
+
+[node name="EndTurnButton" type="Button" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1923551302]
+unique_name_in_owner = true
+layout_mode = 2
+text = "End Turn"
+
 [node name="SkillButtonsScroll" type="ScrollContainer" parent="Margin/Layout/BottomRow/ActionBar" unique_id=1521657191]
 layout_mode = 2
 size_flags_vertical = 3

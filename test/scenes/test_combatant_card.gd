@@ -76,3 +76,16 @@ func test_normal_roll_mode_removes_the_tag() -> void:
 
 	assert_false(_roll_mode_label(card).visible)
 	assert_no_new_orphans()
+
+
+func test_intent_text_names_every_effect() -> void:
+	var intent: EnemyIntentData = EnemyIntentData.new()
+	intent.display_name = "Test"
+	intent.attack_count = 2
+	intent.extra_damage_dice = 1
+	intent.momentum_drain = 1
+	intent.momentum_to_allies = 2
+
+	var text: String = CombatantCard.describe_intent(Enemy.new(GOBLIN), intent)
+
+	assert_eq(text, "Test: 2× 2d6+1, −1 Momentum on a hit, allies +2 Momentum")

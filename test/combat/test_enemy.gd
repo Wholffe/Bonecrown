@@ -1,6 +1,8 @@
 extends GutTest
 
 const GOBLIN: EnemyData = preload("res://scripts/data/enemies/goblin.tres")
+## [hit point percent, max hit points] of a goblin with 8 hit points.
+const HIT_POINT_PERCENT_CASES: Array = [[0, 8], [10, 9], [30, 10], [50, 12]]
 
 var _goblin: Enemy
 
@@ -104,3 +106,35 @@ func test_group_numbers_different_enemies_that_share_a_display_name() -> void:
 	var group: Array[Combatant] = Enemy.create_group([GOBLIN, other_goblin])
 
 	assert_eq(_display_names(group), ["Goblin 1", "Goblin 2"] as Array[String])
+
+
+func test_group_adds_the_attack_modifier_to_every_enemy() -> void:
+	var group: Array[Combatant] = Enemy.create_group([GOBLIN, GOBLIN], 2)
+
+	assert_eq(group[0].get_attack_bonus(), 5)
+	assert_eq(group[1].get_attack_bonus(), 5)
+
+
+func test_group_raises_hit_points_by_percent_and_rounds(
+	params: Array = use_parameters(HIT_POINT_PERCENT_CASES)
+) -> void:
+	var goblin: Combatant = Enemy.create_group([GOBLIN], 0, params[0])[0]
+
+	assert_eq(goblin.max_hit_points, params[1], "+%d%%" % params[0])
+	assert_eq(goblin.hit_points, params[1], "+%d%% starts at full health" % params[0])
+
+
+func test_group_puts_the_name_prefix_before_the_number() -> void:
+	var pair: Array[Combatant] = Enemy.create_group([GOBLIN, GOBLIN], 0, 0, "Elite ")
+	var single: Array[Combatant] = Enemy.create_group([GOBLIN], 0, 0, "Elite ")
+
+	assert_eq(_display_names(pair), ["Elite Goblin 1", "Elite Goblin 2"] as Array[String])
+	assert_eq(_display_names(single), ["Elite Goblin"] as Array[String])
+
+
+func test_group_modifiers_leave_shared_data_untouched() -> void:
+	Enemy.create_group([GOBLIN], 2, 50, "Elite ")
+
+	assert_eq(GOBLIN.display_name, "Goblin")
+	assert_eq(GOBLIN.attack_bonus, 3)
+	assert_eq(GOBLIN.max_hit_points, 8)

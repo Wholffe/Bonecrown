@@ -75,6 +75,34 @@ layout_mode = 2
 text = "AC 0   Attack +0"
 horizontal_alignment = 1
 
+[node name="MomentumRow" type="HBoxContainer" parent="Layout" unique_id=1820443117]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="MomentumCaption" type="Label" parent="Layout/MomentumRow" unique_id=1820443118]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 14
+text = "Momentum"
+
+[node name="MomentumPips" type="HBoxContainer" parent="Layout/MomentumRow" unique_id=1820443119]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="IntentLabel" type="Label" parent="Layout" unique_id=1820443120]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(156, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="RollModeLabel" type="Label" parent="Layout" unique_id=1659207341]
 unique_name_in_owner = true
 visible = false

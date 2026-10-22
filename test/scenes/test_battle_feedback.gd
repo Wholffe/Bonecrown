@@ -21,6 +21,8 @@ const SHAKE_WATCH_TIME: float = 0.1
 ## Warrior: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP each.
 func _start_battle(rolls: Array[int], animations_enabled: bool) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
+	# Room 2 holds two goblins and picks them without a roll.
+	RunState.advance_room()
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
 	battle.set_animations_enabled(animations_enabled)

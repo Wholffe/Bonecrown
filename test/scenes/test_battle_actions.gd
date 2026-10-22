@@ -1,12 +1,13 @@
 extends GutTest
-## Battle scene: victory and defeat states and Second Wind as a free action.
+## Battle scene: victory and defeat states and Second Wind, which keeps the turn going.
 
 const BATTLE_SCENE: PackedScene = preload("res://scenes/battle/battle.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const SECOND_WIND: SkillData = preload("res://scripts/data/skills/second_wind.tres")
 const SEED: int = 42
 const SECOND_WIND_BUTTON: NodePath = ^"%SkillButtons/SecondWindButton"
-## The warrior fells Goblin 1, Goblin 2 misses, the warrior fells Goblin 2 in round 2.
+## The warrior fells Goblin 1 and ends the turn with the Momentum of the kill, Goblin 2 misses,
+## the warrior fells Goblin 2 in round 2.
 const VICTORY_ROLLS: Array[int] = [17, 4, 2, 17, 4]
 ## The warrior misses, both goblins hit for 6 + 1, which takes all 14 HP.
 const DEFEAT_ROLLS: Array[int] = [2, 13, 6, 13, 6]
@@ -17,6 +18,8 @@ var _dice: FixedDice
 ## Warrior: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP each.
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
+	# Room 2 holds two goblins and picks them without a roll.
+	RunState.advance_room()
 	_dice = FixedDice.new(rolls)
 	RunState.dice = _dice
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
@@ -32,6 +35,10 @@ func _press(battle: Battle, button: Button) -> void:
 
 func _attack_button(battle: Battle) -> Button:
 	return battle.get_node("%AttackButton") as Button
+
+
+func _end_turn_button(battle: Battle) -> Button:
+	return battle.get_node("%EndTurnButton") as Button
 
 
 func _second_wind_button(battle: Battle) -> Button:
@@ -65,6 +72,7 @@ func _round_line_count(battle: Battle) -> int:
 
 func _win(battle: Battle) -> void:
 	await _press(battle, _attack_button(battle))
+	await _press(battle, _end_turn_button(battle))
 	await _press(battle, _attack_button(battle))
 
 
@@ -174,7 +182,8 @@ func test_second_wind_heals_the_player_card() -> void:
 
 
 func test_second_wind_does_not_start_a_new_round() -> void:
-	# The last two rolls would be the goblins' attacks, if Second Wind ended the turn.
+	# The last two rolls would be the goblins' attacks, if Second Wind ended the turn. It leaves
+	# 2 of 3 Momentum, enough for another action.
 	var battle: Battle = await _start_wounded_battle([2, 2])
 	var round_lines_before: int = _round_line_count(battle)
 
@@ -192,7 +201,7 @@ func test_second_wind_button_is_spent_after_use() -> void:
 
 	var button: Button = _second_wind_button(battle)
 	assert_true(button.disabled, "Second Wind works once per fight")
-	assert_eq(button.text, "%s (0)" % SECOND_WIND.display_name, "The button shows 0 uses left")
+	assert_eq(button.text, "%s · 1  (0 left)" % SECOND_WIND.display_name, "Cost and 0 uses left")
 	assert_no_new_orphans()
 
 

@@ -8,9 +8,9 @@ const FOCUS: SkillData = preload("res://scripts/data/skills/focus.tres")
 const SEED: int = 42
 const FOCUS_BUTTON: NodePath = ^"%SkillButtons/FocusButton"
 const OFF_BALANCE_LINE: String = "Natural 1 – Off-Balance: next attack with disadvantage"
-## With Focus the warrior keeps 15 of 3 and 15, so 15 + 5 = 20 hits Goblin 1 for 1 + 4.
-## Both goblins miss.
-const FOCUSED_ROLLS: Array[int] = [3, 15, 1, 2, 2]
+## The warrior ends the first turn and both goblins miss, which fills the Momentum to 4. With
+## Focus the warrior keeps 15 of 3 and 15, so 15 + 5 = 20 hits Goblin 1 for 1 + 4.
+const FOCUSED_ROLLS: Array[int] = [2, 2, 3, 15, 1]
 ## The warrior rolls a natural 1, both goblins miss.
 const NATURAL_ONE_ROLLS: Array[int] = [1, 2, 2]
 ## Round 1 as NATURAL_ONE_ROLLS. Round 2: disadvantage keeps 6 of 6 and 15, so 6 + 5 = 11
@@ -28,6 +28,8 @@ const NATURAL_ONE_DEFEAT_ROLLS: Array[int] = [1, 13, 6, 13, 6]
 ## Warrior with Focus: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP.
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
+	# Room 2 holds two goblins and picks them without a roll.
+	RunState.advance_room()
 	RunState.player.learn_skill(FOCUS)
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
@@ -43,6 +45,10 @@ func _press(battle: Battle, button: Button) -> void:
 
 func _attack(battle: Battle) -> void:
 	await _press(battle, battle.get_node("%AttackButton") as Button)
+
+
+func _end_turn(battle: Battle) -> void:
+	await _press(battle, battle.get_node("%EndTurnButton") as Button)
 
 
 func _focus(battle: Battle) -> void:
@@ -90,7 +96,7 @@ func test_learned_focus_gets_a_usable_button() -> void:
 
 	assert_not_null(button, "Focus is an active skill")
 	assert_false(button.disabled, "Focus can be used")
-	assert_eq(button.text, "%s (1)" % FOCUS.display_name, "Once per fight")
+	assert_eq(button.text, "%s · 1  (1 left)" % FOCUS.display_name, "Cost and uses per fight")
 	assert_no_new_orphans()
 
 
@@ -101,8 +107,8 @@ func test_focus_button_is_spent_after_use() -> void:
 
 	var button: Button = _focus_button(battle)
 	assert_true(button.disabled, "Focus works once per fight")
-	assert_eq(button.text, "%s (0)" % FOCUS.display_name, "The button shows 0 uses left")
-	assert_false((battle.get_node("%AttackButton") as Button).disabled, "Focus is a free action")
+	assert_eq(button.text, "%s · 1  (0 left)" % FOCUS.display_name, "Cost and 0 uses left")
+	assert_false((battle.get_node("%BlockButton") as Button).disabled, "Focus keeps the turn")
 	assert_no_new_orphans()
 
 
@@ -119,6 +125,7 @@ func test_focus_tags_the_player_card_with_advantage() -> void:
 
 func test_tag_is_gone_after_the_focused_attack() -> void:
 	var battle: Battle = _start_battle(FOCUSED_ROLLS)
+	await _end_turn(battle)
 	await _focus(battle)
 
 	await _attack(battle)
@@ -129,6 +136,7 @@ func test_tag_is_gone_after_the_focused_attack() -> void:
 
 func test_advantage_roll_names_both_dice_in_the_log() -> void:
 	var battle: Battle = _start_battle(FOCUSED_ROLLS)
+	await _end_turn(battle)
 	await _focus(battle)
 
 	await _attack(battle)
@@ -139,6 +147,7 @@ func test_advantage_roll_names_both_dice_in_the_log() -> void:
 
 func test_advantage_roll_shows_both_dice() -> void:
 	var battle: Battle = _start_battle(FOCUSED_ROLLS)
+	await _end_turn(battle)
 	await _focus(battle)
 	var attack_line: String = (
 		"%s attacks %s"

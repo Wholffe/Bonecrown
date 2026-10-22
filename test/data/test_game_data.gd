@@ -87,6 +87,24 @@ func test_enemies_have_valid_damage_dice_and_hit_points() -> void:
 			assert_gt(enemy.max_hit_points, 0, "%s hit points" % enemy.id)
 
 
+# The first intent is the fallback when the enemy has no Momentum, so it must cost nothing.
+func test_enemies_have_affordable_intents_in_cost_order() -> void:
+	for resource: Resource in _resources:
+		if resource is EnemyData:
+			var enemy: EnemyData = resource
+			assert_false(enemy.intents.is_empty(), "%s has no intents" % enemy.id)
+			assert_eq(enemy.intents[0].momentum_cost, 0, "%s first intent cost" % enemy.id)
+			var last_cost: int = 0
+			for intent: EnemyIntentData in enemy.intents:
+				assert_ne(intent.display_name, "", "%s: %s display name" % [enemy.id, intent.id])
+				assert_gt(intent.attack_count, 0, "%s: %s attacks" % [enemy.id, intent.id])
+				assert_gte(intent.momentum_cost, last_cost, "%s: %s order" % [enemy.id, intent.id])
+				assert_lte(
+					intent.momentum_cost, enemy.momentum_cap, "%s: %s cost" % [enemy.id, intent.id]
+				)
+				last_cost = intent.momentum_cost
+
+
 func test_classes_have_no_empty_starting_skill_slots() -> void:
 	for resource: Resource in _resources:
 		if resource is ClassData:
@@ -118,11 +136,11 @@ func test_skills_have_display_name_and_activation() -> void:
 		assert_ne(skill.activation, SkillData.Activation.UNSET, "%s has no activation" % skill.id)
 
 
-func test_active_skills_have_action_cost_and_use_limit() -> void:
+func test_active_skills_cost_momentum_and_have_a_use_limit() -> void:
 	for skill: SkillData in _skills():
 		if skill.activation != SkillData.Activation.ACTIVE:
 			continue
-		assert_ne(skill.action_cost, SkillData.ActionCost.UNSET, "%s action cost" % skill.id)
+		assert_gt(skill.momentum_cost, 0, "%s Momentum cost" % skill.id)
 		assert_gte(skill.uses_per_fight, 0, "%s uses per fight" % skill.id)
 
 
@@ -155,7 +173,6 @@ func test_enum_fields_default_to_unset() -> void:
 	var talisman: TalismanData = TalismanData.new()
 
 	assert_eq(skill.activation, SkillData.Activation.UNSET)
-	assert_eq(skill.action_cost, SkillData.ActionCost.UNSET)
 	assert_eq(modifier.stat, StatModifierEffect.Stat.UNSET)
 	assert_eq(conditional.condition, ConditionalModifierEffect.Condition.UNSET)
 	assert_eq(talisman.rarity, ItemData.Rarity.UNSET)

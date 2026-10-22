@@ -9,6 +9,8 @@ const DESCRIPTION_COLOR: Color = Color(0.7, 0.7, 0.75)
 
 ## Set once by the scene that adds the sheet. The content is rebuilt on every open().
 var character: Character
+## While locked, the sheet does not open, for example while a battle turn plays back.
+var is_locked: bool = false
 
 @onready var _stats_grid: GridContainer = %StatsGrid
 @onready var _skills_box: VBoxContainer = %SkillsBox
@@ -40,10 +42,14 @@ func toggle() -> void:
 
 func open() -> void:
 	assert(character != null, "Set the character before opening the sheet")
+	if is_locked:
+		return
 	_show_stats()
 	_show_skills()
 	_paper_doll.show_character(character)
 	show()
+	# Keys such as Enter must not reach the buttons behind the sheet.
+	_close_button.grab_focus()
 
 
 ## The text of a stat row, for example "+5" for "Attack". Empty if the row does not exist.

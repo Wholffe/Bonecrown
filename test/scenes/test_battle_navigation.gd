@@ -4,7 +4,8 @@ extends GutTest
 const BATTLE_SCENE: PackedScene = preload("res://scenes/battle/battle.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const SEED: int = 42
-## The warrior fells Goblin 1, Goblin 2 misses, the warrior fells Goblin 2 in round 2.
+## The warrior fells Goblin 1 and ends the turn, Goblin 2 misses, the warrior fells Goblin 2 in
+## round 2.
 const VICTORY_ROLLS: Array[int] = [17, 4, 2, 17, 4]
 ## The warrior misses, both goblins hit for 6 + 1, which takes all 14 HP.
 const DEFEAT_ROLLS: Array[int] = [2, 13, 6, 13, 6]
@@ -12,6 +13,8 @@ const DEFEAT_ROLLS: Array[int] = [2, 13, 6, 13, 6]
 
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
+	# Room 2 holds two goblins and picks them without a roll.
+	RunState.advance_room()
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
 	battle.set_animations_enabled(false)
@@ -38,6 +41,8 @@ func test_victory_offers_continue() -> void:
 	var battle: Battle = _start_battle(VICTORY_ROLLS)
 
 	await _attack(battle)
+	(battle.get_node("%EndTurnButton") as Button).pressed.emit()
+	await battle.wait_for_playback()
 	await _attack(battle)
 
 	assert_true(_continue_button(battle).visible)

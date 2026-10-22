@@ -10,3 +10,10 @@ extends Resource
 @export var damage_die_count: int = 0
 @export var damage_die_sides: int = 0
 @export var damage_bonus: int = 0
+## Crits against this enemy still hit, but roll the damage dice only once.
+@export var crit_resistant: bool = false
+@export var starting_momentum: int = 0
+@export var momentum_per_round: int = 0
+@export var momentum_cap: int = 0
+## Ordered by Momentum cost, the first one costs nothing.
+@export var intents: Array[EnemyIntentData] = []

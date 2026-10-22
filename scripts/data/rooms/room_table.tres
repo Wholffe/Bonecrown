@@ -1,0 +1,107 @@
+[gd_resource type="Resource" script_class="RoomTableData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_oevm7"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/goblin.tres" id="2_gobln"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/skeleton.tres" id="3_skltn"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/orc.tres" id="4_orc4k"]
+[ext_resource type="Resource" path="res://scripts/data/enemies/guardian.tres" id="5_gurdn"]
+[ext_resource type="Script" path="res://scripts/data/encounter_data.gd" id="6_encnt"]
+[ext_resource type="Script" path="res://scripts/data/room_tier_data.gd" id="7_rtier"]
+[ext_resource type="Script" path="res://scripts/data/room_table_data.gd" id="8_rtabl"]
+
+[sub_resource type="Resource" id="Resource_goblin"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_goblin_pair"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("2_gobln"), ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_skeleton"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_orc"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k")])
+
+[sub_resource type="Resource" id="Resource_skeleton_goblin"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn"), ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_orc_goblin"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k"), ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_skeleton_pair"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn"), ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_guardian"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("5_gurdn")])
+
+[sub_resource type="Resource" id="Resource_guardian_goblin"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("5_gurdn"), ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_guardian_skeleton"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("5_gurdn"), ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_orc_skeleton"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k"), ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_goblin_pair_skeleton"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("2_gobln"), ExtResource("2_gobln"), ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_orc_goblin_pair"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k"), ExtResource("2_gobln"), ExtResource("2_gobln")])
+
+[sub_resource type="Resource" id="Resource_elite_skeleton"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn")])
+
+[sub_resource type="Resource" id="Resource_elite_orc"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k")])
+
+[sub_resource type="Resource" id="Resource_rooms_1"]
+script = ExtResource("7_rtier")
+first_room = 1
+last_room = 1
+encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_goblin")])
+
+[sub_resource type="Resource" id="Resource_rooms_2_3"]
+script = ExtResource("7_rtier")
+first_room = 2
+last_room = 3
+encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_goblin_pair")])
+
+[sub_resource type="Resource" id="Resource_rooms_4_6"]
+script = ExtResource("7_rtier")
+first_room = 4
+last_room = 6
+encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_skeleton"), SubResource("Resource_orc"), SubResource("Resource_skeleton_goblin"), SubResource("Resource_orc_goblin"), SubResource("Resource_skeleton_pair")])
+
+[sub_resource type="Resource" id="Resource_rooms_7_9"]
+script = ExtResource("7_rtier")
+first_room = 7
+last_room = 9
+encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_guardian"), SubResource("Resource_guardian_goblin"), SubResource("Resource_guardian_skeleton"), SubResource("Resource_orc_skeleton"), SubResource("Resource_goblin_pair_skeleton"), SubResource("Resource_orc_goblin_pair")])
+
+[resource]
+script = ExtResource("8_rtabl")
+tiers = Array[ExtResource("7_rtier")]([SubResource("Resource_rooms_1"), SubResource("Resource_rooms_2_3"), SubResource("Resource_rooms_4_6"), SubResource("Resource_rooms_7_9")])
+elite_room = 5
+elite_encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_elite_skeleton"), SubResource("Resource_elite_orc")])
+elite_name_prefix = "Elite "
+elite_hit_point_percent = 30
+elite_attack_bonus = 1
+elite_loot_bonus = 3
+scaling_room_step = 3
+scaling_attack_bonus = 1
+scaling_hit_point_percent = 10

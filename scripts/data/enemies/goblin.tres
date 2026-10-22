@@ -1,6 +1,20 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_oevm7"]
+[ext_resource type="Script" path="res://scripts/data/enemy_intent_data.gd" id="2_g7int"]
+
+[sub_resource type="Resource" id="Resource_stab"]
+script = ExtResource("2_g7int")
+id = &"stab"
+display_name = "Stab"
+attack_count = 1
+
+[sub_resource type="Resource" id="Resource_frenzy"]
+script = ExtResource("2_g7int")
+id = &"frenzy"
+display_name = "Frenzy"
+momentum_cost = 3
+attack_count = 2
 
 [resource]
 script = ExtResource("1_oevm7")
@@ -12,3 +26,6 @@ attack_bonus = 3
 damage_die_count = 1
 damage_die_sides = 6
 damage_bonus = 1
+momentum_per_round = 1
+momentum_cap = 3
+intents = Array[ExtResource("2_g7int")]([SubResource("Resource_stab"), SubResource("Resource_frenzy")])

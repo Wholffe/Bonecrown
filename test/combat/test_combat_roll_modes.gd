@@ -17,11 +17,12 @@ func before_each() -> void:
 	_goblin = Enemy.new(GOBLIN)
 
 
-## Warrior: attack +5, AC 14, d8+4, 14 HP. Goblin: attack +3, AC 12, d6+1, 8 HP.
+## Warrior: attack +5, AC 14, d8+4, 14 HP, 2 Momentum. Goblin: attack +3, AC 12, d6+1, 8 HP.
+## Attack costs 2 Momentum, Focus 1, and the turn ends when nothing is affordable.
 func _start_combat(rolls: Array[int]) -> Combat:
 	_dice = FixedDice.new(rolls)
 	var enemies: Array[Combatant] = [_goblin]
-	var combat: Combat = Combat.new(_player, enemies, _dice)
+	var combat: Combat = Combat.new(_player, enemies, _dice, GAME_RULES)
 	watch_signals(combat)
 	combat.start()
 	return combat
@@ -32,7 +33,8 @@ func _attack_roll(combat: Combat, index: int) -> AttackRoll:
 
 
 func test_focus_gives_the_next_attack_advantage() -> void:
-	var combat: Combat = _start_combat([3, 15, 1, 2])
+	var combat: Combat = _start_combat([3, 15, 1])
+	_player.momentum = 4
 
 	combat.use_skill(FOCUS)
 	combat.player_attack(_goblin)
@@ -41,11 +43,12 @@ func test_focus_gives_the_next_attack_advantage() -> void:
 	assert_eq(attack.roll_mode, AttackRoll.RollMode.ADVANTAGE)
 	assert_eq(attack.natural_roll, 15)
 	assert_eq(attack.discarded_roll, 3)
-	assert_eq(_dice.remaining_rolls(), 0, "Two d20, the damage die and the goblin's d20")
+	assert_eq(_dice.remaining_rolls(), 0, "Two d20 and the damage die")
 
 
 func test_focus_is_previewed_until_the_attack() -> void:
-	var combat: Combat = _start_combat([3, 15, 1, 2])
+	var combat: Combat = _start_combat([3, 15, 1])
+	_player.momentum = 4
 
 	combat.use_skill(FOCUS)
 
@@ -55,18 +58,20 @@ func test_focus_is_previewed_until_the_attack() -> void:
 
 
 func test_focus_lasts_for_one_attack() -> void:
-	var combat: Combat = _start_combat([3, 15, 1, 2, 10, 1])
+	var combat: Combat = _start_combat([3, 15, 1, 10, 1])
+	# More than the cap, so Focus and two attacks fit into one turn.
+	_player.momentum = 5
 	combat.use_skill(FOCUS)
 	combat.player_attack(_goblin)
 
 	combat.player_attack(_goblin)
 
-	assert_eq(_attack_roll(combat, 2).roll_mode, AttackRoll.RollMode.NORMAL)
+	assert_eq(_attack_roll(combat, 1).roll_mode, AttackRoll.RollMode.NORMAL)
 	assert_eq(_dice.remaining_rolls(), 0)
 
 
 func test_natural_one_gives_the_next_attack_disadvantage() -> void:
-	var combat: Combat = _start_combat([1, 2, 18, 9, 1, 2])
+	var combat: Combat = _start_combat([1, 2, 18, 9, 1])
 	combat.player_attack(_goblin)
 
 	combat.player_attack(_goblin)
@@ -82,6 +87,7 @@ func test_off_balance_lasts_for_one_attack() -> void:
 	var combat: Combat = _start_combat([1, 2, 18, 9, 1, 2, 10, 1])
 	combat.player_attack(_goblin)
 	combat.player_attack(_goblin)
+	combat.end_turn()
 
 	combat.player_attack(_goblin)
 
@@ -92,8 +98,9 @@ func test_off_balance_lasts_for_one_attack() -> void:
 func test_natural_one_puts_enemies_off_balance_too() -> void:
 	var combat: Combat = _start_combat([5, 1, 5, 15, 3])
 	combat.player_attack(_goblin)
-
 	combat.player_attack(_goblin)
+
+	combat.end_turn()
 
 	var goblin_attack: AttackRoll = _attack_roll(combat, 3)
 	assert_eq(goblin_attack.roll_mode, AttackRoll.RollMode.DISADVANTAGE)
@@ -122,7 +129,8 @@ func test_focus_and_off_balance_cancel_out() -> void:
 
 
 func test_natural_one_on_the_discarded_d20_gives_no_off_balance() -> void:
-	var combat: Combat = _start_combat([1, 15, 1, 2])
+	var combat: Combat = _start_combat([1, 15, 1])
+	_player.momentum = 4
 
 	combat.use_skill(FOCUS)
 	combat.player_attack(_goblin)

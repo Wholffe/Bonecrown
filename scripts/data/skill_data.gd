@@ -5,14 +5,13 @@ extends Resource
 # Stored as numbers in .tres files: append new members, never renumber.
 # UNSET is the default, so every real value is written to the .tres explicitly.
 enum Activation { PASSIVE = 0, ACTIVE = 1, UNSET = -1 }
-enum ActionCost { ACTION = 0, FREE = 1, UNSET = -1 }
 
 @export var id: StringName
 @export var display_name: String
 @export_multiline var description: String
 @export var activation: Activation = Activation.UNSET
-## Only for active skills. ACTION ends the player's turn, FREE does not.
-@export var action_cost: ActionCost = ActionCost.UNSET
+## Only for active skills. Using a skill never ends the player's turn on its own.
+@export var momentum_cost: int = 0
 ## Only for active skills. 0 means no limit.
 @export var uses_per_fight: int = 0
 @export var effects: Array[EffectData] = []

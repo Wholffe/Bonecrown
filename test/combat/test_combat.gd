@@ -23,7 +23,7 @@ func _start_combat(rolls: Array[int]) -> Combat:
 
 func _start_group_combat(rolls: Array[int], enemies: Array[Combatant]) -> Combat:
 	_dice = FixedDice.new(rolls)
-	var combat: Combat = Combat.new(_player, enemies, _dice)
+	var combat: Combat = Combat.new(_player, enemies, _dice, GAME_RULES)
 	watch_signals(combat)
 	combat.start()
 	return combat
@@ -116,8 +116,9 @@ func test_player_attack_hits_the_chosen_target() -> void:
 func test_defeated_group_member_does_not_attack() -> void:
 	var group: Array[Combatant] = Enemy.create_group([GOBLIN, GOBLIN])
 	var combat: Combat = _start_group_combat([15, 4, 2], group)
-
 	combat.player_attack(group[1])
+
+	combat.end_turn()
 
 	assert_eq(_dice.remaining_rolls(), 0, "Only the living goblin rolls its attack")
 	assert_signal_emit_count(combat, "attack_resolved", 2, "Player attack plus one goblin")

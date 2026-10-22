@@ -13,6 +13,12 @@ const BORDER_WIDTH: int = 2
 const SELECTED_BORDER_WIDTH: int = 4
 const PADDING: int = 12
 const DEFEATED_MODULATE: Color = Color(1.0, 1.0, 1.0, 0.35)
+const MOMENTUM_PIP_SIZE: Vector2 = Vector2(12, 12)
+const MOMENTUM_FILLED_COLOR: Color = Color(1.0, 0.78, 0.25)
+const MOMENTUM_EMPTY_COLOR: Color = Color(0.25, 0.25, 0.3)
+const INTENT_COLOR: Color = Color(0.85, 0.85, 0.9)
+## Intents that cost Momentum are the enemy's big moves, so they stand out.
+const SPECIAL_INTENT_COLOR: Color = Color(1.0, 0.5, 0.35)
 
 var combatant: Combatant
 var _shown_hit_points: int = 0
@@ -27,6 +33,8 @@ var _selected_style: StyleBoxFlat = _make_style(SELECTED_BORDER_COLOR, SELECTED_
 @onready var _hit_point_label: Label = %HitPointLabel
 @onready var _stats_label: Label = %StatsLabel
 @onready var _roll_mode_label: Label = %RollModeLabel
+@onready var _momentum_pips: HBoxContainer = %MomentumPips
+@onready var _intent_label: Label = %IntentLabel
 
 
 func _ready() -> void:
@@ -40,6 +48,23 @@ func _gui_input(event: InputEvent) -> void:
 	if _can_be_selected():
 		accept_event()
 		selected.emit(self)
+
+
+## For example "Frenzy: 2× 1d6+1" or "Chill Strike: 1d6+2, −1 Momentum on a hit".
+static func describe_intent(enemy: Enemy, intent: EnemyIntentData) -> String:
+	var dice: String = StatSheet.dice_text(
+		enemy.get_damage_die_count() + intent.extra_damage_dice,
+		enemy.get_damage_die_sides(),
+		enemy.get_damage_bonus()
+	)
+	if intent.attack_count > 1:
+		dice = "%d× %s" % [intent.attack_count, dice]
+	var parts: PackedStringArray = [dice]
+	if intent.momentum_drain > 0:
+		parts.append("−%d Momentum on a hit" % intent.momentum_drain)
+	if intent.momentum_to_allies > 0:
+		parts.append("allies +%d Momentum" % intent.momentum_to_allies)
+	return "%s: %s" % [intent.display_name, ", ".join(parts)]
 
 
 func show_combatant(shown_combatant: Combatant, is_player: bool) -> void:
@@ -60,6 +85,45 @@ func show_hit_points(value: int) -> void:
 	_hit_point_bar.value = value
 	_hit_point_label.text = "HP %d/%d" % [value, combatant.max_hit_points]
 	_refresh_look()
+
+
+func show_momentum(value: int, cap: int) -> void:
+	# The pips are kept and only recolored, because the value changes many times per round.
+	while _momentum_pips.get_child_count() > cap:
+		_momentum_pips.get_child(-1).free()
+	while _momentum_pips.get_child_count() < cap:
+		var new_pip: ColorRect = ColorRect.new()
+		new_pip.custom_minimum_size = MOMENTUM_PIP_SIZE
+		new_pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_momentum_pips.add_child(new_pip)
+	for index: int in cap:
+		var pip: ColorRect = _momentum_pips.get_child(index) as ColorRect
+		pip.color = MOMENTUM_FILLED_COLOR if index < value else MOMENTUM_EMPTY_COLOR
+	_momentum_pips.tooltip_text = "Momentum %d/%d" % [value, cap]
+
+
+## Number of filled Momentum pips, for tests and later effects.
+func shown_momentum() -> int:
+	var filled: int = 0
+	for pip: Node in _momentum_pips.get_children():
+		if (pip as ColorRect).color == MOMENTUM_FILLED_COLOR:
+			filled += 1
+	return filled
+
+
+## Shows what the enemy will do on its turn. A null intent hides the line.
+func show_intent(intent: EnemyIntentData) -> void:
+	_intent_label.visible = intent != null and combatant.is_alive()
+	if not _intent_label.visible:
+		return
+	_intent_label.text = "Next: " + describe_intent(combatant as Enemy, intent)
+	_intent_label.add_theme_color_override(
+		"font_color", SPECIAL_INTENT_COLOR if intent.momentum_cost > 0 else INTENT_COLOR
+	)
+
+
+func intent_text() -> String:
+	return _intent_label.text if _intent_label.visible else ""
 
 
 ## Tags the card while the combatant's next attack roll has advantage or disadvantage.

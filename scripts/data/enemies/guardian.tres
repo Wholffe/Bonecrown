@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_oevm7"]
+[ext_resource type="Script" path="res://scripts/data/enemy_intent_data.gd" id="2_g7int"]
+
+[sub_resource type="Resource" id="Resource_strike"]
+script = ExtResource("2_g7int")
+id = &"strike"
+display_name = "Strike"
+attack_count = 1
+
+[sub_resource type="Resource" id="Resource_rally"]
+script = ExtResource("2_g7int")
+id = &"rally"
+display_name = "Rally"
+momentum_cost = 3
+attack_count = 1
+momentum_to_allies = 1
+
+[resource]
+script = ExtResource("1_oevm7")
+id = &"guardian"
+display_name = "Guardian"
+armor_class = 16
+max_hit_points = 22
+attack_bonus = 3
+damage_die_count = 1
+damage_die_sides = 8
+damage_bonus = 1
+momentum_per_round = 1
+momentum_cap = 3
+intents = Array[ExtResource("2_g7int")]([SubResource("Resource_strike"), SubResource("Resource_rally")])

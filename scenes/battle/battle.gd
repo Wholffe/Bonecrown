@@ -5,9 +5,6 @@ extends Control
 ## Emitted after all queued combat events have been shown.
 signal playback_finished
 
-const GOBLIN: EnemyData = preload("res://scripts/data/enemies/goblin.tres")
-# Placeholder encounter until the room sequence exists (milestone 7).
-const ENCOUNTER: Array[EnemyData] = [GOBLIN, GOBLIN]
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
 const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
 const EQUIPMENT_ICON_SIZE: float = 36.0
@@ -20,6 +17,13 @@ const SHAKE_OFFSETS: Array[Vector2] = [
 	Vector2(10, -6), Vector2(-9, 5), Vector2(7, 4), Vector2(-5, -3), Vector2(2, 2)
 ]
 const SHAKE_STEP_DURATION: float = 0.035
+## Momentum changes worth a log line. Spending and the gain of a new round show only on the pips.
+const MOMENTUM_REASON_TEXTS: Dictionary[Combat.MomentumReason, String] = {
+	Combat.MomentumReason.FENDED_OFF: "attack fended off",
+	Combat.MomentumReason.KILL: "kill",
+	Combat.MomentumReason.DRAINED: "drained",
+	Combat.MomentumReason.RALLIED: "rallied",
+}
 
 var _combat: Combat
 var _cards: Dictionary[Combatant, CombatantCard] = {}
@@ -44,6 +48,8 @@ var _layout_rest_position: Vector2 = Vector2.ZERO
 @onready var _dice_display: DiceDisplay = %DiceDisplay
 @onready var _combat_log: RichTextLabel = %CombatLog
 @onready var _attack_button: Button = %AttackButton
+@onready var _block_button: Button = %BlockButton
+@onready var _end_turn_button: Button = %EndTurnButton
 @onready var _skill_buttons_box: VBoxContainer = %SkillButtons
 @onready var _character_button: Button = %CharacterButton
 @onready var _continue_button: Button = %ContinueButton
@@ -54,10 +60,13 @@ var _layout_rest_position: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	_dice_display.animations_enabled = _animations_enabled
 	_attack_button.pressed.connect(_on_attack_button_pressed)
+	_block_button.pressed.connect(_on_block_button_pressed)
+	_end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
 	_continue_button.pressed.connect(_on_continue_button_pressed)
 	_character_sheet.character = RunState.player
 	_character_button.pressed.connect(_character_sheet.toggle)
+	_character_sheet.visibility_changed.connect(_on_character_sheet_visibility_changed)
 	_create_equipment_strip()
 	_start_combat()
 
@@ -95,8 +104,8 @@ func _create_equipment_strip() -> void:
 
 
 func _start_combat() -> void:
-	var enemies: Array[Combatant] = Enemy.create_group(ENCOUNTER)
-	_combat = Combat.new(RunState.player, enemies, RunState.dice)
+	var enemies: Array[Combatant] = RunState.create_room_enemies()
+	_combat = Combat.new(RunState.player, enemies, RunState.dice, RunState.GAME_RULES)
 	_combat.round_started.connect(_on_round_started)
 	_combat.attack_resolved.connect(_on_attack_resolved)
 	_combat.skill_used.connect(_on_skill_used)
@@ -104,8 +113,12 @@ func _start_combat() -> void:
 	_combat.attacker_drained.connect(_on_attacker_drained)
 	_combat.combatant_defeated.connect(_on_combatant_defeated)
 	_combat.combat_ended.connect(_on_combat_ended)
+	_combat.momentum_changed.connect(_on_momentum_changed)
+	_combat.intents_announced.connect(_on_intents_announced)
+	_combat.player_blocked.connect(_on_player_blocked)
+	_combat.intent_started.connect(_on_intent_started)
 	_create_cards(enemies)
-	_create_skill_buttons()
+	_create_action_buttons()
 	_log("Room %d   ·   Run seed: %d" % [RunState.room_number, RunState.run_seed])
 	for enemy: Combatant in enemies:
 		_log("A %s appears." % enemy.display_name)
@@ -117,21 +130,32 @@ func _start_combat() -> void:
 func _create_cards(enemies: Array[Combatant]) -> void:
 	var player: Combatant = _combat.player
 	_player_card.show_combatant(player, true)
+	_player_card.show_momentum(0, RunState.GAME_RULES.momentum_cap)
 	_cards[player] = _player_card
 	for enemy: Combatant in enemies:
 		var card: CombatantCard = COMBATANT_CARD_SCENE.instantiate() as CombatantCard
 		_enemy_cards_box.add_child(card)
 		card.show_combatant(enemy, false)
+		card.show_momentum(enemy.momentum, (enemy as Enemy).data.momentum_cap)
 		card.selected.connect(_on_enemy_card_selected)
 		_cards[enemy] = card
 		_enemy_cards.append(card)
 
 
-func _create_skill_buttons() -> void:
+func _create_action_buttons() -> void:
+	var rules: GameRulesData = RunState.GAME_RULES
+	_attack_button.text = "Attack · %d" % rules.attack_momentum_cost
+	_attack_button.tooltip_text = _describe_cost(rules.attack_momentum_cost)
+	_block_button.text = "Block · %d" % rules.block_momentum_cost
+	_block_button.tooltip_text = (
+		"Enemy attacks roll with disadvantage until your next turn.\n"
+		+ _describe_cost(rules.block_momentum_cost)
+	)
+	_end_turn_button.tooltip_text = ("Unused Momentum carries over, up to %d." % rules.momentum_cap)
 	for skill: SkillData in _combat.player.active_skills():
 		var button: Button = Button.new()
 		button.name = skill.id.to_pascal_case() + "Button"
-		button.tooltip_text = skill.description
+		button.tooltip_text = "%s\n%s" % [skill.description, _describe_cost(skill.momentum_cost)]
 		button.pressed.connect(_on_skill_button_pressed.bind(skill))
 		_skill_buttons_box.add_child(button)
 		_skill_buttons[skill] = button
@@ -164,6 +188,8 @@ func _play_pending_events() -> void:
 	if _is_playing_back:
 		return
 	_is_playing_back = true
+	# The sheet would show values from after the turn while the turn still plays back.
+	_character_sheet.hide()
 	_refresh_actions()
 	while not _pending_events.is_empty():
 		var event: Callable = _pending_events.pop_front()
@@ -172,13 +198,19 @@ func _play_pending_events() -> void:
 	_refresh_actions()
 	_refresh_player_info()
 	_refresh_roll_modes()
+	_focus_default_action()
+	playback_finished.emit()
+
+
+func _focus_default_action() -> void:
 	if _continue_button.visible:
 		_continue_button.grab_focus()
 	elif _combat.is_over:
 		_main_menu_button.grab_focus()
-	else:
+	elif not _attack_button.disabled:
 		_attack_button.grab_focus()
-	playback_finished.emit()
+	else:
+		_end_turn_button.grab_focus()
 
 
 func _play_round_start(round_number: int) -> void:
@@ -246,8 +278,34 @@ func _shake_layout() -> void:
 	_shake_tween.tween_property(_margin, "position", _layout_rest_position, SHAKE_STEP_DURATION)
 
 
+func _play_momentum_change(
+	combatant: Combatant, momentum: int, change: int, reason: Combat.MomentumReason
+) -> void:
+	var cap: int = RunState.GAME_RULES.momentum_cap
+	var enemy: Enemy = combatant as Enemy
+	if enemy != null:
+		cap = enemy.data.momentum_cap
+	_cards[combatant].show_momentum(momentum, cap)
+	var reason_text: String = MOMENTUM_REASON_TEXTS.get(reason, "")
+	if reason_text != "":
+		_log("%s %+d Momentum (%s)" % [combatant.display_name, change, reason_text])
+
+
+func _play_intents(intents: Dictionary[Enemy, EnemyIntentData]) -> void:
+	for enemy: Enemy in intents:
+		_cards[enemy].show_intent(intents[enemy])
+
+
+func _play_intent_start(enemy: Enemy, intent: EnemyIntentData) -> void:
+	_log("%s uses %s." % [enemy.display_name, intent.display_name])
+	_cards[enemy].show_intent(null)
+
+
 func _play_defeat(combatant: Combatant) -> void:
 	_log("%s is defeated." % combatant.display_name)
+	var enemy: Enemy = combatant as Enemy
+	if enemy != null:
+		_cards[enemy].show_intent(null)
 	if _cards[combatant] == _target_card:
 		_select_target(_next_living_card(_target_card))
 
@@ -261,16 +319,25 @@ func _play_combat_end(player_won: bool) -> void:
 
 # The input handlers check this too, because a scripted pressed.emit() ignores disabled buttons.
 func _can_act() -> bool:
-	return not _is_playing_back and not _combat.is_over
+	return not _is_playing_back and not _combat.is_over and not _character_sheet.visible
 
 
 func _can_attack() -> bool:
-	return _can_act() and _target_card != null and _target_card.combatant.is_alive()
+	return (
+		_can_act()
+		and _combat.can_attack()
+		and _target_card != null
+		and _target_card.combatant.is_alive()
+	)
 
 
 func _refresh_actions() -> void:
 	var can_act: bool = _can_act()
 	_attack_button.disabled = not _can_attack()
+	_block_button.disabled = not can_act or not _combat.can_block()
+	_end_turn_button.disabled = not can_act
+	_character_button.disabled = _is_playing_back
+	_character_sheet.is_locked = _is_playing_back
 	for skill: SkillData in _skill_buttons:
 		var button: Button = _skill_buttons[skill]
 		button.text = _describe_skill_button(skill)
@@ -302,11 +369,16 @@ func _refresh_roll_modes() -> void:
 		_cards[combatant].show_roll_mode(mode)
 
 
+func _describe_cost(momentum_cost: int) -> String:
+	return "Costs %d Momentum." % momentum_cost
+
+
 func _describe_skill_button(skill: SkillData) -> String:
+	var text: String = "%s · %d" % [skill.display_name, skill.momentum_cost]
 	var uses: int = _combat.uses_left(skill)
 	if uses == Combat.UNLIMITED_USES:
-		return skill.display_name
-	return "%s (%d)" % [skill.display_name, uses]
+		return text
+	return "%s  (%d left)" % [text, uses]
 
 
 func _describe_attack(
@@ -396,6 +468,35 @@ func _on_attack_resolved(
 	)
 
 
+func _on_momentum_changed(
+	combatant: Combatant, momentum: int, change: int, reason: Combat.MomentumReason
+) -> void:
+	_pending_events.append(_play_momentum_change.bind(combatant, momentum, change, reason))
+
+
+# Intents can change before playback reaches this point, so they are copied now.
+func _on_intents_announced() -> void:
+	var intents: Dictionary[Enemy, EnemyIntentData] = {}
+	for enemy: Combatant in _combat.living_enemies():
+		intents[enemy as Enemy] = (enemy as Enemy).intent
+	_pending_events.append(_play_intents.bind(intents))
+
+
+func _on_player_blocked(player: Character) -> void:
+	_pending_events.append(
+		_log.bind(
+			(
+				"%s blocks: enemy attacks roll with disadvantage until your next turn."
+				% player.display_name
+			)
+		)
+	)
+
+
+func _on_intent_started(enemy: Enemy, intent: EnemyIntentData) -> void:
+	_pending_events.append(_play_intent_start.bind(enemy, intent))
+
+
 func _on_skill_used(user: Combatant, skill: SkillData) -> void:
 	_pending_events.append(_log.bind("%s uses %s." % [user.display_name, skill.display_name]))
 
@@ -429,6 +530,28 @@ func _on_attack_button_pressed() -> void:
 		return
 	_combat.player_attack(_target_card.combatant)
 	_play_pending_events()
+
+
+func _on_block_button_pressed() -> void:
+	if not _can_act() or not _combat.can_block():
+		return
+	_combat.player_block()
+	_play_pending_events()
+
+
+func _on_end_turn_button_pressed() -> void:
+	if not _can_act():
+		return
+	_combat.end_turn()
+	_play_pending_events()
+
+
+func _on_character_sheet_visibility_changed() -> void:
+	if not is_node_ready() or _combat == null:
+		return
+	_refresh_actions()
+	if not _character_sheet.visible:
+		_focus_default_action()
 
 
 func _on_skill_button_pressed(skill: SkillData) -> void:

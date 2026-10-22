@@ -1,5 +1,5 @@
 extends GutTest
-## Skill rules of Combat: turn cost, availability, uses per fight, healing and skill signals.
+## Skill rules of Combat: Momentum cost, availability, uses per fight, healing and skill signals.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
@@ -23,21 +23,21 @@ func before_each() -> void:
 func _start_combat(rolls: Array[int]) -> Combat:
 	_dice = FixedDice.new(rolls)
 	var enemies: Array[Combatant] = [_goblin]
-	var combat: Combat = Combat.new(_player, enemies, _dice)
+	var combat: Combat = Combat.new(_player, enemies, _dice, GAME_RULES)
 	watch_signals(combat)
 	combat.start()
 	return combat
 
 
 ## Active skill that heals 1d4 without the level bonus.
-func _healing_skill(action_cost: SkillData.ActionCost, uses_per_fight: int) -> SkillData:
+func _healing_skill(momentum_cost: int, uses_per_fight: int) -> SkillData:
 	var heal: HealEffect = HealEffect.new()
 	heal.die_count = 1
 	heal.die_sides = 4
 	var skill: SkillData = SkillData.new()
 	skill.id = &"test_heal"
 	skill.activation = SkillData.Activation.ACTIVE
-	skill.action_cost = action_cost
+	skill.momentum_cost = momentum_cost
 	skill.uses_per_fight = uses_per_fight
 	skill.effects = [heal]
 	return skill
@@ -56,24 +56,14 @@ func _record_skill_signal_order(combat: Combat) -> Array[StringName]:
 	return order
 
 
-func test_second_wind_does_not_use_the_turn() -> void:
+func test_second_wind_spends_one_momentum_and_keeps_the_turn() -> void:
 	var combat: Combat = _start_combat([7])
 
 	combat.use_skill(SECOND_WIND)
 
-	assert_eq(_dice.remaining_rolls(), 0, "The goblin must not act after a free skill")
+	assert_eq(_player.momentum, 1, "2 at the start of the fight minus 1")
+	assert_eq(_dice.remaining_rolls(), 0, "The goblin must not act while Momentum is left")
 	assert_eq(combat.round_number, 1)
-
-
-func test_free_skill_and_attack_share_one_round() -> void:
-	var combat: Combat = _start_combat([7, 2, 2])
-
-	combat.use_skill(SECOND_WIND)
-	combat.player_attack(_goblin)
-
-	assert_eq(_dice.remaining_rolls(), 0, "Heal, player attack and one goblin attack")
-	assert_signal_emit_count(combat, "attack_resolved", 2, "Exactly one goblin turn")
-	assert_eq(combat.round_number, 2)
 
 
 func test_free_skill_that_leaves_no_living_enemy_wins_the_fight() -> void:
@@ -87,14 +77,14 @@ func test_free_skill_that_leaves_no_living_enemy_wins_the_fight() -> void:
 	assert_signal_emitted_with_parameters(combat, "combat_ended", [true])
 
 
-func test_action_skill_ends_the_turn() -> void:
-	var skill: SkillData = _healing_skill(SkillData.ActionCost.ACTION, NO_USE_LIMIT)
+func test_skill_that_spends_the_last_momentum_ends_the_turn() -> void:
+	var skill: SkillData = _healing_skill(2, NO_USE_LIMIT)
 	_player.skills.append(skill)
 	var combat: Combat = _start_combat([3, 2])
 
 	combat.use_skill(skill)
 
-	assert_eq(_dice.remaining_rolls(), 0, "The goblin attacks after an action skill")
+	assert_eq(_dice.remaining_rolls(), 0, "The goblin attacks once the player cannot pay anything")
 	assert_eq(combat.round_number, 2)
 
 
@@ -117,7 +107,7 @@ func test_second_wind_heals_d10_plus_level() -> void:
 
 
 func test_heal_without_level_bonus_adds_nothing() -> void:
-	var skill: SkillData = _healing_skill(SkillData.ActionCost.FREE, NO_USE_LIMIT)
+	var skill: SkillData = _healing_skill(1, NO_USE_LIMIT)
 	_player.skills.append(skill)
 	_player.level = 3
 	var combat: Combat = _start_combat([3])
@@ -173,7 +163,7 @@ func test_second_wind_works_once_per_fight() -> void:
 
 
 func test_uses_left_counts_down_with_each_use() -> void:
-	var skill: SkillData = _healing_skill(SkillData.ActionCost.FREE, 2)
+	var skill: SkillData = _healing_skill(1, 2)
 	_player.skills.append(skill)
 	var combat: Combat = _start_combat([3])
 
@@ -207,7 +197,7 @@ func test_skill_uses_reset_in_a_new_fight() -> void:
 
 
 func test_unlimited_skill_reports_unlimited_uses() -> void:
-	var skill: SkillData = _healing_skill(SkillData.ActionCost.ACTION, NO_USE_LIMIT)
+	var skill: SkillData = _healing_skill(1, NO_USE_LIMIT)
 	_player.skills.append(skill)
 	var combat: Combat = _start_combat([])
 
@@ -216,7 +206,7 @@ func test_unlimited_skill_reports_unlimited_uses() -> void:
 
 
 func test_unlimited_skill_stays_unlimited_after_use() -> void:
-	var skill: SkillData = _healing_skill(SkillData.ActionCost.FREE, NO_USE_LIMIT)
+	var skill: SkillData = _healing_skill(1, NO_USE_LIMIT)
 	_player.skills.append(skill)
 	var combat: Combat = _start_combat([3])
 
@@ -229,7 +219,7 @@ func test_unlimited_skill_stays_unlimited_after_use() -> void:
 func test_skills_the_player_does_not_own_cannot_be_used() -> void:
 	var combat: Combat = _start_combat([])
 
-	assert_false(combat.can_use_skill(_healing_skill(SkillData.ActionCost.ACTION, NO_USE_LIMIT)))
+	assert_false(combat.can_use_skill(_healing_skill(1, NO_USE_LIMIT)))
 
 
 func test_owned_passive_skill_cannot_be_used() -> void:
@@ -254,7 +244,6 @@ func test_active_effect_without_a_rule_reports_an_error() -> void:
 	var skill: SkillData = SkillData.new()
 	skill.id = &"test_active_modifier"
 	skill.activation = SkillData.Activation.ACTIVE
-	skill.action_cost = SkillData.ActionCost.FREE
 	skill.effects = [modifier]
 	_player.skills.append(skill)
 	var combat: Combat = _start_combat([])
