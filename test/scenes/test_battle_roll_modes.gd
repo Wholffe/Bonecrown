@@ -133,7 +133,7 @@ func test_advantage_roll_names_both_dice_in_the_log() -> void:
 
 	await _attack(battle)
 
-	assert_string_contains(_log_text(battle), "d20 15 / 3 (advantage) +5 = 20 vs AC ? - hit,")
+	assert_string_contains(_log_text(battle), "d20 15 / 3 (advantage) +5 = 20 vs AC 12 - hit,")
 	assert_no_new_orphans()
 
 
@@ -188,7 +188,7 @@ func test_disadvantage_roll_names_both_dice_in_the_log() -> void:
 
 	await _attack(battle)
 
-	assert_string_contains(_log_text(battle), "d20 6 / 15 (disadvantage) +5 = 11 vs AC ? - miss.")
+	assert_string_contains(_log_text(battle), "d20 6 / 15 (disadvantage) +5 = 11 vs AC 12 - miss.")
 	_assert_no_tag(_player_card(battle), "Off-Balance lasts for one attack")
 	assert_no_new_orphans()
 
