@@ -64,12 +64,14 @@ script = ExtResource("3_node")
 id = &"focus"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_focus")])
 min_level = 3
+required_branch_ranks = 1
 
 [sub_resource type="Resource" id="Node_guarded_stance"]
 script = ExtResource("3_node")
 id = &"guarded_stance"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_guarded_stance")])
 min_level = 4
+required_branch_ranks = 1
 
 [sub_resource type="Resource" id="Branch_training"]
 script = ExtResource("2_branch")
@@ -82,7 +84,7 @@ nodes = Array[ExtResource("3_node")]([SubResource("Node_strength_training"), Sub
 script = ExtResource("3_node")
 id = &"dragon_breath"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_dragon_breath"), ExtResource("s_dragon_breath_2"), ExtResource("s_dragon_breath_3")])
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_draconic_scales"]
 script = ExtResource("3_node")
@@ -90,7 +92,7 @@ id = &"draconic_scales"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_draconic_scales")])
 required_node = &"dragon_breath"
 required_rank = 1
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_ember_strike"]
 script = ExtResource("3_node")
@@ -127,7 +129,7 @@ nodes = Array[ExtResource("3_node")]([SubResource("Node_dragon_breath"), SubReso
 script = ExtResource("3_node")
 id = &"mighty_blow"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_mighty_blow"), ExtResource("s_mighty_blow_2")])
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_reckless_swings"]
 script = ExtResource("3_node")
@@ -180,7 +182,7 @@ nodes = Array[ExtResource("3_node")]([SubResource("Node_mighty_blow"), SubResour
 script = ExtResource("3_node")
 id = &"shield_stance"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_shield_stance"), ExtResource("s_shield_stance_2")])
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_retaliate"]
 script = ExtResource("3_node")
@@ -188,7 +190,7 @@ id = &"retaliate"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_retaliate"), ExtResource("s_retaliate_2")])
 required_node = &"shield_stance"
 required_rank = 1
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_iron_skin"]
 script = ExtResource("3_node")
@@ -196,7 +198,7 @@ id = &"iron_skin"
 ranks = Array[ExtResource("4_skill")]([ExtResource("s_iron_skin")])
 required_node = &"shield_stance"
 required_rank = 1
-min_level = 3
+min_level = 4
 
 [sub_resource type="Resource" id="Node_shield_bash"]
 script = ExtResource("3_node")
@@ -233,4 +235,4 @@ nodes = Array[ExtResource("3_node")]([SubResource("Node_shield_stance"), SubReso
 script = ExtResource("1_tree")
 trunk = SubResource("Branch_training")
 specializations = Array[ExtResource("2_branch")]([SubResource("Branch_dragonfire"), SubResource("Branch_berserker"), SubResource("Branch_bulwark")])
-specialization_level = 3
+specialization_trunk_ranks = 2

@@ -51,6 +51,12 @@ func test_nodes_sit_above_the_node_they_build_on() -> void:
 				assert_lt(_center_of(node.id).y, _center_of(node.required_node).y, "%s" % node.id)
 
 
+func test_second_trunk_tier_sits_above_the_first() -> void:
+	assert_lt(_center_of(&"focus").y, _center_of(&"strength_training").y)
+	assert_eq(_center_of(&"focus").y, _center_of(&"guarded_stance").y)
+	assert_eq(_center_of(&"strength_training").y, _center_of(&"precision").y)
+
+
 func test_specializations_stand_side_by_side() -> void:
 	assert_lt(_center_of(&"dragon_breath").x, _center_of(&"mighty_blow").x)
 	assert_lt(_center_of(&"mighty_blow").x, _center_of(&"shield_stance").x)
@@ -65,7 +71,7 @@ func test_nodes_show_their_rank_or_the_missing_level_and_their_name() -> void:
 	var button: Button = _view.node_button(&"dragon_breath")
 	var name_label: Label = button.get_node("NameLabel") as Label
 
-	assert_eq(button.text, "Lv 3")
+	assert_eq(button.text, "Lv 4")
 	assert_eq(name_label.text, "Dragon Breath")
 	assert_eq(_view.node_button(&"toughness").text, "0/2")
 
@@ -82,6 +88,9 @@ func test_learned_node_turns_gold() -> void:
 
 func test_chosen_specialization_title_turns_gold() -> void:
 	_player.level_up()
+	_player.level_up()
+	_progress.learn(_node(&"strength_training"), _player)
+	_progress.learn(_node(&"strength_training"), _player)
 	_progress.learn(_node(&"shield_stance"), _player)
 
 	_view.refresh(_player)

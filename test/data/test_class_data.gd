@@ -129,19 +129,38 @@ func test_trunk_has_a_node_for_the_first_level_up() -> void:
 	for class_data: ClassData in _classes:
 		var has_first_node: bool = false
 		for node: SkillNodeData in class_data.skill_tree.trunk.nodes:
-			if node.required_node == &"" and node.min_level <= Character.STARTING_LEVEL + 1:
+			if (
+				node.required_node == &""
+				and node.required_branch_ranks == 0
+				and node.min_level <= Character.STARTING_LEVEL + 1
+			):
 				has_first_node = true
 		assert_true(has_first_node, "%s: no trunk node at level 2" % class_data.id)
 
 
-func test_specializations_open_at_their_level_with_an_entry_node() -> void:
+# Every tier needs fewer ranks than the tiers below it can hold.
+func test_trunk_tiers_open_with_the_ranks_of_the_tiers_below() -> void:
+	for class_data: ClassData in _classes:
+		var trunk: SkillBranchData = class_data.skill_tree.trunk
+		for node: SkillNodeData in trunk.nodes:
+			var ranks_below: int = 0
+			for other: SkillNodeData in trunk.nodes:
+				if other.required_branch_ranks < node.required_branch_ranks:
+					ranks_below += other.ranks.size()
+			assert_gte(ranks_below, node.required_branch_ranks, "%s tier" % node.id)
+
+
+# The Training ranks come one per level-up, so no specialization node opens before they can.
+func test_specializations_need_training_ranks_and_have_an_entry_node() -> void:
 	for class_data: ClassData in _classes:
 		var tree: SkillTreeData = class_data.skill_tree
-		assert_gt(tree.specialization_level, Character.STARTING_LEVEL, "%s" % class_data.id)
+		var first_level: int = Character.STARTING_LEVEL + tree.specialization_trunk_ranks + 1
+		assert_gt(tree.specialization_trunk_ranks, 0, "%s" % class_data.id)
+		assert_gte(_rank_count(tree.trunk), tree.specialization_trunk_ranks, "%s" % class_data.id)
 		for branch: SkillBranchData in tree.specializations:
 			var entry_count: int = 0
 			for node: SkillNodeData in branch.nodes:
-				assert_gte(node.min_level, tree.specialization_level, "%s level" % node.id)
+				assert_gte(node.min_level, first_level, "%s level" % node.id)
 				if node.required_node == &"":
 					entry_count += 1
 			assert_gt(entry_count, 0, "%s has no entry node" % branch.id)

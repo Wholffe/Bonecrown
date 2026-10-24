@@ -17,7 +17,6 @@ const BRANCH_NAME_FONT_SIZE: int = 20
 const BRANCH_DESCRIPTION_FONT_SIZE: int = 12
 ## The trunk spreads its nodes over this share of the width, centered on the trunk line.
 const TRUNK_WIDTH_SHARE: float = 0.6
-const TRUNK_NODES_PER_ROW: int = 3
 const TRUNK_LINE_WIDTH: float = 12.0
 const TWIG_WIDTH: float = 4.0
 const BRANCH_LINE_WIDTH: float = 6.0
@@ -49,9 +48,11 @@ var _buttons: Dictionary[SkillNodeData, Button] = {}
 var _name_labels: Dictionary[SkillNodeData, Label] = {}
 var _layers: Dictionary[SkillBranchData, Control] = {}
 var _titles: Dictionary[SkillBranchData, Label] = {}
-## Row of each specialization node, 0 for the nodes that start a branch.
+## Row of each node. In the trunk a row is a tier, in a specialization row 0 holds the nodes that
+## start the branch.
 var _rows: Dictionary[SkillNodeData, int] = {}
 var _branch_row_count: int = 0
+var _trunk_row_count: int = 0
 var _fork_point: Vector2 = Vector2.ZERO
 var _button_group: ButtonGroup = ButtonGroup.new()
 
@@ -195,24 +196,32 @@ func _assign_rows() -> void:
 		for node: SkillNodeData in branch.nodes:
 			_rows[node] = 0 if node.required_node == &"" else 1 + levels.find(node.min_level)
 	_branch_row_count = 1 + levels.size()
+	var tiers: Array[int] = []
+	for node: SkillNodeData in _progress.tree.trunk.nodes:
+		if not node.required_branch_ranks in tiers:
+			tiers.append(node.required_branch_ranks)
+	tiers.sort()
+	for node: SkillNodeData in _progress.tree.trunk.nodes:
+		_rows[node] = tiers.find(node.required_branch_ranks)
+	_trunk_row_count = tiers.size()
 
 
 func _layout() -> void:
 	var trunk: SkillBranchData = _progress.tree.trunk
-	var trunk_rows: int = ceili(trunk.nodes.size() / float(TRUNK_NODES_PER_ROW))
+	var trunk_rows: int = _trunk_row_count
 	var row_height: float = (size.y - BRANCH_TITLE_HEIGHT) / (_branch_row_count + trunk_rows)
 	var trunk_width: float = size.x * TRUNK_WIDTH_SHARE
 	var trunk_left: float = (size.x - trunk_width) / 2.0
-	for index: int in trunk.nodes.size():
-		var row: int = floori(index / float(TRUNK_NODES_PER_ROW))
-		var in_row: int = mini(TRUNK_NODES_PER_ROW, trunk.nodes.size() - row * TRUNK_NODES_PER_ROW)
-		var slot: int = index % TRUNK_NODES_PER_ROW
-		_place(
-			trunk.nodes[index],
-			Vector2(
-				trunk_left + (slot + 0.5) * trunk_width / in_row, size.y - (row + 0.5) * row_height
+	for row: int in trunk_rows:
+		var row_nodes: Array[SkillNodeData] = _nodes_in_row(trunk, row)
+		for slot: int in row_nodes.size():
+			_place(
+				row_nodes[slot],
+				Vector2(
+					trunk_left + (slot + 0.5) * trunk_width / row_nodes.size(),
+					size.y - (row + 0.5) * row_height
+				)
 			)
-		)
 	_place_trunk_title(trunk, trunk_left, size.y - trunk_rows * row_height)
 	_fork_point = Vector2(size.x / 2.0, size.y - trunk_rows * row_height)
 	var column_width: float = size.x / _progress.tree.specializations.size()

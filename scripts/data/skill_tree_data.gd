@@ -5,5 +5,5 @@ extends Resource
 
 @export var trunk: SkillBranchData
 @export var specializations: Array[SkillBranchData] = []
-## Lowest character level at which a specialization can be chosen.
-@export var specialization_level: int = 0
+## Training ranks the player learns before a specialization can be chosen.
+@export var specialization_trunk_ranks: int = 0

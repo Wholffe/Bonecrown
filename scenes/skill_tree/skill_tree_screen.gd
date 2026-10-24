@@ -72,9 +72,15 @@ func _hint_text() -> String:
 	var text: String = "Level %d   ·   Skill points: %d" % [RunState.player.level, points]
 	if _progress.specialization != null:
 		return text + "   ·   Specialization: %s" % _progress.specialization.display_name
-	if _progress.tree.specialization_level > RunState.player.level:
+	var trunk_ranks: int = _progress.branch_ranks(_progress.tree.trunk)
+	var needed: int = _progress.tree.specialization_trunk_ranks
+	if trunk_ranks < needed:
 		return (
-			text + "   ·   Specializations open at level %d." % _progress.tree.specialization_level
+			text
+			+ (
+				"   ·   Specializations open after %s (%d/%d)."
+				% [_skill_count_text(needed, _progress.tree.trunk), trunk_ranks, needed]
+			)
 		)
 	return (
 		text
@@ -131,19 +137,27 @@ func _describe_activation(skill: SkillData) -> String:
 # Why the node cannot be learned yet, in the player's words.
 func _blocker_texts() -> Array[String]:
 	var texts: Array[String] = []
-	var level: int = RunState.player.level
 	var branch: SkillBranchData = _progress.branch_of(_selected)
-	if not _progress.is_branch_open(branch, level):
+	if not _progress.is_branch_open(branch):
 		if _progress.specialization != null:
 			texts.append("Closed: you chose %s." % _progress.specialization.display_name)
 		else:
-			texts.append("Opens at level %d." % _progress.tree.specialization_level)
-	if level < _selected.min_level:
+			var needed: int = _progress.tree.specialization_trunk_ranks
+			texts.append("Opens after %s." % _skill_count_text(needed, _progress.tree.trunk))
+	if RunState.player.level < _selected.min_level:
 		texts.append("Needs level %d." % _selected.min_level)
-	if not _progress.is_requirement_met(_selected):
+	if _progress.branch_ranks(branch) < _selected.required_branch_ranks:
+		texts.append("Opens after %s." % _skill_count_text(_selected.required_branch_ranks, branch))
+	if _selected.required_node != &"":
 		var required: SkillNodeData = _progress.find_node(branch, _selected.required_node)
-		texts.append("Needs %s." % required.ranks[_selected.required_rank - 1].display_name)
+		if _progress.rank_of(required) < _selected.required_rank:
+			texts.append("Needs %s." % required.ranks[_selected.required_rank - 1].display_name)
 	return texts
+
+
+# "2 Training skills", "1 Training skill".
+func _skill_count_text(count: int, branch: SkillBranchData) -> String:
+	return "%d %s skill%s" % [count, branch.display_name, "" if count == 1 else "s"]
 
 
 func _on_continue_pressed() -> void:

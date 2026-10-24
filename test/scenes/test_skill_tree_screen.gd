@@ -44,6 +44,12 @@ func _learn(screen: SkillTreeScreen, node_id: StringName) -> void:
 	await wait_process_frames(1)
 
 
+## Learns Strength Training twice, the Training ranks a specialization needs.
+func _open_specializations(screen: SkillTreeScreen) -> void:
+	await _learn(screen, &"strength_training")
+	await _learn(screen, &"strength_training")
+
+
 func test_tree_shows_the_trunk_and_every_specialization() -> void:
 	var screen: SkillTreeScreen = _create(2)
 
@@ -98,14 +104,27 @@ func test_next_rank_shows_the_rank_it_replaces() -> void:
 	assert_string_contains(details, "Attack +6 → +7")
 
 
-func test_specializations_name_their_level_before_it() -> void:
+func test_specializations_name_the_training_ranks_they_need() -> void:
 	var screen: SkillTreeScreen = _create(2)
 
 	await _select(screen, &"dragon_breath")
 
 	assert_true(_button(screen, "LearnButton").disabled)
-	assert_string_contains(_label_text(screen, "NodeDetailsLabel"), "Opens at level 3.")
-	assert_string_contains(_label_text(screen, "HintLabel"), "Specializations open at level 3.")
+	assert_string_contains(
+		_label_text(screen, "NodeDetailsLabel"), "Opens after 2 Training skills."
+	)
+	assert_string_contains(
+		_label_text(screen, "HintLabel"), "Specializations open after 2 Training skills (0/2)."
+	)
+
+
+func test_second_tier_names_the_training_skill_it_needs() -> void:
+	var screen: SkillTreeScreen = _create(3)
+
+	await _select(screen, &"focus")
+
+	assert_true(_button(screen, "LearnButton").disabled)
+	assert_string_contains(_label_text(screen, "NodeDetailsLabel"), "Opens after 1 Training skill.")
 
 
 func test_details_name_the_activation_and_a_missing_requirement() -> void:
@@ -122,6 +141,7 @@ func test_details_name_the_activation_and_a_missing_requirement() -> void:
 
 func test_first_specialization_node_fades_the_other_branches() -> void:
 	var screen: SkillTreeScreen = _create(4)
+	await _open_specializations(screen)
 
 	await _learn(screen, &"dragon_breath")
 
@@ -135,6 +155,7 @@ func test_first_specialization_node_fades_the_other_branches() -> void:
 
 func test_closed_branch_names_the_chosen_specialization() -> void:
 	var screen: SkillTreeScreen = _create(4)
+	await _open_specializations(screen)
 	await _learn(screen, &"dragon_breath")
 
 	await _select(screen, &"mighty_blow")
@@ -145,6 +166,7 @@ func test_closed_branch_names_the_chosen_specialization() -> void:
 
 func test_conditional_skill_shows_its_condition() -> void:
 	var screen: SkillTreeScreen = _create(5)
+	await _open_specializations(screen)
 	await _learn(screen, &"mighty_blow")
 
 	await _select(screen, &"adrenaline")

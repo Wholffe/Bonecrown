@@ -10,3 +10,5 @@ extends Resource
 @export var required_rank: int = 0
 ## Lowest character level at which the node can be learned.
 @export var min_level: int = 0
+## Ranks learned anywhere in the node's own branch before it opens, for the later tiers of a branch.
+@export var required_branch_ranks: int = 0

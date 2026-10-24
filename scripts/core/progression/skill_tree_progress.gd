@@ -39,17 +39,28 @@ func points_available(character: Character) -> int:
 	return character.level - Character.STARTING_LEVEL - _spent_points
 
 
-## The trunk is always open. Specializations open at the specialization level, and once one is
-## chosen, the others close.
-func is_branch_open(branch: SkillBranchData, level: int) -> bool:
+## The ranks learned in all nodes of the branch.
+func branch_ranks(branch: SkillBranchData) -> int:
+	var total: int = 0
+	for node: SkillNodeData in branch.nodes:
+		total += rank_of(node)
+	return total
+
+
+## The trunk is always open. Specializations open once enough Training ranks are learned, and once
+## one is chosen, the others close.
+func is_branch_open(branch: SkillBranchData) -> bool:
 	if branch == tree.trunk:
 		return true
 	if specialization != null:
 		return branch == specialization
-	return level >= tree.specialization_level
+	return branch_ranks(tree.trunk) >= tree.specialization_trunk_ranks
 
 
+## The required node's rank and the ranks of the node's tier, ignoring level and branch.
 func is_requirement_met(node: SkillNodeData) -> bool:
+	if branch_ranks(branch_of(node)) < node.required_branch_ranks:
+		return false
 	if node.required_node == &"":
 		return true
 	return _ranks.get(node.required_node, 0) >= node.required_rank
@@ -60,7 +71,7 @@ func is_unlocked(node: SkillNodeData, level: int) -> bool:
 	return (
 		not is_maxed(node)
 		and level >= node.min_level
-		and is_branch_open(branch_of(node), level)
+		and is_branch_open(branch_of(node))
 		and is_requirement_met(node)
 	)
 

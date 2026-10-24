@@ -1,6 +1,7 @@
 extends GutTest
-## SkillTreeProgress: points per level-up, ranks, requirements, level gates and the specialization
-## that closes the other branches. Uses a small tree built here, so the rules read on their own.
+## SkillTreeProgress: points per level-up, ranks, requirements, tiers, level gates, the Training
+## ranks that open the specializations and the specialization that closes the other branches. Uses
+## a small tree built here, so the rules read on their own.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
@@ -9,11 +10,14 @@ const TOUGHNESS_2: SkillData = preload("res://scripts/data/skills/toughness_2.tr
 const DRAGON_BREATH: SkillData = preload("res://scripts/data/skills/dragon_breath.tres")
 const DRACONIC_SCALES: SkillData = preload("res://scripts/data/skills/draconic_scales.tres")
 const MIGHTY_BLOW: SkillData = preload("res://scripts/data/skills/mighty_blow.tres")
+const FOCUS: SkillData = preload("res://scripts/data/skills/focus.tres")
 const SPECIALIZATION_LEVEL: int = 3
+const SPECIALIZATION_TRUNK_RANKS: int = 1
 
 var _player: Character
 var _progress: SkillTreeProgress
 var _toughness: SkillNodeData
+var _focus: SkillNodeData
 var _breath: SkillNodeData
 var _scales: SkillNodeData
 var _blow: SkillNodeData
@@ -25,16 +29,18 @@ var _rage: SkillBranchData
 func before_each() -> void:
 	_player = Character.new(WARRIOR, GAME_RULES)
 	_toughness = _node(&"toughness", [TOUGHNESS, TOUGHNESS_2], 2)
+	_focus = _node(&"focus", [FOCUS], 2)
+	_focus.required_branch_ranks = 1
 	_breath = _node(&"breath", [DRAGON_BREATH], SPECIALIZATION_LEVEL)
 	_scales = _node(&"scales", [DRACONIC_SCALES], SPECIALIZATION_LEVEL, &"breath")
 	_blow = _node(&"blow", [MIGHTY_BLOW], SPECIALIZATION_LEVEL)
-	_trunk = _branch(&"trunk", [_toughness])
+	_trunk = _branch(&"trunk", [_toughness, _focus])
 	_fire = _branch(&"fire", [_breath, _scales])
 	_rage = _branch(&"rage", [_blow])
 	var tree: SkillTreeData = SkillTreeData.new()
 	tree.trunk = _trunk
 	tree.specializations = [_fire, _rage]
-	tree.specialization_level = SPECIALIZATION_LEVEL
+	tree.specialization_trunk_ranks = SPECIALIZATION_TRUNK_RANKS
 	_progress = SkillTreeProgress.new(tree)
 
 
@@ -118,29 +124,42 @@ func test_learning_without_a_point_changes_nothing() -> void:
 	assert_does_not_have(_player.skills, TOUGHNESS)
 
 
-func test_specializations_stay_closed_below_their_level() -> void:
-	_level_up_to(2)
-
-	assert_true(_progress.is_branch_open(_trunk, _player.level))
-	assert_false(_progress.is_branch_open(_fire, _player.level))
-	assert_false(_progress.is_unlocked(_breath, _player.level))
-
-
-func test_specializations_open_at_their_level() -> void:
+func test_specializations_stay_closed_without_enough_training_ranks() -> void:
 	_level_up_to(SPECIALIZATION_LEVEL)
+
+	assert_true(_progress.is_branch_open(_trunk))
+	assert_false(_progress.is_branch_open(_fire))
+	assert_false(_progress.is_unlocked(_breath, _player.level), "level 3, but no Training rank")
+
+
+func test_specializations_open_after_enough_training_ranks() -> void:
+	_level_up_to(SPECIALIZATION_LEVEL)
+
+	_progress.learn(_toughness, _player)
 
 	assert_true(_progress.can_learn(_breath, _player))
 	assert_true(_progress.can_learn(_blow, _player))
 
 
+func test_later_tier_opens_after_ranks_in_its_branch() -> void:
+	_level_up_to(3)
+	assert_false(_progress.can_learn(_focus, _player))
+
+	_progress.learn(_toughness, _player)
+
+	assert_true(_progress.can_learn(_focus, _player))
+	assert_eq(_progress.branch_ranks(_trunk), 1)
+
+
 func test_first_specialization_node_closes_the_other_branches() -> void:
 	_level_up_to(4)
+	_progress.learn(_toughness, _player)
 
 	_progress.learn(_breath, _player)
 
 	assert_eq(_progress.specialization, _fire)
-	assert_true(_progress.is_branch_open(_fire, _player.level))
-	assert_false(_progress.is_branch_open(_rage, _player.level))
+	assert_true(_progress.is_branch_open(_fire))
+	assert_false(_progress.is_branch_open(_rage))
 	assert_false(_progress.can_learn(_blow, _player), "a point is left, but Rage is closed")
 	assert_true(_progress.can_learn(_toughness, _player), "the trunk stays open")
 
@@ -151,11 +170,12 @@ func test_trunk_nodes_choose_no_specialization() -> void:
 	_progress.learn(_toughness, _player)
 
 	assert_null(_progress.specialization)
-	assert_true(_progress.is_branch_open(_rage, _player.level))
+	assert_true(_progress.is_branch_open(_rage))
 
 
 func test_node_needs_its_required_node_first() -> void:
 	_level_up_to(4)
+	_progress.learn(_toughness, _player)
 	assert_false(_progress.is_requirement_met(_scales))
 	assert_false(_progress.can_learn(_scales, _player))
 
@@ -167,6 +187,7 @@ func test_node_needs_its_required_node_first() -> void:
 func test_node_below_its_level_cannot_be_learned() -> void:
 	_scales.min_level = 5
 	_level_up_to(4)
+	_progress.learn(_toughness, _player)
 	_progress.learn(_breath, _player)
 
 	assert_false(_progress.can_learn(_scales, _player))
@@ -176,3 +197,4 @@ func test_branch_of_and_find_node_look_up_the_tree() -> void:
 	assert_eq(_progress.branch_of(_scales), _fire)
 	assert_eq(_progress.find_node(_fire, &"breath"), _breath)
 	assert_eq(_progress.branches(), [_trunk, _fire, _rage] as Array[SkillBranchData])
+	assert_eq(_progress.branch_of(_focus), _trunk)
