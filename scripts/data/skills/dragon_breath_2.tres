@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_effect"]
+[ext_resource type="Script" path="res://scripts/data/area_damage_effect.gd" id="2_area_damage_effect"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="9_skill"]
+
+[sub_resource type="Resource" id="Resource_dragon_breath_2_0"]
+script = ExtResource("2_area_damage_effect")
+die_count = 3
+die_sides = 6
+
+[resource]
+script = ExtResource("9_skill")
+id = &"dragon_breath_2"
+display_name = "Dragon Breath II"
+description = "Once per fight, breathe fire: 3d6 damage to every enemy, no attack roll."
+activation = 1
+momentum_cost = 2
+uses_per_fight = 1
+effects = Array[ExtResource("1_effect")]([SubResource("Resource_dragon_breath_2_0")])

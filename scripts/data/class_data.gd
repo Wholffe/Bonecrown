@@ -13,5 +13,5 @@ extends Resource
 @export var starting_weapon: WeaponData
 @export var starting_armor: ArmorData
 @export var starting_skills: Array[SkillData] = []
-## The class's own skills for the offers after each won fight.
-@export var skill_pool: Array[SkillData] = []
+## Every level-up gives a point to spend in it.
+@export var skill_tree: SkillTreeData

@@ -17,4 +17,3 @@ display_name = "Adrenaline"
 description = "+2 damage while at or below half your maximum HP."
 activation = 0
 effects = Array[ExtResource("1_iwns0")]([SubResource("Resource_7nbwg")])
-min_level = 4

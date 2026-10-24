@@ -16,4 +16,3 @@ display_name = "Strength Training"
 description = "+2 Strength."
 activation = 0
 effects = Array[ExtResource("1_web4n")]([SubResource("Resource_sjop4")])
-stackable = true

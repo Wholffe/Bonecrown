@@ -32,12 +32,19 @@ func _skills() -> Array[SkillData]:
 
 # Mirrors Combat._apply_effect: the effect types Combat can apply when an active skill is used.
 func _has_active_skill_rule(effect: EffectData) -> bool:
-	return effect is HealEffect or effect is AdvantageEffect
+	return (
+		effect is HealEffect
+		or effect is AdvantageEffect
+		or effect is AttackEffect
+		or effect is AreaDamageEffect
+		or effect is MomentumGainEffect
+	)
 
 
-# Mirrors Character._stat_modifier: only StatModifierEffect counts on passive skills.
+# Mirrors Character._stat_modifier and Combat's counterattack: the effect types that work while a
+# passive skill is owned.
 func _has_passive_skill_rule(effect: EffectData) -> bool:
-	return effect is StatModifierEffect
+	return effect is StatModifierEffect or effect is RetaliateEffect
 
 
 func _effect_name(effect: EffectData) -> String:
@@ -150,12 +157,16 @@ func test_skills_have_display_name_and_activation() -> void:
 		assert_ne(skill.activation, SkillData.Activation.UNSET, "%s has no activation" % skill.id)
 
 
-func test_active_skills_cost_momentum_and_have_a_use_limit() -> void:
+# A free skill without a use limit could be used forever in one turn.
+func test_active_skills_cost_momentum_or_have_a_use_limit() -> void:
 	for skill: SkillData in _skills():
 		if skill.activation != SkillData.Activation.ACTIVE:
 			continue
-		assert_gt(skill.momentum_cost, 0, "%s Momentum cost" % skill.id)
+		assert_gte(skill.momentum_cost, 0, "%s Momentum cost" % skill.id)
 		assert_gte(skill.uses_per_fight, 0, "%s uses per fight" % skill.id)
+		assert_gt(
+			skill.momentum_cost + skill.uses_per_fight, 0, "%s is free and unlimited" % skill.id
+		)
 
 
 func test_passive_skills_contain_only_passive_effect_types() -> void:

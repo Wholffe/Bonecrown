@@ -1,16 +1,15 @@
 class_name LevelUp
 extends Control
-## Post-fight screen: the level-up, then the loot roll with its find, then the skill choice.
+## Post-fight screen: the level-up, then the loot roll with its find. The skill tree follows.
 
 const NOTHING_FOUND_TEXT: String = "Nothing new this time."
-const SKILL_CARD_WIDTH: float = 300.0
-const SKILL_NAME_FONT_SIZE: int = 20
 # Paths instead of preloads, because the battle scene leads here and a preload would form a cycle.
 const BATTLE_SCENE_PATH: String = "res://scenes/battle/battle.tscn"
 const DOOR_CHOICE_SCENE_PATH: String = "res://scenes/doors/door_choice.tscn"
+# The skill tree screen leads to the next room, so a preload would form a cycle too.
+const SKILL_TREE_SCENE_PATH: String = "res://scenes/skill_tree/skill_tree.tscn"
 
 var _rewards: RoomRewards
-var _skill_buttons: Array[Button] = []
 # Kept here, because tests set it before _ready(), when the dice display does not exist yet.
 var _animations_enabled: bool = true
 
@@ -30,8 +29,6 @@ var _animations_enabled: bool = true
 @onready var _find_details_label: Label = %FindDetailsLabel
 @onready var _take_button: Button = %TakeButton
 @onready var _leave_button: Button = %LeaveButton
-@onready var _skill_section: VBoxContainer = %SkillSection
-@onready var _skill_cards: HBoxContainer = %SkillCards
 @onready var _next_button: Button = %NextButton
 @onready var _character_sheet: CharacterSheet = %CharacterSheet
 
@@ -69,27 +66,17 @@ static func room_scene_path() -> String:
 	return DOOR_CHOICE_SCENE_PATH if RunState.is_door_room() else BATTLE_SCENE_PATH
 
 
+## Next leads to the skill tree while a point can be spent there, else to the next room.
+static func has_skill_point_to_spend() -> bool:
+	var tree: SkillTreeProgress = RunState.skill_tree
+	return tree != null and tree.has_learnable_node(RunState.player)
+
+
 ## Tests and a later fast mode turn the roll animation off. Works before and after _ready().
 func set_animations_enabled(enabled: bool) -> void:
 	_animations_enabled = enabled
 	if is_node_ready():
 		_dice_display.animations_enabled = enabled
-
-
-## The skills of the current offer, in card order. Empty until the loot step is done.
-func offered_skills() -> Array[SkillData]:
-	return _rewards.skill_offer
-
-
-func choose_skill(skill: SkillData) -> void:
-	# Only the first choice counts, even if a disabled card button still gets a pressed signal.
-	if _rewards.chosen_skill != null:
-		return
-	_rewards.choose_skill(skill)
-	for button: Button in _skill_buttons:
-		button.disabled = true
-	_show_hit_points()
-	_show_next_step()
 
 
 func _show_hit_points() -> void:
@@ -129,7 +116,6 @@ func _show_loot_offer() -> void:
 		)
 	_take_button.hide()
 	_leave_button.hide()
-	_skill_section.hide()
 	_next_button.hide()
 
 
@@ -161,7 +147,7 @@ func _show_find(loot: LootRoll) -> void:
 	if loot.item == null:
 		_find_label.text = "%s: %s" % [rarity_text, NOTHING_FOUND_TEXT]
 		_find_details_label.text = ""
-		_show_skill_offer()
+		_show_next_step()
 		return
 	var item: ItemData = loot.item
 	var slot: ItemData.Slot = item.get_slot()
@@ -192,66 +178,18 @@ func _on_take_pressed() -> void:
 	_rewards.take_item()
 	_find_details_label.text = "Equipped."
 	_show_hit_points()
-	_show_skill_offer()
+	_show_next_step()
 
 
 func _on_leave_pressed() -> void:
 	_find_details_label.text = "Left behind."
-	_show_skill_offer()
-
-
-func _show_skill_offer() -> void:
-	_take_button.hide()
-	_leave_button.hide()
-	# The find text stays, the die makes room for the cards.
-	_dice_display.hide()
-	_skill_section.show()
-	for skill: SkillData in _rewards.roll_skill_offer():
-		_skill_cards.add_child(_create_skill_card(skill))
-	if _skill_buttons.is_empty():
-		_show_next_step()
-
-
-func _create_skill_card(skill: SkillData) -> PanelContainer:
-	var card: PanelContainer = PanelContainer.new()
-	card.custom_minimum_size = Vector2(SKILL_CARD_WIDTH, 0)
-	var layout: VBoxContainer = VBoxContainer.new()
-	card.add_child(layout)
-	var name_label: Label = Label.new()
-	name_label.text = skill.display_name
-	name_label.add_theme_font_size_override("font_size", SKILL_NAME_FONT_SIZE)
-	layout.add_child(name_label)
-	var lines: Array[String] = _skill_card_lines(skill)
-	for index: int in lines.size():
-		var line_label: Label = Label.new()
-		line_label.text = lines[index]
-		line_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		# The first line is the skill's description, the others are value changes.
-		if index == 0:
-			line_label.add_theme_color_override("font_color", CharacterSheet.DESCRIPTION_COLOR)
-		layout.add_child(line_label)
-	var button: Button = Button.new()
-	button.text = "Choose"
-	button.size_flags_vertical = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
-	button.pressed.connect(choose_skill.bind(skill))
-	layout.add_child(button)
-	_skill_buttons.append(button)
-	return card
-
-
-## The description first, then the changes to the player's own values. Never chances.
-func _skill_card_lines(skill: SkillData) -> Array[String]:
-	var lines: Array[String] = [skill.description]
-	# preview_skill() keeps its copy to itself, and the notes need the max HP after learning.
-	var after: Character = RunState.player.copy()
-	after.learn_skill(skill)
-	for change: StatSheet.Change in StatSheet.preview_skill(RunState.player, skill):
-		lines.append("%s %s → %s" % [change.label, change.before, change.after])
-	lines.append_array(StatSheet.condition_notes(after.max_hit_points, skill.effects))
-	return lines
+	_show_next_step()
 
 
 func _show_next_step() -> void:
+	_take_button.hide()
+	_leave_button.hide()
+	_next_button.text = "Skill Tree" if has_skill_point_to_spend() else "Next Room"
 	_next_button.show()
 	_next_button.grab_focus()
 
@@ -259,5 +197,8 @@ func _show_next_step() -> void:
 func _on_next_pressed() -> void:
 	# Disabled first, so a second press cannot advance the room twice.
 	_next_button.disabled = true
+	if has_skill_point_to_spend():
+		get_tree().change_scene_to_file(SKILL_TREE_SCENE_PATH)
+		return
 	RunState.advance_room()
 	get_tree().change_scene_to_file(room_scene_path())

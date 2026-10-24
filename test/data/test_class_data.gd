@@ -1,14 +1,12 @@
 extends GutTest
-## Content rules of the class skill pools and the level gates of the skills in them.
+## Content rules of the class skill trees: branches, nodes, ranks, requirements and level gates.
 
 const DATA_ROOT: String = "res://scripts/data"
-const RECKLESS_SWINGS: SkillData = preload("res://scripts/data/skills/reckless_swings.tres")
-const GUARDED_STANCE: SkillData = preload("res://scripts/data/skills/guarded_stance.tres")
-const ADRENALINE: SkillData = preload("res://scripts/data/skills/adrenaline.tres")
-const FOCUS: SkillData = preload("res://scripts/data/skills/focus.tres")
-## Skills with a drawback or a condition are offered from this level on (DECISIONS 2026-10-20).
+const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
+const WARRIOR_TREE: SkillTreeData = preload("res://scripts/data/skill_trees/warrior.tres")
+## Skills with a drawback or a condition open from this level on (DECISIONS 2026-10-20).
 const DRAWBACK_MIN_LEVEL: int = 4
-## Focus is offered from this level on (DECISIONS 2026-10-20).
+## Focus opens at this level (DECISIONS 2026-10-20).
 const FOCUS_MIN_LEVEL: int = 3
 
 var _classes: Array[ClassData] = []
@@ -31,28 +29,24 @@ func _find_resource_paths(directory: String) -> PackedStringArray:
 	return paths
 
 
-# Mirrors Character._stat_modifier: only StatModifierEffect counts on passive skills.
-func _has_passive_skill_rule(effect: EffectData) -> bool:
-	return effect is StatModifierEffect
+func _branches(tree: SkillTreeData) -> Array[SkillBranchData]:
+	var branches: Array[SkillBranchData] = [tree.trunk]
+	branches.append_array(tree.specializations)
+	return branches
 
 
-# Mirrors Combat._apply_effect: the effect types Combat can apply when an active skill is used.
-func _has_active_skill_rule(effect: EffectData) -> bool:
-	return effect is HealEffect or effect is AdvantageEffect
+func _rank_count(branch: SkillBranchData) -> int:
+	var count: int = 0
+	for node: SkillNodeData in branch.nodes:
+		count += node.ranks.size()
+	return count
 
 
-func _has_rule_for_every_effect(skill: SkillData) -> bool:
-	for effect: EffectData in skill.effects:
-		match skill.activation:
-			SkillData.Activation.PASSIVE:
-				if not _has_passive_skill_rule(effect):
-					return false
-			SkillData.Activation.ACTIVE:
-				if not _has_active_skill_rule(effect):
-					return false
-			_:
-				return false
-	return true
+func _find_node(branch: SkillBranchData, node_id: StringName) -> SkillNodeData:
+	for node: SkillNodeData in branch.nodes:
+		if node.id == node_id:
+			return node
+	return null
 
 
 func _has_drawback_or_condition(skill: SkillData) -> bool:
@@ -65,74 +59,115 @@ func _has_drawback_or_condition(skill: SkillData) -> bool:
 	return false
 
 
-func _ids(skills: Array[SkillData]) -> Array[StringName]:
-	var ids: Array[StringName] = []
-	for skill: SkillData in skills:
-		ids.append(skill.id)
-	return ids
-
-
 func test_classes_exist() -> void:
 	assert_gt(_classes.size(), 0, "No classes found under %s" % DATA_ROOT)
 
 
-func test_classes_have_a_skill_pool_without_empty_slots() -> void:
+func test_classes_have_a_tree_with_a_trunk_and_specializations() -> void:
 	for class_data: ClassData in _classes:
-		assert_gt(class_data.skill_pool.size(), 0, "%s has no skill pool" % class_data.id)
-		assert_does_not_have(class_data.skill_pool, null, "%s pool" % class_data.id)
+		var tree: SkillTreeData = class_data.skill_tree
+		assert_not_null(tree, "%s has no skill tree" % class_data.id)
+		assert_not_null(tree.trunk, "%s has no trunk" % class_data.id)
+		assert_gt(tree.specializations.size(), 1, "%s specializations" % class_data.id)
+		assert_does_not_have(tree.specializations, null, "%s specializations" % class_data.id)
 
 
-func test_pool_skills_are_passive_or_active_with_combat_rules() -> void:
+func test_branches_have_texts_and_nodes_without_empty_slots() -> void:
 	for class_data: ClassData in _classes:
-		for skill: SkillData in class_data.skill_pool:
-			assert_has(
-				[SkillData.Activation.PASSIVE, SkillData.Activation.ACTIVE],
-				skill.activation,
-				"%s: %s activation" % [class_data.id, skill.id]
+		for branch: SkillBranchData in _branches(class_data.skill_tree):
+			assert_ne(branch.id, &"", "%s: branch without id" % class_data.id)
+			assert_ne(branch.display_name, "", "%s: %s display name" % [class_data.id, branch.id])
+			assert_ne(branch.description, "", "%s: %s description" % [class_data.id, branch.id])
+			assert_gt(branch.nodes.size(), 0, "%s: %s has no nodes" % [class_data.id, branch.id])
+			assert_does_not_have(branch.nodes, null, "%s: %s nodes" % [class_data.id, branch.id])
+
+
+func test_nodes_have_ranks_with_their_own_names() -> void:
+	for class_data: ClassData in _classes:
+		for branch: SkillBranchData in _branches(class_data.skill_tree):
+			for node: SkillNodeData in branch.nodes:
+				assert_gt(node.ranks.size(), 0, "%s has no ranks" % node.id)
+				assert_does_not_have(node.ranks, null, "%s ranks" % node.id)
+				var names: Array[String] = []
+				for skill: SkillData in node.ranks:
+					assert_does_not_have(names, skill.display_name, "%s rank names" % node.id)
+					names.append(skill.display_name)
+
+
+func test_node_ids_and_skills_are_unique_and_no_starting_skill() -> void:
+	for class_data: ClassData in _classes:
+		var node_ids: Array[StringName] = []
+		var skills: Array[SkillData] = class_data.starting_skills.duplicate()
+		for branch: SkillBranchData in _branches(class_data.skill_tree):
+			for node: SkillNodeData in branch.nodes:
+				assert_does_not_have(node_ids, node.id, "%s: duplicate node" % class_data.id)
+				node_ids.append(node.id)
+				for skill: SkillData in node.ranks:
+					assert_does_not_have(skills, skill, "%s: %s twice" % [class_data.id, skill.id])
+					skills.append(skill)
+
+
+# Listed before the node, so a column reads from top to bottom.
+func test_requirements_name_an_earlier_node_of_the_same_branch() -> void:
+	for class_data: ClassData in _classes:
+		for branch: SkillBranchData in _branches(class_data.skill_tree):
+			for index: int in branch.nodes.size():
+				var node: SkillNodeData = branch.nodes[index]
+				if node.required_node == &"":
+					assert_eq(node.required_rank, 0, "%s required rank" % node.id)
+					continue
+				var required: SkillNodeData = _find_node(branch, node.required_node)
+				assert_not_null(required, "%s needs a node outside %s" % [node.id, branch.id])
+				if required == null:
+					continue
+				assert_lt(branch.nodes.find(required), index, "%s order" % node.id)
+				assert_between(node.required_rank, 1, required.ranks.size(), "%s rank" % node.id)
+				assert_lte(required.min_level, node.min_level, "%s level" % node.id)
+
+
+func test_trunk_has_a_node_for_the_first_level_up() -> void:
+	for class_data: ClassData in _classes:
+		var has_first_node: bool = false
+		for node: SkillNodeData in class_data.skill_tree.trunk.nodes:
+			if node.required_node == &"" and node.min_level <= Character.STARTING_LEVEL + 1:
+				has_first_node = true
+		assert_true(has_first_node, "%s: no trunk node at level 2" % class_data.id)
+
+
+func test_specializations_open_at_their_level_with_an_entry_node() -> void:
+	for class_data: ClassData in _classes:
+		var tree: SkillTreeData = class_data.skill_tree
+		assert_gt(tree.specialization_level, Character.STARTING_LEVEL, "%s" % class_data.id)
+		for branch: SkillBranchData in tree.specializations:
+			var entry_count: int = 0
+			for node: SkillNodeData in branch.nodes:
+				assert_gte(node.min_level, tree.specialization_level, "%s level" % node.id)
+				if node.required_node == &"":
+					entry_count += 1
+			assert_gt(entry_count, 0, "%s has no entry node" % branch.id)
+
+
+# A level-up follows every fight room, so a build must never run out of nodes to spend points on.
+func test_every_specialization_with_the_trunk_takes_every_point_of_a_run() -> void:
+	var points_per_run: int = GAME_RULES.room_count - 1
+	for class_data: ClassData in _classes:
+		var tree: SkillTreeData = class_data.skill_tree
+		for branch: SkillBranchData in tree.specializations:
+			assert_gte(
+				_rank_count(tree.trunk) + _rank_count(branch),
+				points_per_run,
+				"%s: %s" % [class_data.id, branch.id]
 			)
-			assert_true(
-				_has_rule_for_every_effect(skill),
-				"%s: %s has an effect without a rule" % [class_data.id, skill.id]
-			)
 
 
-func test_pool_skill_ids_are_unique() -> void:
+func test_skills_with_a_drawback_or_condition_open_at_level_4() -> void:
 	for class_data: ClassData in _classes:
-		var seen_ids: Array[StringName] = []
-		for skill_id: StringName in _ids(class_data.skill_pool):
-			assert_does_not_have(seen_ids, skill_id, "%s: duplicate %s" % [class_data.id, skill_id])
-			seen_ids.append(skill_id)
+		for branch: SkillBranchData in _branches(class_data.skill_tree):
+			for node: SkillNodeData in branch.nodes:
+				for skill: SkillData in node.ranks:
+					if _has_drawback_or_condition(skill):
+						assert_gte(node.min_level, DRAWBACK_MIN_LEVEL, "%s" % skill.id)
 
 
-func test_pool_contains_no_starting_skill() -> void:
-	for class_data: ClassData in _classes:
-		var starting_ids: Array[StringName] = _ids(class_data.starting_skills)
-		for skill_id: StringName in _ids(class_data.skill_pool):
-			assert_does_not_have(
-				starting_ids, skill_id, "%s: %s is a starting skill" % [class_data.id, skill_id]
-			)
-
-
-func test_pool_skills_have_a_description() -> void:
-	for class_data: ClassData in _classes:
-		for skill: SkillData in class_data.skill_pool:
-			assert_ne(skill.description, "", "%s: %s description" % [class_data.id, skill.id])
-
-
-func test_pool_skills_with_a_drawback_or_condition_unlock_at_level_4() -> void:
-	for class_data: ClassData in _classes:
-		for skill: SkillData in class_data.skill_pool:
-			if _has_drawback_or_condition(skill):
-				assert_gte(
-					skill.min_level, DRAWBACK_MIN_LEVEL, "%s: %s" % [class_data.id, skill.id]
-				)
-
-
-func test_drawback_and_condition_skills_of_the_test_pool_unlock_at_level_4() -> void:
-	assert_eq(RECKLESS_SWINGS.min_level, DRAWBACK_MIN_LEVEL, "Reckless Swings")
-	assert_eq(GUARDED_STANCE.min_level, DRAWBACK_MIN_LEVEL, "Guarded Stance")
-	assert_eq(ADRENALINE.min_level, DRAWBACK_MIN_LEVEL, "Adrenaline")
-
-
-func test_focus_unlocks_at_level_3() -> void:
-	assert_eq(FOCUS.min_level, FOCUS_MIN_LEVEL)
+func test_warrior_focus_opens_at_level_3() -> void:
+	assert_eq(_find_node(WARRIOR_TREE.trunk, &"focus").min_level, FOCUS_MIN_LEVEL)

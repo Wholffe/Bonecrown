@@ -1,7 +1,8 @@
 class_name RoomRewards
 extends RefCounted
-## The rewards after a won fight, in the order the screen shows them: level-up, loot roll, skill
-## choice. Each step changes the player right away, so the run state is plain data at any point.
+## The rewards after a won fight, in the order the screen shows them: level-up and loot roll. The
+## level-up's skill point is spent in the skill tree afterwards. Each step changes the player right
+## away, so the run state is plain data at any point.
 
 var player: Character
 ## The room just won. Its loot is rolled here.
@@ -9,15 +10,11 @@ var room_number: int
 var max_hit_points_before_level_up: int = 0
 ## Null until roll_loot().
 var loot: LootRoll = null
-var skill_offer: Array[SkillData] = []
-## Null until choose_skill().
-var chosen_skill: SkillData = null
 ## The reward of the door chosen before the fight, or null.
 var door_reward: DoorRewardData = null
 var _room_loot_bonus: int
 var _loot_table: LootTableData
 var _loot_roller: LootRoller
-var _skill_offer_roller: SkillOfferRoller
 var _has_leveled_up: bool = false
 
 
@@ -38,7 +35,6 @@ func _init(
 		_room_loot_bonus += door_reward.loot_bonus
 	_loot_table = loot_table
 	_loot_roller = LootRoller.new(dice, loot_table)
-	_skill_offer_roller = SkillOfferRoller.new(dice)
 
 
 ## Heals the door reward's share of the max hit points, rounded down. The screen calls it once,
@@ -101,26 +97,3 @@ func roll_loot(pay_blood_price: bool) -> LootRoll:
 func take_item() -> ItemData:
 	assert(loot != null and loot.item != null, "There is no find to take")
 	return player.equip(loot.item)
-
-
-func roll_skill_offer() -> Array[SkillData]:
-	assert(_has_leveled_up, "The level-up comes before the skill offer")
-	skill_offer = _skill_offer_roller.roll_offer(
-		player.class_data.skill_pool, player.level, player.skills, _capped_attribute_stats()
-	)
-	return skill_offer
-
-
-func choose_skill(skill: SkillData) -> void:
-	assert(chosen_skill == null, "A room gives one skill")
-	assert(skill in skill_offer, "Only an offered skill can be chosen")
-	chosen_skill = skill
-	player.learn_skill(skill)
-
-
-func _capped_attribute_stats() -> Array[StatModifierEffect.Stat]:
-	var capped: Array[StatModifierEffect.Stat] = []
-	for kind: Attributes.Kind in Character.ATTRIBUTE_STATS:
-		if player.is_attribute_capped(kind):
-			capped.append(Character.ATTRIBUTE_STATS[kind])
-	return capped

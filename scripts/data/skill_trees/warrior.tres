@@ -1,0 +1,236 @@
+[gd_resource type="Resource" script_class="SkillTreeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_tree_data.gd" id="1_tree"]
+[ext_resource type="Script" path="res://scripts/data/skill_branch_data.gd" id="2_branch"]
+[ext_resource type="Script" path="res://scripts/data/skill_node_data.gd" id="3_node"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="4_skill"]
+[ext_resource type="Resource" path="res://scripts/data/skills/adrenaline.tres" id="s_adrenaline"]
+[ext_resource type="Resource" path="res://scripts/data/skills/bastion.tres" id="s_bastion"]
+[ext_resource type="Resource" path="res://scripts/data/skills/blood_rage.tres" id="s_blood_rage"]
+[ext_resource type="Resource" path="res://scripts/data/skills/bloodthirst.tres" id="s_bloodthirst"]
+[ext_resource type="Resource" path="res://scripts/data/skills/draconic_scales.tres" id="s_draconic_scales"]
+[ext_resource type="Resource" path="res://scripts/data/skills/dragon_breath.tres" id="s_dragon_breath"]
+[ext_resource type="Resource" path="res://scripts/data/skills/dragon_breath_2.tres" id="s_dragon_breath_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/dragon_breath_3.tres" id="s_dragon_breath_3"]
+[ext_resource type="Resource" path="res://scripts/data/skills/ember_strike.tres" id="s_ember_strike"]
+[ext_resource type="Resource" path="res://scripts/data/skills/fire_heart.tres" id="s_fire_heart"]
+[ext_resource type="Resource" path="res://scripts/data/skills/focus.tres" id="s_focus"]
+[ext_resource type="Resource" path="res://scripts/data/skills/footwork.tres" id="s_footwork"]
+[ext_resource type="Resource" path="res://scripts/data/skills/guarded_stance.tres" id="s_guarded_stance"]
+[ext_resource type="Resource" path="res://scripts/data/skills/inferno.tres" id="s_inferno"]
+[ext_resource type="Resource" path="res://scripts/data/skills/iron_skin.tres" id="s_iron_skin"]
+[ext_resource type="Resource" path="res://scripts/data/skills/mighty_blow.tres" id="s_mighty_blow"]
+[ext_resource type="Resource" path="res://scripts/data/skills/mighty_blow_2.tres" id="s_mighty_blow_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/precision.tres" id="s_precision"]
+[ext_resource type="Resource" path="res://scripts/data/skills/reckless_swings.tres" id="s_reckless_swings"]
+[ext_resource type="Resource" path="res://scripts/data/skills/retaliate.tres" id="s_retaliate"]
+[ext_resource type="Resource" path="res://scripts/data/skills/retaliate_2.tres" id="s_retaliate_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/shield_bash.tres" id="s_shield_bash"]
+[ext_resource type="Resource" path="res://scripts/data/skills/shield_stance.tres" id="s_shield_stance"]
+[ext_resource type="Resource" path="res://scripts/data/skills/shield_stance_2.tres" id="s_shield_stance_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/steadfast.tres" id="s_steadfast"]
+[ext_resource type="Resource" path="res://scripts/data/skills/strength_training.tres" id="s_strength_training"]
+[ext_resource type="Resource" path="res://scripts/data/skills/strength_training_2.tres" id="s_strength_training_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/toughness.tres" id="s_toughness"]
+[ext_resource type="Resource" path="res://scripts/data/skills/toughness_2.tres" id="s_toughness_2"]
+[ext_resource type="Resource" path="res://scripts/data/skills/unstoppable.tres" id="s_unstoppable"]
+
+[sub_resource type="Resource" id="Node_strength_training"]
+script = ExtResource("3_node")
+id = &"strength_training"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_strength_training"), ExtResource("s_strength_training_2")])
+min_level = 2
+
+[sub_resource type="Resource" id="Node_toughness"]
+script = ExtResource("3_node")
+id = &"toughness"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_toughness"), ExtResource("s_toughness_2")])
+min_level = 2
+
+[sub_resource type="Resource" id="Node_footwork"]
+script = ExtResource("3_node")
+id = &"footwork"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_footwork")])
+min_level = 2
+
+[sub_resource type="Resource" id="Node_precision"]
+script = ExtResource("3_node")
+id = &"precision"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_precision")])
+min_level = 2
+
+[sub_resource type="Resource" id="Node_focus"]
+script = ExtResource("3_node")
+id = &"focus"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_focus")])
+min_level = 3
+
+[sub_resource type="Resource" id="Node_guarded_stance"]
+script = ExtResource("3_node")
+id = &"guarded_stance"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_guarded_stance")])
+min_level = 4
+
+[sub_resource type="Resource" id="Branch_training"]
+script = ExtResource("2_branch")
+id = &"training"
+display_name = "Training"
+description = "Shared drills, open to every specialization."
+nodes = Array[ExtResource("3_node")]([SubResource("Node_strength_training"), SubResource("Node_toughness"), SubResource("Node_footwork"), SubResource("Node_precision"), SubResource("Node_focus"), SubResource("Node_guarded_stance")])
+
+[sub_resource type="Resource" id="Node_dragon_breath"]
+script = ExtResource("3_node")
+id = &"dragon_breath"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_dragon_breath"), ExtResource("s_dragon_breath_2"), ExtResource("s_dragon_breath_3")])
+min_level = 3
+
+[sub_resource type="Resource" id="Node_draconic_scales"]
+script = ExtResource("3_node")
+id = &"draconic_scales"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_draconic_scales")])
+required_node = &"dragon_breath"
+required_rank = 1
+min_level = 3
+
+[sub_resource type="Resource" id="Node_ember_strike"]
+script = ExtResource("3_node")
+id = &"ember_strike"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_ember_strike")])
+required_node = &"dragon_breath"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_fire_heart"]
+script = ExtResource("3_node")
+id = &"fire_heart"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_fire_heart")])
+required_node = &"dragon_breath"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_inferno"]
+script = ExtResource("3_node")
+id = &"inferno"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_inferno")])
+required_node = &"dragon_breath"
+required_rank = 2
+min_level = 8
+
+[sub_resource type="Resource" id="Branch_dragonfire"]
+script = ExtResource("2_branch")
+id = &"dragonfire"
+display_name = "Dragonfire"
+description = "Breathe fire on every enemy at once. Strong against groups."
+nodes = Array[ExtResource("3_node")]([SubResource("Node_dragon_breath"), SubResource("Node_draconic_scales"), SubResource("Node_ember_strike"), SubResource("Node_fire_heart"), SubResource("Node_inferno")])
+
+[sub_resource type="Resource" id="Node_mighty_blow"]
+script = ExtResource("3_node")
+id = &"mighty_blow"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_mighty_blow"), ExtResource("s_mighty_blow_2")])
+min_level = 3
+
+[sub_resource type="Resource" id="Node_reckless_swings"]
+script = ExtResource("3_node")
+id = &"reckless_swings"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_reckless_swings")])
+required_node = &"mighty_blow"
+required_rank = 1
+min_level = 4
+
+[sub_resource type="Resource" id="Node_blood_rage"]
+script = ExtResource("3_node")
+id = &"blood_rage"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_blood_rage")])
+required_node = &"mighty_blow"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_adrenaline"]
+script = ExtResource("3_node")
+id = &"adrenaline"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_adrenaline")])
+required_node = &"mighty_blow"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_bloodthirst"]
+script = ExtResource("3_node")
+id = &"bloodthirst"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_bloodthirst")])
+required_node = &"mighty_blow"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_unstoppable"]
+script = ExtResource("3_node")
+id = &"unstoppable"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_unstoppable")])
+required_node = &"mighty_blow"
+required_rank = 2
+min_level = 8
+
+[sub_resource type="Resource" id="Branch_berserker"]
+script = ExtResource("2_branch")
+id = &"berserker"
+display_name = "Berserker"
+description = "Heavy blows at a risk to yourself. Strong against single foes."
+nodes = Array[ExtResource("3_node")]([SubResource("Node_mighty_blow"), SubResource("Node_reckless_swings"), SubResource("Node_blood_rage"), SubResource("Node_adrenaline"), SubResource("Node_bloodthirst"), SubResource("Node_unstoppable")])
+
+[sub_resource type="Resource" id="Node_shield_stance"]
+script = ExtResource("3_node")
+id = &"shield_stance"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_shield_stance"), ExtResource("s_shield_stance_2")])
+min_level = 3
+
+[sub_resource type="Resource" id="Node_retaliate"]
+script = ExtResource("3_node")
+id = &"retaliate"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_retaliate"), ExtResource("s_retaliate_2")])
+required_node = &"shield_stance"
+required_rank = 1
+min_level = 3
+
+[sub_resource type="Resource" id="Node_iron_skin"]
+script = ExtResource("3_node")
+id = &"iron_skin"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_iron_skin")])
+required_node = &"shield_stance"
+required_rank = 1
+min_level = 3
+
+[sub_resource type="Resource" id="Node_shield_bash"]
+script = ExtResource("3_node")
+id = &"shield_bash"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_shield_bash")])
+required_node = &"shield_stance"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_steadfast"]
+script = ExtResource("3_node")
+id = &"steadfast"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_steadfast")])
+required_node = &"shield_stance"
+required_rank = 1
+min_level = 5
+
+[sub_resource type="Resource" id="Node_bastion"]
+script = ExtResource("3_node")
+id = &"bastion"
+ranks = Array[ExtResource("4_skill")]([ExtResource("s_bastion")])
+required_node = &"shield_stance"
+required_rank = 2
+min_level = 8
+
+[sub_resource type="Resource" id="Branch_bulwark"]
+script = ExtResource("2_branch")
+id = &"bulwark"
+display_name = "Bulwark"
+description = "Block, strike back and hold more Momentum. Strong when enemies attack often."
+nodes = Array[ExtResource("3_node")]([SubResource("Node_shield_stance"), SubResource("Node_retaliate"), SubResource("Node_iron_skin"), SubResource("Node_shield_bash"), SubResource("Node_steadfast"), SubResource("Node_bastion")])
+
+[resource]
+script = ExtResource("1_tree")
+trunk = SubResource("Branch_training")
+specializations = Array[ExtResource("2_branch")]([SubResource("Branch_dragonfire"), SubResource("Branch_berserker"), SubResource("Branch_bulwark")])
+specialization_level = 3

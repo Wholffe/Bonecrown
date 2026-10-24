@@ -21,4 +21,3 @@ display_name = "Reckless Swings"
 description = "+2 damage, but −1 AC."
 activation = 0
 effects = Array[ExtResource("1_3t86b")]([SubResource("Resource_k4gbg"), SubResource("Resource_dku45")])
-min_level = 4

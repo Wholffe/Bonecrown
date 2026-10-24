@@ -9,6 +9,8 @@ const FIRST_ROOM: int = 1
 var run_seed: int
 var dice: DiceRoller
 var player: Character
+## Null for a class without a skill tree.
+var skill_tree: SkillTreeProgress
 var room_number: int = FIRST_ROOM
 ## The door the player chose for the current room, or null. Cleared when the room changes.
 var chosen_door: DoorOption = null
@@ -18,6 +20,9 @@ func start_new_run(class_data: ClassData, seed_value: int) -> void:
 	run_seed = seed_value
 	dice = DiceRoller.new(seed_value)
 	player = Character.new(class_data, GAME_RULES)
+	skill_tree = null
+	if class_data.skill_tree != null:
+		skill_tree = SkillTreeProgress.new(class_data.skill_tree)
 	room_number = FIRST_ROOM
 	chosen_door = null
 

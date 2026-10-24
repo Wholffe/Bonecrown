@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_effect"]
+[ext_resource type="Script" path="res://scripts/data/conditional_modifier_effect.gd" id="2_conditional_modifier_effect"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="9_skill"]
+
+[sub_resource type="Resource" id="Resource_unstoppable_0"]
+script = ExtResource("2_conditional_modifier_effect")
+condition = 0
+stat = 7
+amount = 2
+
+[resource]
+script = ExtResource("9_skill")
+id = &"unstoppable"
+display_name = "Unstoppable"
+description = "Take 2 less damage from each hit while you are at or below half your maximum HP."
+activation = 0
+effects = Array[ExtResource("1_effect")]([SubResource("Resource_unstoppable_0")])

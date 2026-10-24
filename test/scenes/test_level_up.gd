@@ -1,5 +1,5 @@
 extends GutTest
-## Post-fight screen: level-up, Blood Price, loot roll and find, skill cards and the next step.
+## Post-fight screen: level-up, Blood Price, loot roll and find, and the next step.
 
 const LEVEL_UP_SCENE: PackedScene = preload("res://scenes/levelup/level_up.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -8,10 +8,9 @@ const REINFORCED_CHAIN_MAIL: ArmorData = preload(
 	"res://scripts/data/items/reinforced_chain_mail.tres"
 )
 const LUCKY_COIN: TalismanData = preload("res://scripts/data/items/lucky_coin.tres")
-const STRENGTH_TRAINING: SkillData = preload("res://scripts/data/skills/strength_training.tres")
 const SEED: int = 7
-## Loot d20 5 (common), first common item, then the first candidate for each of the 3 cards.
-const COMMON_FIND_ROLLS: Array[int] = [5, 1, 1, 1, 1]
+## Loot d20 5 (common), first common item.
+const COMMON_FIND_ROLLS: Array[int] = [5, 1]
 ## Loot d20 5 (common), third common item: the Lucky Coin for the empty talisman slot.
 const TALISMAN_FIND_ROLLS: Array[int] = [5, 3]
 ## [room after advance_room()] with a door choice before the fight.
@@ -127,15 +126,14 @@ func test_find_for_an_empty_slot_is_shown_next_to_the_empty_slot() -> void:
 	assert_string_contains(_label_text(level_up, "FindDetailsLabel"), "talisman slot is empty")
 
 
-func test_take_equips_the_find_and_opens_the_skill_choice() -> void:
+func test_take_equips_the_find_and_shows_next() -> void:
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
 	await _press(level_up, "RollButton")
 
 	await _press(level_up, "TakeButton")
 
 	assert_eq(RunState.player.weapon, HONED_LONGSWORD)
-	assert_true(level_up.get_node("%SkillSection").visible)
-	assert_eq(level_up.offered_skills().size(), 3)
+	assert_true(_button(level_up, "NextButton").visible)
 
 
 func test_leave_keeps_the_worn_item() -> void:
@@ -145,24 +143,24 @@ func test_leave_keeps_the_worn_item() -> void:
 	await _press(level_up, "LeaveButton")
 
 	assert_eq(RunState.player.weapon, WARRIOR.starting_weapon)
-	assert_true(level_up.get_node("%SkillSection").visible)
+	assert_true(_button(level_up, "NextButton").visible)
 
 
-func test_nothing_new_goes_straight_to_the_skill_choice() -> void:
+func test_nothing_new_goes_straight_to_next() -> void:
 	RunState.player.equip(HONED_LONGSWORD)
 	RunState.player.equip(REINFORCED_CHAIN_MAIL)
 	RunState.player.equip(LUCKY_COIN)
-	var level_up: LevelUp = _create([4, 1, 1, 1])
+	var level_up: LevelUp = _create([4])
 
 	await _press(level_up, "RollButton")
 
 	assert_eq(_label_text(level_up, "FindLabel"), "Common: Nothing new this time.")
 	assert_false(_button(level_up, "TakeButton").visible)
-	assert_eq(level_up.offered_skills().size(), 3)
+	assert_true(_button(level_up, "NextButton").visible)
 
 
 func test_legendary_total_in_an_early_room_names_the_rule() -> void:
-	var level_up: LevelUp = _create([20, 1, 1, 1, 1])
+	var level_up: LevelUp = _create([20, 1])
 
 	await _press(level_up, "RollButton")
 
@@ -172,32 +170,26 @@ func test_legendary_total_in_an_early_room_names_the_rule() -> void:
 	)
 
 
-func test_skill_cards_show_value_changes() -> void:
+func test_next_leads_to_the_skill_tree_while_a_point_can_be_spent() -> void:
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
 	await _press(level_up, "RollButton")
+
 	await _press(level_up, "LeaveButton")
 
-	assert_eq(level_up.offered_skills()[0], STRENGTH_TRAINING)
-	var card_texts: Array[String] = []
-	for label: Node in level_up.get_node("%SkillCards").get_child(0).find_children(
-		"*", "Label", true, false
-	):
-		card_texts.append((label as Label).text)
-	assert_has(card_texts, "Strength Training")
-	assert_has(card_texts, "Attack +5 → +6")
+	assert_true(LevelUp.has_skill_point_to_spend())
+	assert_eq(_button(level_up, "NextButton").text, "Skill Tree")
 
 
-func test_choosing_a_skill_learns_it_and_offers_the_next_room() -> void:
+func test_next_leads_to_the_next_room_once_the_point_is_spent() -> void:
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
+	var strength_training: SkillNodeData = RunState.skill_tree.tree.trunk.nodes[0]
+	RunState.skill_tree.learn(strength_training, RunState.player)
 	await _press(level_up, "RollButton")
+
 	await _press(level_up, "LeaveButton")
 
-	level_up.choose_skill(STRENGTH_TRAINING)
-
-	assert_has(RunState.player.skills, STRENGTH_TRAINING)
-	var next: Button = _button(level_up, "NextButton")
-	assert_true(next.visible)
-	assert_eq(next.text, "Next Room")
+	assert_false(LevelUp.has_skill_point_to_spend())
+	assert_eq(_button(level_up, "NextButton").text, "Next Room")
 
 
 # The scene change itself would replace the running GUT scene, so only its target is checked.
@@ -226,3 +218,4 @@ func test_character_button_toggles_the_sheet() -> void:
 func test_scene_paths_point_to_existing_scenes() -> void:
 	assert_true(ResourceLoader.exists(LevelUp.BATTLE_SCENE_PATH))
 	assert_true(ResourceLoader.exists(LevelUp.DOOR_CHOICE_SCENE_PATH))
+	assert_true(ResourceLoader.exists(LevelUp.SKILL_TREE_SCENE_PATH))

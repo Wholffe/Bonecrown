@@ -16,4 +16,3 @@ activation = 1
 momentum_cost = 1
 uses_per_fight = 1
 effects = Array[ExtResource("1_ei421")]([SubResource("Resource_u1bs1")])
-min_level = 3

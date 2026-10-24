@@ -1,0 +1,114 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/skill_tree/skill_tree_screen.gd" id="1_sktre"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="2_chsht"]
+
+[node name="SkillTreeScreen" type="Control" unique_id=1406257311]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sktre")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1720412236]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=597732025]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1960553372]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Margin/Layout" unique_id=314998087]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Layout/Header" unique_id=1159063611]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Skill Tree"
+
+[node name="ContinueButton" type="Button" parent="Margin/Layout/Header" unique_id=887135462]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Next Room"
+
+[node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=1302187594]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Character (C)"
+
+[node name="HintLabel" type="Label" parent="Margin/Layout" unique_id=1882066145]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Columns" type="HBoxContainer" parent="Margin/Layout" unique_id=556017330]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Details" type="PanelContainer" parent="Margin/Layout" unique_id=1263364706]
+layout_mode = 2
+
+[node name="DetailsMargin" type="MarginContainer" parent="Margin/Layout/Details" unique_id=1588905613]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="DetailsRow" type="HBoxContainer" parent="Margin/Layout/Details/DetailsMargin" unique_id=1022474416]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DetailsText" type="VBoxContainer" parent="Margin/Layout/Details/DetailsMargin/DetailsRow" unique_id=1764591227]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NodeNameLabel" type="Label" parent="Margin/Layout/Details/DetailsMargin/DetailsRow/DetailsText" unique_id=1435622108]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+
+[node name="NodeDetailsLabel" type="Label" parent="Margin/Layout/Details/DetailsMargin/DetailsRow/DetailsText" unique_id=2093541318]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="LearnButton" type="Button" parent="Margin/Layout/Details/DetailsMargin/DetailsRow" unique_id=1659340872]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_vertical = 4
+text = "Learn"
+
+[node name="CharacterSheet" parent="." unique_id=1093313437 instance=ExtResource("2_chsht")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

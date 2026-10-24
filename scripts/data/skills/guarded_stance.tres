@@ -21,4 +21,3 @@ display_name = "Guarded Stance"
 description = "+2 AC, but −1 damage."
 activation = 0
 effects = Array[ExtResource("1_xccsu")]([SubResource("Resource_7bhfe"), SubResource("Resource_0tm7m")])
-min_level = 4

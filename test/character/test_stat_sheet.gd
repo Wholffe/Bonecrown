@@ -5,7 +5,9 @@ const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
 const STRENGTH_TRAINING: SkillData = preload("res://scripts/data/skills/strength_training.tres")
 const TOUGHNESS: SkillData = preload("res://scripts/data/skills/toughness.tres")
+const STRENGTH_TRAINING_2: SkillData = preload("res://scripts/data/skills/strength_training_2.tres")
 const ADRENALINE: SkillData = preload("res://scripts/data/skills/adrenaline.tres")
+const UNSTOPPABLE: SkillData = preload("res://scripts/data/skills/unstoppable.tres")
 const BONE_PLATE: ArmorData = preload("res://scripts/data/items/bone_plate.tres")
 const LUCKY_COIN: TalismanData = preload("res://scripts/data/items/lucky_coin.tres")
 ## [crit threshold, expected text]
@@ -143,3 +145,21 @@ func test_condition_note_rounds_half_down() -> void:
 
 func test_plain_modifiers_have_no_condition_note() -> void:
 	assert_eq(StatSheet.condition_notes(22, STRENGTH_TRAINING.effects).size(), 0)
+
+
+func test_condition_note_names_less_damage_taken() -> void:
+	var notes: Array[String] = StatSheet.condition_notes(22, UNSTOPPABLE.effects)
+
+	assert_eq(notes, ["While at 11 HP or less (half of 22): Damage reduction +2"] as Array[String])
+
+
+func test_skill_preview_of_a_higher_rank_compares_with_the_rank_it_replaces() -> void:
+	_warrior.learn_skill(STRENGTH_TRAINING)
+
+	var changes: Array[StatSheet.Change] = StatSheet.preview_skill(
+		_warrior, STRENGTH_TRAINING_2, STRENGTH_TRAINING
+	)
+
+	assert_eq(changes[0].label, "Attack")
+	assert_eq(changes[0].before, "+6")
+	assert_eq(changes[0].after, "+7")

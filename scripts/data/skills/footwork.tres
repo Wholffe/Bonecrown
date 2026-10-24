@@ -16,4 +16,3 @@ display_name = "Footwork"
 description = "+2 Dexterity."
 activation = 0
 effects = Array[ExtResource("1_67tx0")]([SubResource("Resource_6xkcs")])
-stackable = true

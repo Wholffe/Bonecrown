@@ -16,4 +16,3 @@ display_name = "Precision"
 description = "+1 to all attack rolls."
 activation = 0
 effects = Array[ExtResource("1_271mi")]([SubResource("Resource_rtvb0")])
-stackable = true

@@ -76,9 +76,11 @@ static func changes(before: StatSheet, after: StatSheet) -> Array[Change]:
 
 ## What learning the skill would change. Both sides are compared at full HP, so conditional
 ## modifiers do not show up here but in condition_notes().
-static func preview_skill(character: Character, skill: SkillData) -> Array[Change]:
+static func preview_skill(
+	character: Character, skill: SkillData, replaced: SkillData = null
+) -> Array[Change]:
 	var after: Character = character.copy()
-	after.learn_skill(skill)
+	after.learn_skill(skill, replaced)
 	return _compare_at_full_hit_points(character, after)
 
 

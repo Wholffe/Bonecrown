@@ -30,6 +30,19 @@ func test_new_run_starts_in_first_room_with_full_health() -> void:
 	assert_eq(RunState.player.hit_points, RunState.player.max_hit_points)
 
 
+func test_new_run_starts_a_fresh_skill_tree_of_the_class() -> void:
+	RunState.start_new_run(WARRIOR, SEED)
+	var old_progress: SkillTreeProgress = RunState.skill_tree
+	RunState.player.level_up()
+	old_progress.learn(old_progress.tree.trunk.nodes[0], RunState.player)
+
+	RunState.start_new_run(WARRIOR, SEED)
+
+	assert_ne(RunState.skill_tree, old_progress)
+	assert_eq(RunState.skill_tree.tree, WARRIOR.skill_tree)
+	assert_eq(RunState.skill_tree.rank_of(WARRIOR.skill_tree.trunk.nodes[0]), 0)
+
+
 func test_same_seed_repeats_the_run_dice() -> void:
 	RunState.start_new_run(WARRIOR, SEED)
 	var first: Array[int] = _roll_sequence()

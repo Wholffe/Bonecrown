@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_effect"]
+[ext_resource type="Script" path="res://scripts/data/attack_effect.gd" id="2_attack_effect"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="9_skill"]
+
+[sub_resource type="Resource" id="Resource_ember_strike_0"]
+script = ExtResource("2_attack_effect")
+splash_die_count = 1
+splash_die_sides = 6
+
+[resource]
+script = ExtResource("9_skill")
+id = &"ember_strike"
+display_name = "Ember Strike"
+description = "An attack. On a hit, every other enemy takes 1d6 fire damage."
+activation = 1
+momentum_cost = 3
+effects = Array[ExtResource("1_effect")]([SubResource("Resource_ember_strike_0")])

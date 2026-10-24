@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SkillData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="1_effect"]
+[ext_resource type="Script" path="res://scripts/data/retaliate_effect.gd" id="2_retaliate_effect"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="9_skill"]
+
+[sub_resource type="Resource" id="Resource_retaliate_0"]
+script = ExtResource("2_retaliate_effect")
+die_count = 1
+die_sides = 6
+
+[resource]
+script = ExtResource("9_skill")
+id = &"retaliate"
+display_name = "Retaliate"
+description = "While you block, every enemy attack that misses you deals 1d6 damage back."
+activation = 0
+effects = Array[ExtResource("1_effect")]([SubResource("Resource_retaliate_0")])

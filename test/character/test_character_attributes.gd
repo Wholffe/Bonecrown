@@ -37,7 +37,7 @@ func test_strength_training_raises_effective_strength_by_2() -> void:
 	assert_eq(_warrior.attribute_value(Attributes.Kind.STRENGTH), 18, "16 + 2")
 
 
-func test_stackable_skill_counts_every_time_it_is_learned() -> void:
+func test_skill_learned_twice_counts_twice() -> void:
 	_learn_times(FOOTWORK, 2)
 
 	assert_eq(_warrior.attribute_value(Attributes.Kind.DEXTERITY), 16, "12 + 2 × 2")

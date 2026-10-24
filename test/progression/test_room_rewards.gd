@@ -1,11 +1,9 @@
 extends GutTest
-## RoomRewards: door reward, level-up, Blood Price, loot roll and swap, skill offer and choice after
-## a fight.
+## RoomRewards: door reward, level-up, Blood Price, loot roll and swap after a fight.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
 const LOOT_TABLE: LootTableData = preload("res://scripts/data/loot/loot_table.tres")
-const STRENGTH_TRAINING: SkillData = preload("res://scripts/data/skills/strength_training.tres")
 const HONED_LONGSWORD: WeaponData = preload("res://scripts/data/items/honed_longsword.tres")
 const LUCKY_COIN: TalismanData = preload("res://scripts/data/items/lucky_coin.tres")
 const TREASURE: DoorRewardData = preload("res://scripts/data/doors/treasure.tres")
@@ -13,8 +11,6 @@ const HEALING_SPRING: DoorRewardData = preload("res://scripts/data/doors/healing
 const ELITE_LOOT_BONUS: int = 3
 const FIRST_ROOM: int = 1
 const BLOOD_PRICE_ROOM: int = 2
-const SEED: int = 99
-const SEED_COUNT: int = 30
 
 var _player: Character
 var _dice: FixedDice
@@ -161,44 +157,3 @@ func test_worn_item_is_not_found_again() -> void:
 
 	assert_ne(loot.item, HONED_LONGSWORD)
 	assert_eq(loot.item.rarity, ItemData.Rarity.COMMON)
-
-
-func test_skill_offer_has_only_skills_of_the_new_level() -> void:
-	for seed_value: int in SEED_COUNT:
-		_player = Character.new(WARRIOR, GAME_RULES)
-		var rewards: RoomRewards = RoomRewards.new(
-			_player, FIRST_ROOM, 0, DiceRoller.new(seed_value), LOOT_TABLE
-		)
-		rewards.level_up()
-
-		var offer: Array[SkillData] = rewards.roll_skill_offer()
-
-		assert_eq(offer.size(), 3, "seed %d" % seed_value)
-		for skill: SkillData in offer:
-			assert_true(skill.min_level <= 2, "%s at level 2, seed %d" % [skill.id, seed_value])
-
-
-func test_skill_offer_leaves_out_skills_of_a_capped_attribute() -> void:
-	for seed_value: int in SEED_COUNT:
-		_player = Character.new(WARRIOR, GAME_RULES)
-		_player.learn_skill(STRENGTH_TRAINING)
-		_player.learn_skill(STRENGTH_TRAINING)
-		var rewards: RoomRewards = RoomRewards.new(
-			_player, FIRST_ROOM, 0, DiceRoller.new(seed_value), LOOT_TABLE
-		)
-		rewards.level_up()
-
-		assert_does_not_have(rewards.roll_skill_offer(), STRENGTH_TRAINING, "seed %d" % seed_value)
-
-
-func test_chosen_skill_is_learned() -> void:
-	var rewards: RoomRewards = RoomRewards.new(
-		_player, FIRST_ROOM, 0, DiceRoller.new(SEED), LOOT_TABLE
-	)
-	rewards.level_up()
-	var offer: Array[SkillData] = rewards.roll_skill_offer()
-
-	rewards.choose_skill(offer[0])
-
-	assert_has(_player.skills, offer[0])
-	assert_eq(rewards.chosen_skill, offer[0])

@@ -16,4 +16,3 @@ display_name = "Toughness"
 description = "+2 Constitution."
 activation = 0
 effects = Array[ExtResource("1_netsp")]([SubResource("Resource_rh2ri")])
-stackable = true

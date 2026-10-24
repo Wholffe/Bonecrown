@@ -2,19 +2,11 @@
 
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="1_0s5q5"]
 [ext_resource type="Resource" path="res://scripts/data/items/chain_mail.tres" id="2_beihx"]
-[ext_resource type="Resource" path="res://scripts/data/skills/strength_training.tres" id="3_afwf4"]
 [ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_ccsre"]
 [ext_resource type="Resource" path="res://scripts/data/items/longsword.tres" id="3_gg483"]
 [ext_resource type="Resource" path="res://scripts/data/skills/second_wind.tres" id="4_b6w27"]
-[ext_resource type="Resource" path="res://scripts/data/skills/footwork.tres" id="4_n4tux"]
-[ext_resource type="Resource" path="res://scripts/data/skills/toughness.tres" id="5_5skj8"]
 [ext_resource type="Resource" path="res://scripts/data/skills/weapon_master.tres" id="5_ei16b"]
-[ext_resource type="Resource" path="res://scripts/data/skills/precision.tres" id="6_ibyqt"]
-[ext_resource type="Resource" path="res://scripts/data/skills/iron_skin.tres" id="7_8jqxc"]
-[ext_resource type="Resource" path="res://scripts/data/skills/reckless_swings.tres" id="8_agwd8"]
-[ext_resource type="Resource" path="res://scripts/data/skills/guarded_stance.tres" id="9_m4cdq"]
-[ext_resource type="Resource" path="res://scripts/data/skills/adrenaline.tres" id="10_imw2t"]
-[ext_resource type="Resource" path="res://scripts/data/skills/focus.tres" id="11_focus"]
+[ext_resource type="Resource" path="res://scripts/data/skill_trees/warrior.tres" id="6_tree"]
 
 [resource]
 script = ExtResource("1_0s5q5")
@@ -29,4 +21,4 @@ hit_points_per_level = 6
 starting_weapon = ExtResource("3_gg483")
 starting_armor = ExtResource("2_beihx")
 starting_skills = Array[ExtResource("3_ccsre")]([ExtResource("4_b6w27"), ExtResource("5_ei16b")])
-skill_pool = Array[ExtResource("3_ccsre")]([ExtResource("3_afwf4"), ExtResource("4_n4tux"), ExtResource("5_5skj8"), ExtResource("6_ibyqt"), ExtResource("7_8jqxc"), ExtResource("8_agwd8"), ExtResource("9_m4cdq"), ExtResource("10_imw2t"), ExtResource("11_focus")])
+skill_tree = ExtResource("6_tree")

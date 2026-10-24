@@ -1,15 +1,13 @@
 extends GutTest
-## Post-fight screen: the roll buttons, the Choose buttons of the skill cards, an empty skill offer
-## and where the Next button leads.
+## Post-fight screen: the roll buttons, a class without a skill tree and where the Next button
+## leads.
 
 const LEVEL_UP_SCENE: PackedScene = preload("res://scenes/levelup/level_up.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const SEED: int = 7
 const BLOOD_PRICE_ROOM: int = 2
-## Loot d20 5 (common), first common item, then the first candidate for each of the 3 cards.
-const COMMON_FIND_ROLLS: Array[int] = [5, 1, 1, 1, 1]
-## Loot d20 5 (common), first common item. An empty pool rolls no cards.
-const COMMON_FIND_WITHOUT_CARDS_ROLLS: Array[int] = [5, 1]
+## Loot d20 5 (common), first common item.
+const COMMON_FIND_ROLLS: Array[int] = [5, 1]
 ## [button pressed to roll the loot] in the Blood Price room.
 const ROLL_BUTTON_CASES: Array = [["RollButton"], ["BloodPriceButton"]]
 ## [room just cleared], each followed by a room with a door choice.
@@ -37,16 +35,6 @@ func _press(level_up: LevelUp, node_name: String) -> void:
 	await wait_process_frames(1)
 
 
-## Rolls a common find, leaves it and returns the Choose buttons of the cards in card order.
-func _open_skill_cards(level_up: LevelUp) -> Array[Button]:
-	await _press(level_up, "RollButton")
-	await _press(level_up, "LeaveButton")
-	var buttons: Array[Button] = []
-	for button: Node in level_up.get_node("%SkillCards").find_children("*", "Button", true, false):
-		buttons.append(button as Button)
-	return buttons
-
-
 func test_either_roll_button_disables_both(
 	params: Array = use_parameters(ROLL_BUTTON_CASES)
 ) -> void:
@@ -59,44 +47,18 @@ func test_either_roll_button_disables_both(
 	assert_true(_button(level_up, "BloodPriceButton").disabled, "after %s" % params[0])
 
 
-func test_choose_button_disables_every_card() -> void:
+func test_class_without_a_skill_tree_goes_to_the_next_room() -> void:
+	var class_without_tree: ClassData = WARRIOR.duplicate()
+	class_without_tree.skill_tree = null
+	RunState.start_new_run(class_without_tree, SEED)
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
-	var buttons: Array[Button] = await _open_skill_cards(level_up)
-	assert_eq(buttons.size(), 3)
-
-	buttons[0].pressed.emit()
-
-	for index: int in buttons.size():
-		assert_true(buttons[index].disabled, "card %d" % index)
-	assert_has(RunState.player.skills, level_up.offered_skills()[0])
-
-
-func test_second_choose_button_learns_no_second_skill() -> void:
-	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
-	var buttons: Array[Button] = await _open_skill_cards(level_up)
-	var offer: Array[SkillData] = level_up.offered_skills()
-
-	buttons[0].pressed.emit()
-	buttons[1].pressed.emit()
-
-	assert_eq(RunState.player.skills.size(), WARRIOR.starting_skills.size() + 1)
-	assert_eq(RunState.player.skills.count(offer[0]), 1)
-	assert_does_not_have(RunState.player.skills, offer[1])
-
-
-func test_empty_skill_offer_shows_next_at_once() -> void:
-	var class_without_pool: ClassData = WARRIOR.duplicate()
-	var no_skills: Array[SkillData] = []
-	class_without_pool.skill_pool = no_skills
-	RunState.start_new_run(class_without_pool, SEED)
-	var level_up: LevelUp = _create(COMMON_FIND_WITHOUT_CARDS_ROLLS)
 
 	await _press(level_up, "RollButton")
 	await _press(level_up, "LeaveButton")
 
-	assert_true(level_up.offered_skills().is_empty())
-	assert_eq(level_up.get_node("%SkillCards").get_child_count(), 0)
-	assert_true(_button(level_up, "NextButton").visible)
+	assert_null(RunState.skill_tree)
+	assert_false(LevelUp.has_skill_point_to_spend())
+	assert_eq(_button(level_up, "NextButton").text, "Next Room")
 
 
 # Next advances the room and then changes to room_scene_path(). The scene change itself would
