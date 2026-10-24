@@ -70,7 +70,7 @@ func test_open_shows_the_worn_items_on_the_paper_doll() -> void:
 	assert_has(texts, "Longsword")
 	assert_has(texts, "Chain Mail")
 	var paper_doll: PaperDoll = _sheet.get_node("%PaperDoll") as PaperDoll
-	assert_eq(paper_doll.figure_layers().size(), 2, "Longsword and Chain Mail on the figure")
+	assert_eq(paper_doll.item_slot(ItemData.Slot.WEAPON).item.display_name, "Longsword")
 	assert_null(paper_doll.item_slot(ItemData.Slot.TALISMAN).item, "No talisman at the start")
 
 

@@ -16,7 +16,8 @@ enum Rarity { COMMON = 0, UNCOMMON = 1, RARE = 2, LEGENDARY = 3, UNSET = -1 }
 @export var effects: Array[EffectData] = []
 ## Shown in the equipment slots.
 @export var icon: Texture2D
-## Drawn over the figure while the item is worn. Null means the item does not show on the figure.
+## A layer of the worn item for the old SVG figure. The pixel figure does not draw item layers
+## yet, so this waits for pixel layers. Null means the item would not show on the figure.
 @export var figure_layer: Texture2D
 
 # The slot follows from the subclass, so it can never contradict the item's fields.

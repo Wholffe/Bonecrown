@@ -94,3 +94,11 @@ func test_defeated_figure_stops_its_idle_loop() -> void:
 
 	assert_true(figure.is_defeated())
 	assert_false(figure.is_processing())
+
+
+func test_figure_without_frames_stays_still_when_it_enters_the_tree() -> void:
+	var figure: FigureView = FigureView.new()
+
+	add_child_autofree(figure)
+
+	assert_false(figure.is_processing(), "no idle loop before a figure is shown")

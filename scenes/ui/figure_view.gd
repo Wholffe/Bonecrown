@@ -40,7 +40,11 @@ func _init() -> void:
 	_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(_sprite)
-	set_process(false)
+
+
+# Godot turns processing on when a node with _process becomes ready, even without frames.
+func _ready() -> void:
+	set_process(_frames.size() > 1 and not _is_defeated)
 
 
 func _notification(what: int) -> void:

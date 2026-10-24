@@ -1,5 +1,5 @@
 extends GutTest
-## Paper doll: one item slot per equipment slot and the figure layers of the worn items.
+## Paper doll: one item slot per equipment slot and the class's pixel figure.
 
 const PAPER_DOLL_SCENE: PackedScene = preload("res://scenes/ui/paper_doll.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -33,13 +33,13 @@ func test_slots_sit_on_their_side_of_the_figure() -> void:
 		assert_eq(String(column.name), expected, ItemData.Slot.find_key(slot))
 
 
-func test_figure_wears_the_layers_of_the_worn_items() -> void:
+func test_figure_is_the_class_figure_from_the_battlefield() -> void:
 	_paper_doll.show_character(_warrior)
 
-	assert_eq(
-		_paper_doll.figure_layers(),
-		[WARRIOR.starting_weapon.figure_layer, WARRIOR.starting_armor.figure_layer]
-	)
+	var figure: FigureView = _paper_doll.figure()
+	assert_eq(figure.shown_frame(), WARRIOR.figure_frames[0])
+	assert_false(figure.is_facing_left())
+	assert_true(figure.is_processing(), "it plays the same idle loop")
 
 
 func test_worn_items_fill_their_slots() -> void:
@@ -57,25 +57,12 @@ func test_slot_without_an_item_is_shown_empty() -> void:
 	assert_true(talisman_slot.is_dimmed(), "The empty slot shows its dimmed silhouette")
 
 
-func test_showing_again_replaces_the_layers() -> void:
+func test_showing_again_replaces_the_items() -> void:
 	_paper_doll.show_character(_warrior)
 	_warrior.equip(HEADSMANS_GREATSWORD)
+	_warrior.equip(LUCKY_COIN)
 
 	_paper_doll.show_character(_warrior)
 
-	assert_eq(
-		_paper_doll.figure_layers(),
-		[HEADSMANS_GREATSWORD.figure_layer, WARRIOR.starting_armor.figure_layer]
-	)
 	assert_eq(_paper_doll.item_slot(ItemData.Slot.WEAPON).item, HEADSMANS_GREATSWORD)
-
-
-func test_item_without_a_figure_layer_only_fills_its_slot() -> void:
-	var plain_talisman: TalismanData = LUCKY_COIN.duplicate() as TalismanData
-	plain_talisman.figure_layer = null
-	_warrior.equip(plain_talisman)
-
-	_paper_doll.show_character(_warrior)
-
-	assert_eq(_paper_doll.figure_layers().size(), 2, "Only the weapon and the armor")
-	assert_eq(_paper_doll.item_slot(ItemData.Slot.TALISMAN).item, plain_talisman)
+	assert_eq(_paper_doll.item_slot(ItemData.Slot.TALISMAN).item, LUCKY_COIN)
