@@ -5,6 +5,10 @@
 [ext_resource type="Script" path="res://scripts/data/boss_phase_data.gd" id="3_bphas"]
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="4_oevm7"]
 [ext_resource type="Resource" path="res://scripts/data/enemies/skeleton.tres" id="5_skltn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/necromancer_anim_f0.png" id="fig_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/necromancer_anim_f1.png" id="fig_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/necromancer_anim_f2.png" id="fig_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/necromancer_anim_f3.png" id="fig_3"]
 
 [sub_resource type="Resource" id="Resource_royal_strike"]
 script = ExtResource("2_g7int")
@@ -62,3 +66,5 @@ damage_bonus = 6
 momentum_per_round = 1
 momentum_cap = 2
 intents = Array[ExtResource("2_g7int")]([SubResource("Resource_royal_strike"), SubResource("Resource_crushing_blow")])
+figure_frames = Array[Texture2D]([ExtResource("fig_0"), ExtResource("fig_1"), ExtResource("fig_2"), ExtResource("fig_3")])
+figure_scale = 1.4

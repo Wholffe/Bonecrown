@@ -15,3 +15,5 @@ extends Resource
 @export var starting_skills: Array[SkillData] = []
 ## Every level-up gives a point to spend in it.
 @export var skill_tree: SkillTreeData
+## Idle animation of the battle figure, facing right.
+@export var figure_frames: Array[Texture2D] = []

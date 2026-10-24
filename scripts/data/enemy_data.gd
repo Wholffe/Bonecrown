@@ -17,3 +17,7 @@ extends Resource
 @export var momentum_cap: int = 0
 ## Ordered by Momentum cost, the first one costs nothing.
 @export var intents: Array[EnemyIntentData] = []
+## Idle animation of the battle figure, facing right. The battle mirrors it to face the player.
+@export var figure_frames: Array[Texture2D] = []
+## Size of the battle figure relative to the others, so a boss can tower over them.
+@export var figure_scale: float = 1.0

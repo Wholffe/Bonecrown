@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_oevm7"]
 [ext_resource type="Script" path="res://scripts/data/enemy_intent_data.gd" id="2_g7int"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/skelet_idle_anim_f0.png" id="fig_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/skelet_idle_anim_f1.png" id="fig_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/skelet_idle_anim_f2.png" id="fig_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/skelet_idle_anim_f3.png" id="fig_3"]
 
 [sub_resource type="Resource" id="Resource_slash"]
 script = ExtResource("2_g7int")
@@ -31,3 +35,5 @@ crit_resistant = true
 momentum_per_round = 1
 momentum_cap = 2
 intents = Array[ExtResource("2_g7int")]([SubResource("Resource_slash"), SubResource("Resource_chill_strike")])
+figure_frames = Array[Texture2D]([ExtResource("fig_0"), ExtResource("fig_1"), ExtResource("fig_2"), ExtResource("fig_3")])
+figure_scale = 1.5

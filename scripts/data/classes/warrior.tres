@@ -7,6 +7,10 @@
 [ext_resource type="Resource" path="res://scripts/data/skills/second_wind.tres" id="4_b6w27"]
 [ext_resource type="Resource" path="res://scripts/data/skills/weapon_master.tres" id="5_ei16b"]
 [ext_resource type="Resource" path="res://scripts/data/skill_trees/warrior.tres" id="6_tree"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/lizard_m_idle_anim_f0.png" id="fig_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/lizard_m_idle_anim_f1.png" id="fig_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/lizard_m_idle_anim_f2.png" id="fig_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dungeon/lizard_m_idle_anim_f3.png" id="fig_3"]
 
 [resource]
 script = ExtResource("1_0s5q5")
@@ -22,3 +26,4 @@ starting_weapon = ExtResource("3_gg483")
 starting_armor = ExtResource("2_beihx")
 starting_skills = Array[ExtResource("3_ccsre")]([ExtResource("4_b6w27"), ExtResource("5_ei16b")])
 skill_tree = ExtResource("6_tree")
+figure_frames = Array[Texture2D]([ExtResource("fig_0"), ExtResource("fig_1"), ExtResource("fig_2"), ExtResource("fig_3")])

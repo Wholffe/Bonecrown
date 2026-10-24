@@ -94,6 +94,26 @@ func test_enemies_have_valid_damage_dice_and_hit_points() -> void:
 			assert_gt(enemy.max_hit_points, 0, "%s hit points" % enemy.id)
 
 
+# The figure stands at the bottom of its box, so every frame of its idle loop must be the same size.
+func test_classes_and_enemies_have_figures_with_frames_of_one_size() -> void:
+	for resource: Resource in _resources:
+		var frames: Array[Texture2D] = []
+		if resource is EnemyData:
+			frames = (resource as EnemyData).figure_frames
+			assert_gt((resource as EnemyData).figure_scale, 0.0, "%s scale" % resource.get("id"))
+		elif resource is ClassData:
+			frames = (resource as ClassData).figure_frames
+		else:
+			continue
+		assert_false(frames.is_empty(), "%s has a figure" % resource.get("id"))
+		for frame: Texture2D in frames:
+			assert_not_null(frame, "%s has an empty frame" % resource.get("id"))
+			if frame != null and not frames.is_empty() and frames[0] != null:
+				assert_eq(
+					frame.get_size(), frames[0].get_size(), "%s frame size" % resource.get("id")
+				)
+
+
 # The first intent is the fallback when the enemy has no Momentum, so it must cost nothing.
 func test_enemies_have_affordable_intents_in_cost_order() -> void:
 	for resource: Resource in _resources:
