@@ -4,8 +4,6 @@ extends Control
 
 const STARTING_CLASS: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const ITEM_SLOT_SCENE: PackedScene = preload("res://scenes/ui/item_slot.tscn")
-# The battle scene leads here, so a preload of it would form a cycle.
-const BATTLE_SCENE_PATH: String = "res://scenes/battle/battle.tscn"
 const MAIN_MENU_SCENE_PATH: String = "res://scenes/main_menu/main_menu.tscn"
 const VICTORY_TITLE: String = "Victory!"
 const DEFEAT_TITLE: String = "You have fallen."
@@ -61,7 +59,7 @@ func _skill_names(skills: Array[SkillData]) -> PackedStringArray:
 
 func _on_new_run_button_pressed() -> void:
 	RunState.start_new_run(STARTING_CLASS, RunState.new_random_seed())
-	get_tree().change_scene_to_file(BATTLE_SCENE_PATH)
+	get_tree().change_scene_to_file(MapScreen.MAP_SCENE_PATH)
 
 
 func _on_main_menu_button_pressed() -> void:

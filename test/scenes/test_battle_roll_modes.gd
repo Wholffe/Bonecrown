@@ -28,9 +28,8 @@ const NATURAL_ONE_DEFEAT_ROLLS: Array[int] = [1, 13, 6, 13, 6]
 ## Warrior with Focus: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP.
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
-	# Room 2 behind a door of two goblins, so the fight starts without a roll.
-	RunState.advance_room()
-	RunState.choose_door(GoblinPairDoor.create())
+	# A room 2 fight node with two goblins, so the fight starts without a roll.
+	RunState.enter_node(GoblinPairNode.create())
 	RunState.player.learn_skill(FOCUS)
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle

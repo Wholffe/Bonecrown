@@ -1,13 +1,13 @@
 extends GutTest
-## RoomRewards: door reward, level-up, Blood Price, loot roll and swap after a fight.
+## RoomRewards: level-up, gold, Blood Price, loot roll, swap and selling after a fight or at a
+## treasure.
 
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
 const GAME_RULES: GameRulesData = preload("res://scripts/data/game_rules.tres")
 const LOOT_TABLE: LootTableData = preload("res://scripts/data/loot/loot_table.tres")
 const HONED_LONGSWORD: WeaponData = preload("res://scripts/data/items/honed_longsword.tres")
 const LUCKY_COIN: TalismanData = preload("res://scripts/data/items/lucky_coin.tres")
-const TREASURE: DoorRewardData = preload("res://scripts/data/doors/treasure.tres")
-const HEALING_SPRING: DoorRewardData = preload("res://scripts/data/doors/healing_spring.tres")
+const ECONOMY: EconomyData = preload("res://scripts/data/map/economy.tres")
 const ELITE_LOOT_BONUS: int = 3
 const FIRST_ROOM: int = 1
 const BLOOD_PRICE_ROOM: int = 2
@@ -25,48 +25,69 @@ func _rewards(room_number: int, rolls: Array[int]) -> RoomRewards:
 	return RoomRewards.new(_player, room_number, 0, _dice, LOOT_TABLE)
 
 
-func _door_rewards(reward: DoorRewardData) -> RoomRewards:
-	return RoomRewards.new(_player, FIRST_ROOM, 0, FixedDice.new([]), LOOT_TABLE, reward)
+func _gold_rewards(room_number: int, rolls: Array[int]) -> RoomRewards:
+	_dice = FixedDice.new(rolls)
+	return RoomRewards.new(_player, room_number, 0, _dice, LOOT_TABLE, ECONOMY)
 
 
-func test_treasure_adds_to_the_room_loot_bonus() -> void:
+func test_room_bonus_adds_to_the_loot_roll() -> void:
 	_dice = FixedDice.new([5, 1])
 	var rewards: RoomRewards = RoomRewards.new(
-		_player, FIRST_ROOM, ELITE_LOOT_BONUS, _dice, LOOT_TABLE, TREASURE
+		_player, FIRST_ROOM, ELITE_LOOT_BONUS, _dice, LOOT_TABLE
 	)
 	rewards.level_up()
 
 	var loot: LootRoll = rewards.roll_loot(false)
 
-	assert_eq(rewards.loot_roll_bonus(), 6, "Elite +3 and Treasure +3")
-	assert_eq(loot.room_bonus, 6)
-	assert_eq(loot.total, 11)
+	assert_eq(rewards.loot_roll_bonus(), ELITE_LOOT_BONUS)
+	assert_eq(loot.room_bonus, ELITE_LOOT_BONUS)
+	assert_eq(loot.total, 5 + ELITE_LOOT_BONUS)
 
 
-func test_healing_spring_heals_its_share_of_max_hit_points_rounded_down() -> void:
-	_player.take_damage(10)
-	var rewards: RoomRewards = _door_rewards(HEALING_SPRING)
+func test_fight_gold_is_base_plus_row_share() -> void:
+	var rewards: RoomRewards = _gold_rewards(3, [])
 
-	var healed: int = rewards.heal_from_door_reward()
+	var gold: int = rewards.add_fight_gold(false)
 
-	assert_eq(healed, 1, "10% of 14 HP is 1.4")
-	assert_eq(_player.hit_points, 5)
-
-
-func test_healing_spring_heals_only_the_missing_hit_points() -> void:
-	_player.take_damage(1)
-	var rewards: RoomRewards = _door_rewards(HEALING_SPRING)
-
-	assert_eq(rewards.heal_from_door_reward(), 1)
-	assert_eq(_player.hit_points, _player.max_hit_points)
+	assert_eq(gold, ECONOMY.fight_gold + ECONOMY.gold_per_row * 3)
+	assert_eq(_player.gold, gold)
+	assert_eq(rewards.gold_gained, gold)
 
 
-func test_door_rewards_without_a_heal_heal_nothing() -> void:
-	_player.take_damage(10)
+func test_elite_fight_gives_its_share_of_the_fight_gold() -> void:
+	var rewards: RoomRewards = _gold_rewards(3, [])
 
-	assert_eq(_door_rewards(TREASURE).heal_from_door_reward(), 0, "Treasure")
-	assert_eq(_door_rewards(null).heal_from_door_reward(), 0, "No door reward")
-	assert_eq(_player.hit_points, 4)
+	var gold: int = rewards.add_fight_gold(true)
+
+	var normal: int = ECONOMY.fight_gold + ECONOMY.gold_per_row * 3
+	assert_eq(gold, floori(normal * ECONOMY.elite_gold_percent / 100.0))
+
+
+func test_treasure_gives_its_gold() -> void:
+	var rewards: RoomRewards = _gold_rewards(FIRST_ROOM, [])
+
+	assert_eq(rewards.add_treasure_gold(), ECONOMY.treasure_gold)
+	assert_eq(_player.gold, ECONOMY.treasure_gold)
+
+
+func test_selling_the_find_gives_its_rarity_value() -> void:
+	var rewards: RoomRewards = _gold_rewards(FIRST_ROOM, [5, 1])
+	rewards.level_up()
+	var loot: LootRoll = rewards.roll_loot(false)
+	var value: int = ECONOMY.sell_values[loot.item.rarity]
+
+	assert_eq(rewards.sell_value(), value)
+	assert_eq(rewards.sell_item(), value)
+	assert_eq(_player.gold, value)
+	assert_eq(_player.weapon, WARRIOR.starting_weapon, "Selling equips nothing")
+
+
+func test_rewards_without_economy_give_no_gold() -> void:
+	var rewards: RoomRewards = _rewards(3, [])
+
+	assert_eq(rewards.add_fight_gold(true), 0)
+	assert_eq(rewards.add_treasure_gold(), 0)
+	assert_eq(_player.gold, 0)
 
 
 func test_level_up_raises_level_and_reports_the_gain() -> void:

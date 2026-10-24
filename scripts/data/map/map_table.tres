@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="MapTableData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/map_table_data.gd" id="1_mtabl"]
+[ext_resource type="Script" path="res://scripts/data/skill_check_data.gd" id="2_check"]
+
+[sub_resource type="Resource" id="Check_rusted_lock"]
+script = ExtResource("2_check")
+id = &"rusted_lock"
+display_name = "Rusted Lock"
+action_text = "Force the rusted lock"
+attribute = 0
+difficulty = 14
+fail_damage = 4
+
+[sub_resource type="Resource" id="Check_trapped_chest"]
+script = ExtResource("2_check")
+id = &"trapped_chest"
+display_name = "Trapped Chest"
+action_text = "Disarm the trap"
+attribute = 1
+difficulty = 13
+fail_damage = 5
+
+[sub_resource type="Resource" id="Check_cursed_seal"]
+script = ExtResource("2_check")
+id = &"cursed_seal"
+display_name = "Cursed Seal"
+action_text = "Endure the curse and break the seal"
+attribute = 2
+difficulty = 13
+fail_damage = 4
+
+[sub_resource type="Resource" id="Check_hidden_latch"]
+script = ExtResource("2_check")
+id = &"hidden_latch"
+display_name = "Hidden Latch"
+action_text = "Search for the hidden latch"
+attribute = 3
+difficulty = 12
+fail_damage = 2
+
+[resource]
+script = ExtResource("1_mtabl")
+lane_count = 4
+path_count = 4
+rest_row = 9
+fight_weight = 50
+elite_weight = 12
+merchant_weight = 10
+rest_weight = 8
+treasure_weight = 20
+elite_first_row = 4
+merchant_first_row = 3
+rest_first_row = 5
+treasure_first_row = 2
+sealed_treasure_chance_percent = 50
+skill_checks = Array[ExtResource("2_check")]([SubResource("Check_rusted_lock"), SubResource("Check_trapped_chest"), SubResource("Check_cursed_seal"), SubResource("Check_hidden_latch")])

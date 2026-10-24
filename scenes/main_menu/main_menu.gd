@@ -2,7 +2,6 @@ extends Control
 ## Title screen that starts a new run.
 
 const STARTING_CLASS: ClassData = preload("res://scripts/data/classes/warrior.tres")
-const BATTLE_SCENE: PackedScene = preload("res://scenes/battle/battle.tscn")
 
 @onready var _start_button: Button = %StartButton
 
@@ -14,4 +13,4 @@ func _ready() -> void:
 
 func _on_start_button_pressed() -> void:
 	RunState.start_new_run(STARTING_CLASS, RunState.new_random_seed())
-	get_tree().change_scene_to_packed(BATTLE_SCENE)
+	get_tree().change_scene_to_file(MapScreen.MAP_SCENE_PATH)

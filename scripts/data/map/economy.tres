@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EconomyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/economy_data.gd" id="1_econ"]
+
+[resource]
+script = ExtResource("1_econ")
+fight_gold = 11
+gold_per_row = 2
+elite_gold_percent = 200
+sell_values = Array[int]([8, 15, 25, 40])
+merchant_item_count = 3
+item_prices = Array[int]([30, 55, 90, 140])
+heal_price = 20
+heal_percent = 25
+rest_heal_percent = 35
+treasure_loot_bonus = 3
+sealed_treasure_loot_bonus = 3
+treasure_gold = 20

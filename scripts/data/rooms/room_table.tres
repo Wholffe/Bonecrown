@@ -9,9 +9,6 @@
 [ext_resource type="Script" path="res://scripts/data/room_tier_data.gd" id="7_rtier"]
 [ext_resource type="Script" path="res://scripts/data/room_table_data.gd" id="8_rtabl"]
 [ext_resource type="Resource" path="res://scripts/data/enemies/bone_king.tres" id="9_bking"]
-[ext_resource type="Script" path="res://scripts/data/door_reward_data.gd" id="10_drwrd"]
-[ext_resource type="Resource" path="res://scripts/data/doors/treasure.tres" id="11_trsre"]
-[ext_resource type="Resource" path="res://scripts/data/doors/healing_spring.tres" id="12_hlspr"]
 
 [sub_resource type="Resource" id="Resource_goblin"]
 script = ExtResource("6_encnt")
@@ -73,6 +70,10 @@ enemies = Array[ExtResource("1_oevm7")]([ExtResource("3_skltn")])
 script = ExtResource("6_encnt")
 enemies = Array[ExtResource("1_oevm7")]([ExtResource("4_orc4k")])
 
+[sub_resource type="Resource" id="Resource_elite_guardian"]
+script = ExtResource("6_encnt")
+enemies = Array[ExtResource("1_oevm7")]([ExtResource("5_gurdn")])
+
 [sub_resource type="Resource" id="Resource_bone_king"]
 script = ExtResource("6_encnt")
 enemies = Array[ExtResource("1_oevm7")]([ExtResource("9_bking")])
@@ -104,8 +105,7 @@ encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_guardian"), Su
 [resource]
 script = ExtResource("8_rtabl")
 tiers = Array[ExtResource("7_rtier")]([SubResource("Resource_rooms_1"), SubResource("Resource_rooms_2_3"), SubResource("Resource_rooms_4_6"), SubResource("Resource_rooms_7_9")])
-elite_room = 5
-elite_encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_elite_skeleton"), SubResource("Resource_elite_orc")])
+elite_encounters = Array[ExtResource("6_encnt")]([SubResource("Resource_elite_skeleton"), SubResource("Resource_elite_orc"), SubResource("Resource_elite_guardian")])
 elite_name_prefix = "Elite "
 elite_hit_point_percent = 30
 elite_attack_bonus = 1
@@ -113,9 +113,5 @@ elite_loot_bonus = 3
 scaling_room_step = 3
 scaling_attack_bonus = 1
 scaling_hit_point_percent = 10
-first_door_room = 2
-doors_per_room = 2
-door_reward_chance_percent = 75
-door_rewards = Array[ExtResource("10_drwrd")]([ExtResource("11_trsre"), ExtResource("12_hlspr")])
 boss_room = 10
 boss_encounter = SubResource("Resource_bone_king")

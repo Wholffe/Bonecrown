@@ -71,5 +71,5 @@ func test_new_run_has_the_focus() -> void:
 
 # The scene change itself would replace the running GUT scene, so only its targets are checked.
 func test_scene_paths_point_to_existing_scenes() -> void:
-	assert_true(ResourceLoader.exists(RunEnd.BATTLE_SCENE_PATH, "PackedScene"))
+	assert_true(ResourceLoader.exists(MapScreen.MAP_SCENE_PATH, "PackedScene"))
 	assert_true(ResourceLoader.exists(RunEnd.MAIN_MENU_SCENE_PATH, "PackedScene"))

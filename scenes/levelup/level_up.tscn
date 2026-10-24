@@ -52,7 +52,7 @@ text = "Room cleared"
 [node name="NextButton" type="Button" parent="Margin/Layout/Header" unique_id=1832637258]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Next Room"
+text = "Map"
 
 [node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=88215593]
 unique_name_in_owner = true
@@ -75,13 +75,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "HP"
 
-[node name="DoorRewardLabel" type="Label" parent="Margin/Layout/LevelRow" unique_id=1349920731]
+[node name="GoldLabel" type="Label" parent="Margin/Layout/LevelRow" unique_id=1349920731]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.82, 0.2, 1)
 theme_override_font_sizes/font_size = 22
-text = "Door reward"
+text = "Gold"
 
 [node name="LootSection" type="VBoxContainer" parent="Margin/Layout" unique_id=255899745]
 layout_mode = 2
@@ -97,6 +96,12 @@ layout_mode = 2
 
 [node name="LootButtons" type="HBoxContainer" parent="Margin/Layout/LootSection" unique_id=1086885770]
 layout_mode = 2
+
+[node name="CheckButton" type="Button" parent="Margin/Layout/LootSection/LootButtons" unique_id=1530927714]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Check"
 
 [node name="RollButton" type="Button" parent="Margin/Layout/LootSection/LootButtons" unique_id=1822544457]
 unique_name_in_owner = true

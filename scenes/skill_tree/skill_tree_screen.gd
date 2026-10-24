@@ -161,7 +161,6 @@ func _skill_count_text(count: int, branch: SkillBranchData) -> String:
 
 
 func _on_continue_pressed() -> void:
-	# Disabled first, so a second press cannot advance the room twice.
+	# Disabled first, so a second press cannot change the scene twice.
 	_continue_button.disabled = true
-	RunState.advance_room()
-	get_tree().change_scene_to_file(LevelUp.room_scene_path())
+	get_tree().change_scene_to_file(MapScreen.MAP_SCENE_PATH)

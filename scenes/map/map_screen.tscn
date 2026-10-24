@@ -1,0 +1,121 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/map/map_screen.gd" id="1_mapsc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="2_chsht"]
+[ext_resource type="Script" path="res://scenes/map/map_view.gd" id="3_mapvw"]
+
+[node name="MapScreen" type="Control" unique_id=1938476102]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mapsc")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1203984756]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=874512093]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=1592837461]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Margin/Layout" unique_id=402918374]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TitleLabel" type="Label" parent="Margin/Layout/Header" unique_id=1765209384]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Map"
+
+[node name="StatusLabel" type="Label" parent="Margin/Layout/Header" unique_id=290384715]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+text = "Level"
+
+[node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=1648203957]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Character (C)"
+
+[node name="Body" type="HBoxContainer" parent="Margin/Layout" unique_id=1029384756]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="MapView" type="Control" parent="Margin/Layout/Body" unique_id=583920174]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_mapvw")
+
+[node name="Details" type="PanelContainer" parent="Margin/Layout/Body" unique_id=1384756290]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+
+[node name="DetailsMargin" type="MarginContainer" parent="Margin/Layout/Body/Details" unique_id=948372615]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="DetailsText" type="VBoxContainer" parent="Margin/Layout/Body/Details/DetailsMargin" unique_id=1726354890]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NodeNameLabel" type="Label" parent="Margin/Layout/Body/Details/DetailsMargin/DetailsText" unique_id=650192837]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+
+[node name="NodeDetailsLabel" type="Label" parent="Margin/Layout/Body/Details/DetailsMargin/DetailsText" unique_id=1873649205]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+autowrap_mode = 3
+
+[node name="LegendLabel" type="Label" parent="Margin/Layout/Body/Details/DetailsMargin/DetailsText" unique_id=219384756]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.64, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="EnterButton" type="Button" parent="Margin/Layout/Body/Details/DetailsMargin/DetailsText" unique_id=1102938475]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Enter"
+
+[node name="CharacterSheet" parent="." unique_id=1574839201 instance=ExtResource("2_chsht")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

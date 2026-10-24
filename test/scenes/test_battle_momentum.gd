@@ -19,9 +19,8 @@ var _dice: FixedDice
 ## d6+1, 8 HP, 1 of 3 Momentum in round 1, Stab or Frenzy (3 Momentum, two attacks).
 func _start_battle(rolls: Array[int]) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
-	# Room 2 behind a door of two goblins, so the fight starts without a roll.
-	RunState.advance_room()
-	RunState.choose_door(GoblinPairDoor.create())
+	# A room 2 fight node with two goblins, so the fight starts without a roll.
+	RunState.enter_node(GoblinPairNode.create())
 	_dice = FixedDice.new(rolls)
 	RunState.dice = _dice
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle

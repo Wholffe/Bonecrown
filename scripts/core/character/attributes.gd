@@ -2,7 +2,8 @@ class_name Attributes
 extends RefCounted
 ## The four combat and loot attributes of a character and their 5e-style bonuses.
 
-enum Kind { STRENGTH, DEXTERITY, CONSTITUTION, LUCK }
+# Stored as numbers in .tres files (skill checks): append new members, never renumber.
+enum Kind { STRENGTH = 0, DEXTERITY = 1, CONSTITUTION = 2, LUCK = 3, UNSET = -1 }
 
 const NEUTRAL_VALUE: int = 10
 const POINTS_PER_BONUS: float = 2.0

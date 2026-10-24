@@ -112,20 +112,6 @@ func test_enemies_have_affordable_intents_in_cost_order() -> void:
 				last_cost = intent.momentum_cost
 
 
-func test_door_rewards_have_texts_and_an_effect() -> void:
-	var count: int = 0
-	for resource: Resource in _resources:
-		if resource is DoorRewardData:
-			var reward: DoorRewardData = resource
-			count += 1
-			assert_ne(reward.display_name, "", "%s display name" % reward.id)
-			assert_ne(reward.description, "", "%s description" % reward.id)
-			assert_gte(reward.loot_bonus, 0, "%s loot bonus" % reward.id)
-			assert_gte(reward.heal_percent, 0, "%s heal percent" % reward.id)
-			assert_gt(reward.loot_bonus + reward.heal_percent, 0, "%s has no effect" % reward.id)
-	assert_gt(count, 0, "No door rewards found")
-
-
 func test_classes_have_no_empty_starting_skill_slots() -> void:
 	for resource: Resource in _resources:
 		if resource is ClassData:

@@ -51,7 +51,7 @@ text = "Skill Tree"
 [node name="ContinueButton" type="Button" parent="Margin/Layout/Header" unique_id=887135462]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Next Room"
+text = "Map"
 
 [node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=1302187594]
 unique_name_in_owner = true

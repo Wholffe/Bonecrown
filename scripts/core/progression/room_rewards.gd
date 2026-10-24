@@ -1,8 +1,9 @@
 class_name RoomRewards
 extends RefCounted
-## The rewards after a won fight, in the order the screen shows them: level-up and loot roll. The
-## level-up's skill point is spent in the skill tree afterwards. Each step changes the player right
-## away, so the run state is plain data at any point.
+## The rewards after a won fight or at a treasure, in the order the screen shows them: level-up,
+## gold and loot roll. A find that is left behind turns into gold. The level-up's skill point is
+## spent in the skill tree afterwards. Each step changes the player right away, so the run state is
+## plain data at any point.
 
 var player: Character
 ## The room just won. Its loot is rolled here.
@@ -10,11 +11,13 @@ var room_number: int
 var max_hit_points_before_level_up: int = 0
 ## Null until roll_loot().
 var loot: LootRoll = null
-## The reward of the door chosen before the fight, or null.
-var door_reward: DoorRewardData = null
+## All gold this room gave so far, for the screen.
+var gold_gained: int = 0
 var _room_loot_bonus: int
 var _loot_table: LootTableData
 var _loot_roller: LootRoller
+## Null gives no gold.
+var _economy: EconomyData
 var _has_leveled_up: bool = false
 
 
@@ -24,26 +27,41 @@ func _init(
 	room_loot_bonus: int,
 	dice: DiceRoller,
 	loot_table: LootTableData,
-	chosen_door_reward: DoorRewardData = null
+	economy: EconomyData = null
 ) -> void:
 	player = run_player
 	room_number = won_room
-	door_reward = chosen_door_reward
-	# The door's loot bonus counts as part of the room's own bonus, like the elite room's.
 	_room_loot_bonus = room_loot_bonus
-	if door_reward != null:
-		_room_loot_bonus += door_reward.loot_bonus
 	_loot_table = loot_table
 	_loot_roller = LootRoller.new(dice, loot_table)
+	_economy = economy
 
 
-## Heals the door reward's share of the max hit points, rounded down. The screen calls it once,
-## before the level-up. Returns the hit points actually restored.
-func heal_from_door_reward() -> int:
-	if door_reward == null:
+## The fight's gold: base and row share, an elite's share of it more.
+func add_fight_gold(is_elite: bool) -> int:
+	if _economy == null:
 		return 0
-	var amount: int = floori(player.max_hit_points * door_reward.heal_percent / 100.0)
-	return player.heal(amount)
+	var gold: int = _economy.fight_gold + _economy.gold_per_row * room_number
+	if is_elite:
+		gold = floori(gold * _economy.elite_gold_percent / 100.0)
+	return _gain_gold(gold)
+
+
+func add_treasure_gold() -> int:
+	return 0 if _economy == null else _gain_gold(_economy.treasure_gold)
+
+
+## Leaves the find behind and sells it. Returns the gold it gave.
+func sell_item() -> int:
+	assert(loot != null and loot.item != null, "There is no find to sell")
+	return 0 if _economy == null else _gain_gold(_economy.sell_values[loot.item.rarity])
+
+
+## What leaving the find behind would give.
+func sell_value() -> int:
+	if _economy == null or loot == null or loot.item == null:
+		return 0
+	return _economy.sell_values[loot.item.rarity]
 
 
 func level_up() -> void:
@@ -68,7 +86,7 @@ func blood_price_roll_bonus() -> int:
 	return _loot_table.blood_price_roll_bonus
 
 
-## Loot roll bonus without the Blood Price: Luck plus the room's own bonus and the door's.
+## Loot roll bonus without the Blood Price: Luck plus the room's own bonus (elite or treasure).
 func loot_roll_bonus() -> int:
 	return player.loot_bonus() + _room_loot_bonus
 
@@ -93,7 +111,12 @@ func roll_loot(pay_blood_price: bool) -> LootRoll:
 
 
 ## Equips the found item and returns the item it replaces, or null for an empty slot.
-## Not calling it leaves the find behind, and it is lost.
 func take_item() -> ItemData:
 	assert(loot != null and loot.item != null, "There is no find to take")
 	return player.equip(loot.item)
+
+
+func _gain_gold(amount: int) -> int:
+	player.gold += amount
+	gold_gained += amount
+	return amount

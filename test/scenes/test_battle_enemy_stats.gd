@@ -13,9 +13,8 @@ const NARROW_HIT_ROLLS: Array[int] = [7, 1, 2, 2]
 ## Warrior: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP each.
 func _start_battle(rolls: Array[int], animations_enabled: bool = false) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
-	# Room 2 behind a door of two goblins, so the fight starts without a roll.
-	RunState.advance_room()
-	RunState.choose_door(GoblinPairDoor.create())
+	# A room 2 fight node with two goblins, so the fight starts without a roll.
+	RunState.enter_node(GoblinPairNode.create())
 	RunState.dice = FixedDice.new(rolls)
 	var battle: Battle = BATTLE_SCENE.instantiate() as Battle
 	battle.set_animations_enabled(animations_enabled)

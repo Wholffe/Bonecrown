@@ -1,5 +1,5 @@
 extends GutTest
-## EncounterRoller: encounters by room tier, the elite room, room scaling, the room loot bonus and
+## EncounterRoller: encounters by room tier, elite fights, room scaling, the elite loot bonus and
 ## the boss room.
 
 const ROOM_TABLE: RoomTableData = preload("res://scripts/data/rooms/room_table.tres")
@@ -34,11 +34,12 @@ const SCALING_CASES: Array = [
 	[7, 2, 18],
 	[9, 2, 18],
 ]
-## [roll, display name, attack bonus, max hit points] in the elite room: room 5 is one scaling
+## [roll, display name, attack bonus, max hit points] of an elite fight in room 5: one scaling
 ## step (+1 attack, +10% HP) plus the elite bonuses (+1 attack, +30% HP).
 const ELITE_CASES: Array = [
 	[1, "Elite Skeleton", 6, 18],
 	[2, "Elite Orc", 7, 28],
+	[3, "Elite Guardian", 5, 31],
 ]
 
 var _dice: FixedDice
@@ -119,10 +120,10 @@ func test_room_table_scales_room_eight_by_two_steps() -> void:
 	assert_eq(enemies[1].max_hit_points, 10, "8 HP + 20% = 9.6 rounds up")
 
 
-func test_elite_room_picks_from_the_elite_pool_by_one_roll(
+func test_elite_fight_picks_from_the_elite_pool_by_one_roll(
 	params: Array = use_parameters(ELITE_CASES)
 ) -> void:
-	var enemies: Array[Combatant] = _roller([params[0]]).roll_enemies(ELITE_ROOM)
+	var enemies: Array[Combatant] = _roller([params[0]]).roll_enemies(ELITE_ROOM, true)
 
 	assert_eq(_display_names(enemies), [params[1]] as Array[String])
 	assert_eq(_dice.remaining_rolls(), 0)
@@ -131,7 +132,7 @@ func test_elite_room_picks_from_the_elite_pool_by_one_roll(
 func test_elite_bonuses_add_to_the_room_scaling(
 	params: Array = use_parameters(ELITE_CASES)
 ) -> void:
-	var enemy: Combatant = _roller([params[0]]).roll_enemies(ELITE_ROOM)[0]
+	var enemy: Combatant = _roller([params[0]]).roll_enemies(ELITE_ROOM, true)[0]
 
 	assert_eq(enemy.get_attack_bonus(), params[2], "%s attack" % params[1])
 	assert_eq(enemy.max_hit_points, params[3], "%s hit points" % params[1])
@@ -139,19 +140,24 @@ func test_elite_bonuses_add_to_the_room_scaling(
 
 
 func test_elite_enemy_leaves_shared_data_untouched() -> void:
-	_roller([1]).roll_enemies(ELITE_ROOM)
+	_roller([1]).roll_enemies(ELITE_ROOM, true)
 
 	assert_eq(SKELETON.display_name, "Skeleton")
 	assert_eq(SKELETON.attack_bonus, 4)
 	assert_eq(SKELETON.max_hit_points, 13)
 
 
-func test_only_the_elite_room_adds_a_loot_bonus() -> void:
+func test_only_elite_fights_add_a_loot_bonus() -> void:
 	var roller: EncounterRoller = _roller([])
 
-	for room: int in range(FIRST_ROOM, GAME_RULES.room_count):
-		var expected: int = ELITE_LOOT_BONUS if room == ELITE_ROOM else 0
-		assert_eq(roller.loot_bonus(room), expected, "room %d" % room)
+	assert_eq(roller.loot_bonus(true), ELITE_LOOT_BONUS)
+	assert_eq(roller.loot_bonus(false), 0)
+
+
+func test_normal_fight_in_room_five_draws_from_its_tier() -> void:
+	var enemies: Array[Combatant] = _roller([1]).roll_enemies(ELITE_ROOM)
+
+	assert_eq(_display_names(enemies), ["Skeleton"] as Array[String])
 
 
 func test_room_without_a_tier_reports_an_error() -> void:

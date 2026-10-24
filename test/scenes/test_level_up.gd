@@ -13,8 +13,7 @@ const SEED: int = 7
 const COMMON_FIND_ROLLS: Array[int] = [5, 1]
 ## Loot d20 5 (common), third common item: the Lucky Coin for the empty talisman slot.
 const TALISMAN_FIND_ROLLS: Array[int] = [5, 3]
-## [room after advance_room()] with a door choice before the fight.
-const DOOR_ROOM_CASES: Array = [[2], [3], [4], [5], [6], [7], [8], [9]]
+const ECONOMY: EconomyData = preload("res://scripts/data/map/economy.tres")
 
 
 func before_each() -> void:
@@ -136,12 +135,25 @@ func test_take_equips_the_find_and_shows_next() -> void:
 	assert_true(_button(level_up, "NextButton").visible)
 
 
-func test_leave_keeps_the_worn_item() -> void:
+func test_fight_gives_gold() -> void:
+	var level_up: LevelUp = _create([])
+
+	var gold: int = ECONOMY.fight_gold + ECONOMY.gold_per_row
+	assert_eq(RunState.player.gold, gold, "room 1")
+	assert_eq(_label_text(level_up, "GoldLabel"), "Gold +%d (%d)" % [gold, gold])
+
+
+func test_selling_keeps_the_worn_item_and_gives_gold() -> void:
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
+	var gold_before: int = RunState.player.gold
 	await _press(level_up, "RollButton")
+	var sell_value: int = ECONOMY.sell_values[ItemData.Rarity.COMMON]
+	assert_eq(_button(level_up, "LeaveButton").text, "Sell (+%d gold)" % sell_value)
 
 	await _press(level_up, "LeaveButton")
 
+	assert_eq(RunState.player.gold, gold_before + sell_value)
+	assert_eq(_label_text(level_up, "FindDetailsLabel"), "Sold for %d gold." % sell_value)
 	assert_eq(RunState.player.weapon, WARRIOR.starting_weapon)
 	assert_true(_button(level_up, "NextButton").visible)
 
@@ -176,11 +188,11 @@ func test_next_leads_to_the_skill_tree_while_a_point_can_be_spent() -> void:
 
 	await _press(level_up, "LeaveButton")
 
-	assert_true(LevelUp.has_skill_point_to_spend())
+	assert_true(MapScreen.has_skill_point_to_spend())
 	assert_eq(_button(level_up, "NextButton").text, "Skill Tree")
 
 
-func test_next_leads_to_the_next_room_once_the_point_is_spent() -> void:
+func test_next_leads_to_the_map_once_the_point_is_spent() -> void:
 	var level_up: LevelUp = _create(COMMON_FIND_ROLLS)
 	var strength_training: SkillNodeData = RunState.skill_tree.tree.trunk.nodes[0]
 	RunState.skill_tree.learn(strength_training, RunState.player)
@@ -188,23 +200,8 @@ func test_next_leads_to_the_next_room_once_the_point_is_spent() -> void:
 
 	await _press(level_up, "LeaveButton")
 
-	assert_false(LevelUp.has_skill_point_to_spend())
-	assert_eq(_button(level_up, "NextButton").text, "Next Room")
-
-
-# The scene change itself would replace the running GUT scene, so only its target is checked.
-func test_next_room_with_doors_opens_the_door_choice(
-	params: Array = use_parameters(DOOR_ROOM_CASES)
-) -> void:
-	RunState.room_number = params[0]
-
-	assert_eq(LevelUp.room_scene_path(), LevelUp.DOOR_CHOICE_SCENE_PATH, "room %d" % params[0])
-
-
-func test_boss_room_opens_the_battle() -> void:
-	RunState.room_number = RunState.GAME_RULES.room_count
-
-	assert_eq(LevelUp.room_scene_path(), LevelUp.BATTLE_SCENE_PATH)
+	assert_false(MapScreen.has_skill_point_to_spend())
+	assert_eq(_button(level_up, "NextButton").text, "Map")
 
 
 func test_character_button_toggles_the_sheet() -> void:
@@ -213,9 +210,3 @@ func test_character_button_toggles_the_sheet() -> void:
 	await _press(level_up, "CharacterButton")
 
 	assert_true((level_up.get_node("%CharacterSheet") as CharacterSheet).visible)
-
-
-func test_scene_paths_point_to_existing_scenes() -> void:
-	assert_true(ResourceLoader.exists(LevelUp.BATTLE_SCENE_PATH))
-	assert_true(ResourceLoader.exists(LevelUp.DOOR_CHOICE_SCENE_PATH))
-	assert_true(ResourceLoader.exists(LevelUp.SKILL_TREE_SCENE_PATH))

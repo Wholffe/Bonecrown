@@ -19,6 +19,8 @@ var armor: ArmorData
 ## Empty until the first talisman is equipped.
 var talisman: TalismanData
 var skills: Array[SkillData] = []
+## Earned in fights and for finds left behind, spent at merchants.
+var gold: int = 0
 var _rules: GameRulesData
 
 
@@ -46,6 +48,7 @@ func copy() -> Character:
 	duplicate_character.talisman = talisman
 	duplicate_character.max_hit_points = duplicate_character._calculate_max_hit_points()
 	duplicate_character.hit_points = hit_points
+	duplicate_character.gold = gold
 	return duplicate_character
 
 

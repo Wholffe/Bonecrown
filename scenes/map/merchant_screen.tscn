@@ -1,0 +1,100 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/map/merchant_screen.gd" id="1_scrpt"]
+[ext_resource type="PackedScene" path="res://scenes/ui/character_sheet.tscn" id="2_chsht"]
+
+[node name="MerchantScreen" type="Control" unique_id=1293847560]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_scrpt")
+
+[node name="Background" type="ColorRect" parent="." unique_id=584736291]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1947382015]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Layout" type="VBoxContainer" parent="Margin" unique_id=302948576]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Margin/Layout" unique_id=1658392047]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TitleLabel" type="Label" parent="Margin/Layout/Header" unique_id=920384756]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Merchant"
+
+[node name="StatusLabel" type="Label" parent="Margin/Layout/Header" unique_id=1475839201]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+text = "Gold"
+
+[node name="LeaveButton" type="Button" parent="Margin/Layout/Header" unique_id=673829105]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Leave"
+
+[node name="CharacterButton" type="Button" parent="Margin/Layout/Header" unique_id=1839204756]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Character (C)"
+
+[node name="LevelUpLabel" type="Label" parent="Margin/Layout" unique_id=1092837465]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Level"
+
+[node name="Offers" type="HBoxContainer" parent="Margin/Layout" unique_id=1384920576]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HealRow" type="HBoxContainer" parent="Margin/Layout" unique_id=574839201]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HealLabel" type="Label" parent="Margin/Layout/HealRow" unique_id=1928374650]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Healing"
+
+[node name="HealButton" type="Button" parent="Margin/Layout/HealRow" unique_id=829304756]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Buy"
+
+[node name="CharacterSheet" parent="." unique_id=1029384675 instance=ExtResource("2_chsht")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
