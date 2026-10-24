@@ -25,6 +25,7 @@ const MOMENTUM_REASON_TEXTS: Dictionary[Combat.MomentumReason, String] = {
 	Combat.MomentumReason.KILL: "kill",
 	Combat.MomentumReason.DRAINED: "drained",
 	Combat.MomentumReason.RALLIED: "rallied",
+	Combat.MomentumReason.SKILL: "skill",
 }
 ## Short notes next to the Momentum bar. Spending shows the change only.
 const MOMENTUM_BAR_NOTES: Dictionary[Combat.MomentumReason, String] = {
@@ -32,7 +33,9 @@ const MOMENTUM_BAR_NOTES: Dictionary[Combat.MomentumReason, String] = {
 	Combat.MomentumReason.FENDED_OFF: "fended off",
 	Combat.MomentumReason.KILL: "kill",
 	Combat.MomentumReason.DRAINED: "drained",
+	Combat.MomentumReason.SKILL: "skill",
 }
+const EFFECT_DAMAGE_COLOR: Color = Color(1.0, 0.55, 0.2)
 const OUT_OF_MOMENTUM_LOG: String = "Out of Momentum – your turn ends."
 const END_TURN_HIGHLIGHT_COLOR: Color = Color(1.0, 0.78, 0.25)
 const END_TURN_HIGHLIGHT_BORDER_WIDTH: int = 3
@@ -156,6 +159,8 @@ func _start_combat() -> void:
 	_combat.phase_started.connect(_on_phase_started)
 	_combat.enemy_summoned.connect(_on_enemy_summoned)
 	_combat.player_turn_ended.connect(_on_player_turn_ended)
+	_combat.effect_damage_dealt.connect(_on_effect_damage_dealt)
+	_combat.hit_points_paid.connect(_on_hit_points_paid)
 	_create_cards(enemies)
 	_create_action_buttons()
 	_log("Room %d   ·   Run seed: %d" % [RunState.room_number, RunState.run_seed])
@@ -170,7 +175,7 @@ func _create_cards(enemies: Array[Combatant]) -> void:
 	var player: Combatant = _combat.player
 	_player_card.show_combatant(player, true)
 	_player_card.set_momentum_visible(false)
-	_momentum_bar.show_momentum(0, RunState.GAME_RULES.momentum_cap)
+	_momentum_bar.show_momentum(0, _combat.momentum_cap_of(player))
 	_cards[player] = _player_card
 	for enemy: Combatant in enemies:
 		_add_enemy_card(enemy as Enemy)
@@ -186,36 +191,32 @@ func _add_enemy_card(enemy: Enemy) -> void:
 	_enemy_cards.append(card)
 
 
+# The texts of Attack and Block show their costs, which skills can change during the fight, so
+# _refresh_actions() sets them.
 func _create_action_buttons() -> void:
-	var rules: GameRulesData = RunState.GAME_RULES
-	_attack_button.text = "Attack · %d" % rules.attack_momentum_cost
-	_attack_button.tooltip_text = _describe_cost(rules.attack_momentum_cost)
-	_connect_cost_preview(_attack_button, rules.attack_momentum_cost)
-	_connect_cost_preview(_block_button, rules.block_momentum_cost)
-	_block_button.text = "Block · %d" % rules.block_momentum_cost
-	_block_button.tooltip_text = (
-		"Enemy attacks roll with disadvantage until your next turn.\n"
-		+ _describe_cost(rules.block_momentum_cost)
+	_connect_cost_preview(_attack_button, _combat.attack_cost)
+	_connect_cost_preview(_block_button, _combat.block_cost)
+	_end_turn_button.tooltip_text = (
+		"Unused Momentum carries over, up to %d." % _combat.momentum_cap_of(_combat.player)
 	)
-	_end_turn_button.tooltip_text = ("Unused Momentum carries over, up to %d." % rules.momentum_cap)
 	for skill: SkillData in _combat.player.active_skills():
 		var button: Button = Button.new()
 		button.name = skill.id.to_pascal_case() + "Button"
 		button.tooltip_text = "%s\n%s" % [skill.description, _describe_cost(skill.momentum_cost)]
 		button.pressed.connect(_on_skill_button_pressed.bind(skill))
-		_connect_cost_preview(button, skill.momentum_cost)
+		_connect_cost_preview(button, func() -> int: return skill.momentum_cost)
 		_skill_buttons_box.add_child(button)
 		_skill_buttons[skill] = button
 
 
 # Hovering an action makes the orbs it would spend pulse on the Momentum bar.
-func _connect_cost_preview(button: Button, momentum_cost: int) -> void:
+func _connect_cost_preview(button: Button, momentum_cost: Callable) -> void:
 	button.mouse_entered.connect(_preview_cost.bind(button, momentum_cost))
 	button.mouse_exited.connect(_momentum_bar.preview_cost.bind(0))
 
 
-func _preview_cost(button: Button, momentum_cost: int) -> void:
-	_momentum_bar.preview_cost(0 if button.disabled else momentum_cost)
+func _preview_cost(button: Button, momentum_cost: Callable) -> void:
+	_momentum_bar.preview_cost(0 if button.disabled else momentum_cost.call())
 
 
 func _select_target(card: CombatantCard) -> void:
@@ -381,6 +382,45 @@ func _play_phase_start(
 	await _dice_display.hold()
 
 
+func _play_effect_damage(
+	skill: SkillData,
+	damage: DamageRoll,
+	die_sides: int,
+	targets: Array[Combatant],
+	hit_points: Array[int]
+) -> void:
+	var dice_sum: int = damage.rolled_total - damage.damage_bonus
+	await _dice_display.play_roll(
+		skill.display_name,
+		dice_sum,
+		damage.dice_results.size() * die_sides,
+		DiceDisplay.join_dice_results(damage.dice_results),
+		"%d DAMAGE" % damage.total,
+		EFFECT_DAMAGE_COLOR
+	)
+	var names: PackedStringArray = []
+	for index: int in targets.size():
+		names.append(targets[index].display_name)
+		var card: CombatantCard = _cards[targets[index]]
+		card.show_hit_points(hit_points[index])
+		if _animations_enabled:
+			_popup_layer.show_attack(card, DiceDisplay.Outcome.HIT, damage, die_sides)
+	_log(
+		(
+			"%s deals %d damage to %s (%s)."
+			% [skill.display_name, damage.total, ", ".join(names), _describe_damage(damage)]
+		)
+	)
+	await _dice_display.hold()
+
+
+func _play_hit_points_paid(
+	combatant: Combatant, amount: int, skill: SkillData, hit_points: int
+) -> void:
+	_log("%s pays %d HP for %s." % [combatant.display_name, amount, skill.display_name])
+	_cards[combatant].show_hit_points(hit_points)
+
+
 func _play_summon(summon: Enemy) -> void:
 	_add_enemy_card(summon)
 	_log("A %s appears." % summon.display_name)
@@ -420,6 +460,13 @@ func _can_attack() -> bool:
 
 func _refresh_actions() -> void:
 	var can_act: bool = _can_act()
+	_attack_button.text = "Attack · %d" % _combat.attack_cost()
+	_attack_button.tooltip_text = _describe_cost(_combat.attack_cost())
+	_block_button.text = "Block · %d" % _combat.block_cost()
+	_block_button.tooltip_text = (
+		"Enemy attacks roll with disadvantage until your next turn.\n"
+		+ _describe_cost(_combat.block_cost())
+	)
 	_attack_button.disabled = not _can_attack()
 	_block_button.disabled = not can_act or not _combat.can_block()
 	_end_turn_button.disabled = not can_act
@@ -576,10 +623,7 @@ func _on_momentum_changed(
 	combatant: Combatant, momentum: int, change: int, reason: Combat.MomentumReason
 ) -> void:
 	# A boss phase can change the cap later in the same turn, so it is kept now.
-	var cap: int = RunState.GAME_RULES.momentum_cap
-	var enemy: Enemy = combatant as Enemy
-	if enemy != null:
-		cap = enemy.momentum_cap()
+	var cap: int = _combat.momentum_cap_of(combatant)
 	_pending_events.append(_play_momentum_change.bind(combatant, momentum, cap, change, reason))
 
 
@@ -625,6 +669,24 @@ func _on_player_turn_ended() -> void:
 
 func _on_skill_used(user: Combatant, skill: SkillData) -> void:
 	_pending_events.append(_log.bind("%s uses %s." % [user.display_name, skill.display_name]))
+
+
+# The hit points right after the damage are kept now, as for attacks.
+func _on_effect_damage_dealt(
+	skill: SkillData, damage: DamageRoll, die_sides: int, targets: Array[Combatant]
+) -> void:
+	var hit_points: Array[int] = []
+	for target: Combatant in targets:
+		hit_points.append(target.hit_points)
+	_pending_events.append(
+		_play_effect_damage.bind(skill, damage, die_sides, targets.duplicate(), hit_points)
+	)
+
+
+func _on_hit_points_paid(combatant: Combatant, amount: int, skill: SkillData) -> void:
+	_pending_events.append(
+		_play_hit_points_paid.bind(combatant, amount, skill, combatant.hit_points)
+	)
 
 
 func _on_combatant_healed(
@@ -685,7 +747,8 @@ func _on_character_sheet_visibility_changed() -> void:
 func _on_skill_button_pressed(skill: SkillData) -> void:
 	if not _can_act() or not _combat.can_use_skill(skill):
 		return
-	_combat.use_skill(skill)
+	var target: Combatant = _target_card.combatant if _target_card != null else null
+	_combat.use_skill(skill, target)
 	_play_pending_events()
 
 

@@ -106,7 +106,7 @@ func take_item() -> ItemData:
 func roll_skill_offer() -> Array[SkillData]:
 	assert(_has_leveled_up, "The level-up comes before the skill offer")
 	skill_offer = _skill_offer_roller.roll_offer(
-		player.class_data.skill_pool, player.level, player.skills, player.capped_attribute_stats()
+		player.class_data.skill_pool, player.level, player.skills, _capped_attribute_stats()
 	)
 	return skill_offer
 
@@ -116,3 +116,11 @@ func choose_skill(skill: SkillData) -> void:
 	assert(skill in skill_offer, "Only an offered skill can be chosen")
 	chosen_skill = skill
 	player.learn_skill(skill)
+
+
+func _capped_attribute_stats() -> Array[StatModifierEffect.Stat]:
+	var capped: Array[StatModifierEffect.Stat] = []
+	for kind: Attributes.Kind in Character.ATTRIBUTE_STATS:
+		if player.is_attribute_capped(kind):
+			capped.append(Character.ATTRIBUTE_STATS[kind])
+	return capped

@@ -43,18 +43,23 @@ func test_changing_a_copy_leaves_the_original_alone() -> void:
 	assert_eq(_warrior.hit_points, 14)
 
 
-func test_no_attribute_is_capped_at_the_start() -> void:
-	assert_eq(_warrior.capped_attribute_stats().size(), 0)
-
-
-func test_capped_strength_is_reported_as_its_modifier_stat() -> void:
+func test_stat_modifier_sums_passive_skills_and_items() -> void:
 	_warrior.learn_skill(STRENGTH_TRAINING)
 	_warrior.learn_skill(STRENGTH_TRAINING)
 
-	assert_eq(
-		_warrior.capped_attribute_stats(),
-		[StatModifierEffect.Stat.STRENGTH] as Array[StatModifierEffect.Stat]
-	)
+	assert_eq(_warrior.stat_modifier(StatModifierEffect.Stat.STRENGTH), 4)
+	assert_eq(_warrior.stat_modifier(StatModifierEffect.Stat.MOMENTUM_CAP), 0)
+
+
+func test_learning_a_higher_rank_replaces_the_lower_one() -> void:
+	_warrior.learn_skill(STRENGTH_TRAINING)
+	var rank_two: SkillData = STRENGTH_TRAINING.duplicate(true)
+
+	_warrior.learn_skill(rank_two, STRENGTH_TRAINING)
+
+	assert_false(STRENGTH_TRAINING in _warrior.skills)
+	assert_true(rank_two in _warrior.skills)
+	assert_eq(_warrior.skills.size(), 3)
 
 
 func test_loot_bonus_is_the_luck_bonus() -> void:

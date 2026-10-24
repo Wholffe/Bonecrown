@@ -28,8 +28,15 @@ signal player_turn_ended
 signal phase_started(boss: Enemy, phase: BossPhaseData)
 ## The summon has joined enemies and chosen its intent. It acts in the current round.
 signal enemy_summoned(summon: Enemy)
+## Damage without an attack roll from a skill's effect, such as a breath, a splash or a
+## counter. One roll hits every target. Emitted before the defeats it causes.
+signal effect_damage_dealt(
+	skill: SkillData, damage: DamageRoll, die_sides: int, targets: Array[Combatant]
+)
+## A skill's effect cost the combatant hit points.
+signal hit_points_paid(combatant: Combatant, amount: int, skill: SkillData)
 
-enum MomentumReason { FIGHT_START, NEW_ROUND, SPENT, FENDED_OFF, KILL, DRAINED, RALLIED }
+enum MomentumReason { FIGHT_START, NEW_ROUND, SPENT, FENDED_OFF, KILL, DRAINED, RALLIED, SKILL }
 
 const UNLIMITED_USES: int = -1
 ## Drain heals the damage rolled divided by this, rounded down.
@@ -65,7 +72,14 @@ func _init(
 ## Separate from _init, so listeners can connect before the first round starts.
 func start() -> void:
 	player.momentum = 0
-	_change_momentum(player, _rules.momentum_at_fight_start, MomentumReason.FIGHT_START)
+	_change_momentum(
+		player,
+		(
+			_rules.momentum_at_fight_start
+			+ player.stat_modifier(StatModifierEffect.Stat.MOMENTUM_AT_FIGHT_START)
+		),
+		MomentumReason.FIGHT_START
+	)
 	_begin_round()
 
 
@@ -103,12 +117,40 @@ func is_player_blocking() -> bool:
 	return _player_is_blocking
 
 
+## The most Momentum the combatant can hold. Skills and items can raise the player's.
+func momentum_cap_of(combatant: Combatant) -> int:
+	var enemy: Enemy = combatant as Enemy
+	if enemy != null:
+		return enemy.momentum_cap()
+	return _rules.momentum_cap + player.stat_modifier(StatModifierEffect.Stat.MOMENTUM_CAP)
+
+
+func attack_cost() -> int:
+	return maxi(
+		(
+			_rules.attack_momentum_cost
+			+ player.stat_modifier(StatModifierEffect.Stat.ATTACK_MOMENTUM_COST)
+		),
+		0
+	)
+
+
+func block_cost() -> int:
+	return maxi(
+		(
+			_rules.block_momentum_cost
+			+ player.stat_modifier(StatModifierEffect.Stat.BLOCK_MOMENTUM_COST)
+		),
+		0
+	)
+
+
 func can_attack() -> bool:
-	return not is_over and player.momentum >= _rules.attack_momentum_cost
+	return not is_over and player.momentum >= attack_cost()
 
 
 func can_block() -> bool:
-	return not is_over and not _player_is_blocking and player.momentum >= _rules.block_momentum_cost
+	return not is_over and not _player_is_blocking and player.momentum >= block_cost()
 
 
 func can_use_skill(skill: SkillData) -> bool:
@@ -117,6 +159,7 @@ func can_use_skill(skill: SkillData) -> bool:
 		and skill in player.active_skills()
 		and uses_left(skill) != 0
 		and player.momentum >= skill.momentum_cost
+		and player.hit_points > _hit_point_cost(skill)
 	)
 
 
@@ -136,7 +179,7 @@ func player_attack(target: Combatant) -> void:
 		push_error("The player cannot attack now")
 		return
 	assert(target in living_enemies(), "Target must be a living enemy of this fight")
-	_change_momentum(player, -_rules.attack_momentum_cost, MomentumReason.SPENT)
+	_change_momentum(player, -attack_cost(), MomentumReason.SPENT)
 	_attack(player, target)
 	_after_player_action()
 
@@ -145,13 +188,14 @@ func player_block() -> void:
 	if not can_block():
 		push_error("The player cannot block now")
 		return
-	_change_momentum(player, -_rules.block_momentum_cost, MomentumReason.SPENT)
+	_change_momentum(player, -block_cost(), MomentumReason.SPENT)
 	_player_is_blocking = true
 	player_blocked.emit(player)
 	_after_player_action()
 
 
-func use_skill(skill: SkillData) -> void:
+## The target is the selected enemy. Only skills with an attack effect use it.
+func use_skill(skill: SkillData, target: Combatant = null) -> void:
 	if not can_use_skill(skill):
 		push_error("%s cannot be used now" % skill.id)
 		return
@@ -159,7 +203,7 @@ func use_skill(skill: SkillData) -> void:
 	_change_momentum(player, -skill.momentum_cost, MomentumReason.SPENT)
 	skill_used.emit(player, skill)
 	for effect: EffectData in skill.effects:
-		_apply_effect(effect, skill)
+		_apply_effect(effect, skill, target)
 	_after_player_action()
 
 
@@ -198,9 +242,15 @@ func _finish_player_turn() -> void:
 	_player_has_advantage = false
 	player_turn_ended.emit()
 	for enemy: Combatant in living_enemies():
+		# A counter can defeat an enemy before its own turn comes.
+		if not enemy.is_alive():
+			continue
 		_carry_out_intent(enemy as Enemy)
 		if not player.is_alive():
 			_end(false)
+			return
+		if living_enemies().is_empty():
+			_end(true)
 			return
 	_begin_round()
 
@@ -215,7 +265,7 @@ func _carry_out_intent(enemy: Enemy) -> void:
 	intent_started.emit(enemy, intent)
 	for _i: int in intent.attack_count:
 		_attack(enemy, player, intent)
-		if not player.is_alive():
+		if not player.is_alive() or not enemy.is_alive():
 			return
 	if intent.momentum_to_allies > 0:
 		for ally: Combatant in living_enemies():
@@ -223,10 +273,17 @@ func _carry_out_intent(enemy: Enemy) -> void:
 				_change_momentum(ally, intent.momentum_to_allies, MomentumReason.RALLIED)
 
 
-## The damage passed to attack_resolved is null on a miss. The intent is null for the player.
-func _attack(attacker: Combatant, defender: Combatant, intent: EnemyIntentData = null) -> void:
+## The damage passed to attack_resolved is null on a miss. The intent is null for the player, the
+## skill and its effect are null for enemies and for the plain Attack.
+func _attack(
+	attacker: Combatant,
+	defender: Combatant,
+	intent: EnemyIntentData = null,
+	skill: SkillData = null,
+	effect: AttackEffect = null
+) -> void:
 	var attack: AttackRoll = _resolver.roll_attack(
-		attacker.get_attack_bonus(),
+		attacker.get_attack_bonus() + (effect.attack_bonus if effect != null else 0),
 		defender.get_armor_class(),
 		attacker.get_crit_threshold(),
 		_spend_roll_mode(attacker)
@@ -237,6 +294,8 @@ func _attack(attacker: Combatant, defender: Combatant, intent: EnemyIntentData =
 	var damage: DamageRoll = null
 	if attack.is_hit:
 		var extra_dice: int = intent.extra_damage_dice if intent != null else 0
+		if effect != null:
+			extra_dice += effect.extra_damage_dice
 		damage = _resolver.roll_damage(
 			attacker.get_damage_die_count() + extra_dice,
 			attacker.get_damage_die_sides(),
@@ -249,12 +308,76 @@ func _attack(attacker: Combatant, defender: Combatant, intent: EnemyIntentData =
 	# Only a natural 20 drains, not a crit in the Luck-extended range.
 	if attack.is_natural_twenty:
 		_drain(attacker, damage)
+	_after_damage(defender)
+	_gain_momentum_from_attack(attacker, defender, attack, intent)
+	if effect != null and attack.is_hit:
+		_apply_attack_effect_on_hit(effect, skill, defender)
+	if attacker != player and not attack.is_hit and _player_is_blocking:
+		_retaliate(attacker)
+
+
+func _after_damage(defender: Combatant) -> void:
 	if not defender.is_alive():
 		combatant_defeated.emit(defender)
 		_defeat_summons_of(defender)
 	elif defender is Enemy:
 		_enter_phases(defender as Enemy)
-	_gain_momentum_from_attack(attacker, defender, attack, intent)
+
+
+func _apply_attack_effect_on_hit(effect: AttackEffect, skill: SkillData, target: Combatant) -> void:
+	if effect.splash_die_count > 0:
+		var others: Array[Combatant] = living_enemies()
+		others.erase(target)
+		_deal_effect_damage(skill, effect.splash_die_count, effect.splash_die_sides, others)
+	var enemy: Enemy = target as Enemy
+	if effect.momentum_drain > 0 and enemy != null and enemy.is_alive():
+		_change_momentum(enemy, -effect.momentum_drain, MomentumReason.DRAINED)
+		if enemy.intent != null and enemy.intent.momentum_cost > enemy.momentum:
+			enemy.choose_intent()
+			intents_announced.emit()
+
+
+# Every RetaliateEffect of the player's passive skills strikes back once.
+func _retaliate(attacker: Combatant) -> void:
+	for skill: SkillData in player.skills:
+		if skill.activation != SkillData.Activation.PASSIVE:
+			continue
+		for effect: EffectData in skill.effects:
+			var retaliate: RetaliateEffect = effect as RetaliateEffect
+			if retaliate != null and attacker.is_alive():
+				var targets: Array[Combatant] = [attacker]
+				_deal_effect_damage(skill, retaliate.die_count, retaliate.die_sides, targets)
+
+
+## One damage roll for all targets. The player caused it, so kills give the player Momentum.
+func _deal_effect_damage(
+	skill: SkillData, die_count: int, die_sides: int, targets: Array[Combatant]
+) -> void:
+	if targets.is_empty():
+		return
+	var damage: DamageRoll = _resolver.roll_damage(die_count, die_sides, 0, false)
+	for target: Combatant in targets:
+		target.take_damage(damage.total)
+	effect_damage_dealt.emit(skill, damage, die_sides, targets)
+	# Summons first, because a summoner's defeat takes its summons down and reports them itself.
+	for target: Combatant in targets:
+		if (target as Enemy).summoner != null:
+			_after_effect_damage(target)
+	for target: Combatant in targets:
+		if (target as Enemy).summoner == null:
+			_after_effect_damage(target)
+
+
+func _after_effect_damage(target: Combatant) -> void:
+	_after_damage(target)
+	if not target.is_alive():
+		_change_momentum(player, _kill_momentum(), MomentumReason.KILL)
+
+
+func _kill_momentum() -> int:
+	return (
+		_rules.momentum_per_kill + player.stat_modifier(StatModifierEffect.Stat.MOMENTUM_PER_KILL)
+	)
 
 
 func _enter_phases(boss: Enemy) -> void:
@@ -285,9 +408,16 @@ func _gain_momentum_from_attack(
 ) -> void:
 	if attacker == player:
 		if not defender.is_alive():
-			_change_momentum(player, _rules.momentum_per_kill, MomentumReason.KILL)
+			_change_momentum(player, _kill_momentum(), MomentumReason.KILL)
 	elif not attack.is_hit:
-		_change_momentum(player, _rules.momentum_per_fended_attack, MomentumReason.FENDED_OFF)
+		_change_momentum(
+			player,
+			(
+				_rules.momentum_per_fended_attack
+				+ player.stat_modifier(StatModifierEffect.Stat.MOMENTUM_PER_FENDED_ATTACK)
+			),
+			MomentumReason.FENDED_OFF
+		)
 	elif intent != null and intent.momentum_drain > 0:
 		_change_momentum(player, -intent.momentum_drain, MomentumReason.DRAINED)
 
@@ -302,12 +432,8 @@ func _spend_roll_mode(attacker: Combatant) -> AttackRoll.RollMode:
 
 ## Keeps Momentum between 0 and the combatant's cap and reports only real changes.
 func _change_momentum(combatant: Combatant, change: int, reason: MomentumReason) -> void:
-	var cap: int = _rules.momentum_cap
-	var enemy: Enemy = combatant as Enemy
-	if enemy != null:
-		cap = enemy.momentum_cap()
 	var before: int = combatant.momentum
-	combatant.momentum = clampi(before + change, 0, cap)
+	combatant.momentum = clampi(before + change, 0, momentum_cap_of(combatant))
 	if combatant.momentum != before:
 		momentum_changed.emit(combatant, combatant.momentum, combatant.momentum - before, reason)
 
@@ -319,14 +445,37 @@ func _drain(attacker: Combatant, damage: DamageRoll) -> void:
 	attacker_drained.emit(attacker, drained, restored)
 
 
-func _apply_effect(effect: EffectData, skill: SkillData) -> void:
-	var heal_effect: HealEffect = effect as HealEffect
-	if heal_effect != null:
-		_heal_player(heal_effect, skill)
+func _apply_effect(effect: EffectData, skill: SkillData, target: Combatant) -> void:
+	if effect is HealEffect:
+		_heal_player(effect as HealEffect, skill)
 	elif effect is AdvantageEffect:
 		_player_has_advantage = true
+	elif effect is AttackEffect:
+		assert(target in living_enemies(), "An attack skill needs a living enemy as target")
+		_attack(player, target, null, skill, effect as AttackEffect)
+	elif effect is AreaDamageEffect:
+		var area: AreaDamageEffect = effect as AreaDamageEffect
+		_deal_effect_damage(skill, area.die_count, area.die_sides, living_enemies())
+	elif effect is MomentumGainEffect:
+		_gain_momentum_from_skill(effect as MomentumGainEffect, skill)
 	else:
 		push_error("Effect %s has no rule for active skills" % effect.get_script().resource_path)
+
+
+func _gain_momentum_from_skill(effect: MomentumGainEffect, skill: SkillData) -> void:
+	if effect.hit_point_cost > 0:
+		player.take_damage(effect.hit_point_cost)
+		hit_points_paid.emit(player, effect.hit_point_cost, skill)
+	_change_momentum(player, effect.amount, MomentumReason.SKILL)
+
+
+func _hit_point_cost(skill: SkillData) -> int:
+	var cost: int = 0
+	for effect: EffectData in skill.effects:
+		var gain: MomentumGainEffect = effect as MomentumGainEffect
+		if gain != null:
+			cost += gain.hit_point_cost
+	return cost
 
 
 func _heal_player(effect: HealEffect, skill: SkillData) -> void:

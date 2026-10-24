@@ -52,7 +52,7 @@ func copy() -> Character:
 func get_armor_class() -> int:
 	return (
 		CombatFormulas.armor_class(armor.armor_base, attribute_bonus(Attributes.Kind.DEXTERITY))
-		+ _stat_modifier(StatModifierEffect.Stat.ARMOR_CLASS)
+		+ stat_modifier(StatModifierEffect.Stat.ARMOR_CLASS)
 	)
 
 
@@ -61,7 +61,7 @@ func get_attack_bonus() -> int:
 		CombatFormulas.melee_attack_bonus(
 			attribute_bonus(Attributes.Kind.STRENGTH), _rules.proficiency_bonus
 		)
-		+ _stat_modifier(StatModifierEffect.Stat.ATTACK)
+		+ stat_modifier(StatModifierEffect.Stat.ATTACK)
 	)
 
 
@@ -81,19 +81,19 @@ func get_damage_die_sides() -> int:
 func get_damage_bonus() -> int:
 	return (
 		attribute_bonus(Attributes.Kind.STRENGTH)
-		+ _stat_modifier(StatModifierEffect.Stat.MELEE_DAMAGE)
+		+ stat_modifier(StatModifierEffect.Stat.MELEE_DAMAGE)
 	)
 
 
 ## Damage taken off each hit the character receives.
 func get_damage_reduction() -> int:
-	return _stat_modifier(StatModifierEffect.Stat.DAMAGE_REDUCTION)
+	return stat_modifier(StatModifierEffect.Stat.DAMAGE_REDUCTION)
 
 
 ## Base value plus the modifiers of passive skills and worn items, capped by the game rules.
 func attribute_value(kind: Attributes.Kind) -> int:
 	return mini(
-		attributes.value_of(kind) + _stat_modifier(ATTRIBUTE_STATS[kind]), _rules.attribute_cap
+		attributes.value_of(kind) + stat_modifier(ATTRIBUTE_STATS[kind]), _rules.attribute_cap
 	)
 
 
@@ -106,13 +106,14 @@ func is_attribute_capped(kind: Attributes.Kind) -> bool:
 	return attribute_value(kind) >= _rules.attribute_cap
 
 
-## The modifier stats of all capped attributes, for the skill offer.
-func capped_attribute_stats() -> Array[StatModifierEffect.Stat]:
-	var capped: Array[StatModifierEffect.Stat] = []
-	for kind: Attributes.Kind in ATTRIBUTE_STATS:
-		if is_attribute_capped(kind):
-			capped.append(ATTRIBUTE_STATS[kind])
-	return capped
+## Sum of the stat's modifiers from passive skills and worn items whose conditions hold.
+func stat_modifier(stat: StatModifierEffect.Stat) -> int:
+	var total: int = 0
+	for effect: EffectData in _passive_effects():
+		var modifier: StatModifierEffect = effect as StatModifierEffect
+		if modifier != null and modifier.stat == stat and _modifier_applies(modifier):
+			total += modifier.amount
+	return total
 
 
 ## Bonus on the loot roll from Luck.
@@ -154,8 +155,12 @@ func active_skills() -> Array[SkillData]:
 	return active
 
 
-## Stackable skills may be learned again, every copy counts.
-func learn_skill(skill: SkillData) -> void:
+## Stackable skills may be learned again, every copy counts. A higher rank of a skill tree node
+## passes the rank it replaces.
+func learn_skill(skill: SkillData, replaced: SkillData = null) -> void:
+	if replaced != null:
+		assert(replaced in skills, "Only a learned skill can be replaced")
+		skills.erase(replaced)
 	skills.append(skill)
 	_update_max_hit_points()
 
@@ -197,15 +202,6 @@ func _update_max_hit_points() -> void:
 	var gain: int = _calculate_max_hit_points() - max_hit_points
 	max_hit_points += gain
 	hit_points = mini(hit_points + maxi(gain, 0), max_hit_points)
-
-
-func _stat_modifier(stat: StatModifierEffect.Stat) -> int:
-	var total: int = 0
-	for effect: EffectData in _passive_effects():
-		var modifier: StatModifierEffect = effect as StatModifierEffect
-		if modifier != null and modifier.stat == stat and _modifier_applies(modifier):
-			total += modifier.amount
-	return total
 
 
 # Worn items count like passive skills.
