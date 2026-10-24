@@ -1,6 +1,6 @@
 extends GutTest
-## Skill tree screen: the columns, node buttons, details with value changes and blockers, learning a
-## node and the specialization that fades the other branches.
+## Skill tree screen: the branches, node buttons, details with value changes and blockers, learning
+## a node and the specialization that fades the other branches.
 
 const SKILL_TREE_SCENE: PackedScene = preload("res://scenes/skill_tree/skill_tree.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -29,8 +29,8 @@ func _button(screen: SkillTreeScreen, node_name: String) -> Button:
 	return screen.get_node("%" + node_name) as Button
 
 
-func _column(screen: SkillTreeScreen, branch_name: String) -> Control:
-	return screen.get_node("%Columns").get_node(branch_name + "Column") as Control
+func _branch(screen: SkillTreeScreen, branch_id: StringName) -> Control:
+	return (screen.get_node("%TreeView") as SkillTreeView).branch_layer(branch_id)
 
 
 func _select(screen: SkillTreeScreen, node_id: StringName) -> void:
@@ -44,15 +44,15 @@ func _learn(screen: SkillTreeScreen, node_id: StringName) -> void:
 	await wait_process_frames(1)
 
 
-func test_columns_show_the_trunk_and_every_specialization() -> void:
+func test_tree_shows_the_trunk_and_every_specialization() -> void:
 	var screen: SkillTreeScreen = _create(2)
 
 	var names: Array[String] = []
-	for column: Node in screen.get_node("%Columns").get_children():
-		names.append(column.name)
+	for branch: Node in screen.get_node("%TreeView").get_children():
+		names.append(branch.name)
 	assert_eq(
 		names,
-		["TrainingColumn", "DragonfireColumn", "BerserkerColumn", "BulwarkColumn"] as Array[String]
+		["TrainingBranch", "DragonfireBranch", "BerserkerBranch", "BulwarkBranch"] as Array[String]
 	)
 
 
@@ -60,7 +60,8 @@ func test_first_learnable_node_is_selected_with_its_value_changes() -> void:
 	var screen: SkillTreeScreen = _create(2)
 
 	assert_eq(screen.selected_node().id, &"strength_training")
-	assert_eq(_label_text(screen, "NodeNameLabel"), "Strength Training   ·   rank 0/2")
+	assert_eq(_label_text(screen, "NodeNameLabel"), "Strength Training")
+	assert_string_contains(_label_text(screen, "NodeDetailsLabel"), "Rank 0/2")
 	assert_string_contains(_label_text(screen, "NodeDetailsLabel"), "Attack +5 → +6")
 	assert_false(_button(screen, "LearnButton").disabled)
 
@@ -71,7 +72,7 @@ func test_learning_spends_the_point() -> void:
 	await _learn(screen, &"strength_training")
 
 	assert_has(RunState.player.skills, STRENGTH_TRAINING)
-	assert_eq(screen.node_button(&"strength_training").text, "Strength Training  1/2")
+	assert_eq(screen.node_button(&"strength_training").text, "1/2")
 	assert_true(_button(screen, "LearnButton").disabled)
 	assert_string_contains(_label_text(screen, "HintLabel"), "Skill points: 0")
 
@@ -91,7 +92,8 @@ func test_next_rank_shows_the_rank_it_replaces() -> void:
 
 	var details: String = _label_text(screen, "NodeDetailsLabel")
 
-	assert_eq(_label_text(screen, "NodeNameLabel"), "Strength Training II   ·   rank 1/2")
+	assert_eq(_label_text(screen, "NodeNameLabel"), "Strength Training II")
+	assert_string_contains(details, "Rank 1/2")
 	assert_string_contains(details, "Now: +2 Strength.")
 	assert_string_contains(details, "Attack +6 → +7")
 
@@ -112,10 +114,10 @@ func test_details_name_the_activation_and_a_missing_requirement() -> void:
 	await _select(screen, &"draconic_scales")
 
 	var details: String = _label_text(screen, "NodeDetailsLabel")
-	assert_true(details.begins_with("Passive."), details)
+	assert_true(details.begins_with("Rank 0/1   ·   Passive."), details)
 	assert_string_contains(details, "Needs Dragon Breath.")
 	await _select(screen, &"dragon_breath")
-	assert_true(_label_text(screen, "NodeDetailsLabel").begins_with("Active, 2 Momentum."))
+	assert_string_contains(_label_text(screen, "NodeDetailsLabel"), "Active, 2 Momentum.")
 
 
 func test_first_specialization_node_fades_the_other_branches() -> void:
@@ -124,10 +126,10 @@ func test_first_specialization_node_fades_the_other_branches() -> void:
 	await _learn(screen, &"dragon_breath")
 
 	assert_has(RunState.player.skills, DRAGON_BREATH)
-	assert_eq(_column(screen, "Dragonfire").modulate, Color.WHITE)
-	assert_eq(_column(screen, "Training").modulate, Color.WHITE)
-	assert_eq(_column(screen, "Berserker").modulate, SkillTreeScreen.CLOSED_BRANCH_MODULATE)
-	assert_eq(_column(screen, "Bulwark").modulate, SkillTreeScreen.CLOSED_BRANCH_MODULATE)
+	assert_eq(_branch(screen, &"dragonfire").modulate, Color.WHITE)
+	assert_eq(_branch(screen, &"training").modulate, Color.WHITE)
+	assert_eq(_branch(screen, &"berserker").modulate, SkillTreeView.CLOSED_BRANCH_MODULATE)
+	assert_eq(_branch(screen, &"bulwark").modulate, SkillTreeView.CLOSED_BRANCH_MODULATE)
 	assert_string_contains(_label_text(screen, "HintLabel"), "Specialization: Dragonfire")
 
 
