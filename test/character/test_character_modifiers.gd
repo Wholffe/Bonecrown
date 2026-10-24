@@ -68,7 +68,7 @@ func test_reckless_swings_trades_armor_class_for_damage() -> void:
 func test_guarded_stance_trades_damage_for_armor_class() -> void:
 	_warrior.learn_skill(GUARDED_STANCE)
 
-	assert_eq(_warrior.get_armor_class(), 16, "14 + 2")
+	assert_eq(_warrior.get_armor_class(), 15, "14 + 1")
 	assert_eq(_warrior.get_damage_bonus(), 3, "4 - 1")
 
 
@@ -84,7 +84,7 @@ func test_positive_and_negative_modifiers_on_one_stat_add_up() -> void:
 	_warrior.learn_skill(RECKLESS_SWINGS)
 	_warrior.learn_skill(GUARDED_STANCE)
 
-	assert_eq(_warrior.get_armor_class(), 15, "14 - 1 + 2")
+	assert_eq(_warrior.get_armor_class(), 14, "14 - 1 + 1")
 	assert_eq(_warrior.get_damage_bonus(), 5, "4 + 2 - 1")
 
 
