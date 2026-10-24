@@ -1,5 +1,5 @@
 extends GutTest
-## Combatant card: exact stats of the player and of enemies, and the roll mode tag.
+## Combatant card: exact stats of the player and of enemies, the roll mode tag and the figure.
 
 const COMBATANT_CARD_SCENE: PackedScene = preload("res://scenes/ui/combatant_card.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -89,3 +89,35 @@ func test_intent_text_names_every_effect() -> void:
 	var text: String = CombatantCard.describe_intent(Enemy.new(GOBLIN), intent)
 
 	assert_eq(text, "Test: 2× 2d6+1, −1 Momentum on a hit, allies +2 Momentum")
+
+
+func test_player_card_shows_the_class_figure_facing_right_without_an_intent() -> void:
+	RunState.start_new_run(WARRIOR, SEED)
+	var card: CombatantCard = _create_card()
+
+	card.show_combatant(RunState.player, true)
+
+	assert_eq(card.figure().shown_frame(), WARRIOR.figure_frames[0])
+	assert_false(card.figure().is_facing_left())
+	assert_eq(card.intent_text(), "", "the player has no intent")
+	assert_no_new_orphans()
+
+
+func test_enemy_card_shows_its_figure_facing_the_player() -> void:
+	var card: CombatantCard = _create_card()
+
+	card.show_combatant(Enemy.new(GOBLIN), false)
+
+	assert_eq(card.figure().shown_frame(), GOBLIN.figure_frames[0])
+	assert_true(card.figure().is_facing_left())
+	assert_no_new_orphans()
+
+
+func test_defeated_combatant_falls() -> void:
+	var card: CombatantCard = _create_card()
+	card.show_combatant(Enemy.new(GOBLIN), false)
+
+	card.show_hit_points(0)
+
+	assert_true(card.figure().is_defeated())
+	assert_no_new_orphans()

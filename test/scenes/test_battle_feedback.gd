@@ -1,5 +1,6 @@
 extends GutTest
-## Battle scene feedback: pop-ups over the cards and the crit shake, with and without animations.
+## Battle scene feedback: pop-ups over the cards, the figures' lunge and knockback, the crit shake
+## with and without animations, and the combat log that opens on demand.
 
 const BATTLE_SCENE: PackedScene = preload("res://scenes/battle/battle.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -16,6 +17,8 @@ const PLAYBACK_TIMEOUT: float = 15.0
 const POSITION_TOLERANCE: float = 0.5
 ## A shake would have moved the layout within this time, because tweens start a frame later.
 const SHAKE_WATCH_TIME: float = 0.1
+## A lunge or knockback shows within this time after the attack's log line.
+const MOTION_WATCH_TIME: float = 1.0
 
 
 ## Warrior: attack +5 vs AC 12, d8+4, 14 HP. Goblins: attack +3 vs AC 14, d6+1, 8 HP each.
@@ -137,4 +140,58 @@ func test_heal_pops_up_over_the_player() -> void:
 	assert_eq(popup.text, "+4", "3 + level 1")
 	_assert_popup_over(popup, battle.get_node("%PlayerCard") as Control)
 	await _finish_playback(battle)
+	assert_no_new_orphans()
+
+
+func test_revealed_hit_lunges_the_attacker_and_knocks_back_the_defender() -> void:
+	var battle: Battle = _start_battle(ROUND_ROLLS, true)
+	var player_figure: FigureView = (battle.get_node("%PlayerCard") as CombatantCard).figure()
+	var goblin_card: CombatantCard = _enemy_card(battle, 0)
+
+	_attack(battle)
+	await _wait_for_log(battle, _attack_line(RunState.player, goblin_card.combatant))
+
+	var lunges: Callable = func() -> bool: return player_figure.offset_from_rest().x > 0.0
+	assert_true(await wait_until(lunges, MOTION_WATCH_TIME), "The warrior lunges right")
+	var knocked_back: Callable = func() -> bool:
+		return goblin_card.figure().offset_from_rest().x > 0.0
+	assert_true(await wait_until(knocked_back, MOTION_WATCH_TIME), "The goblin is pushed right")
+	battle.set_animations_enabled(false)
+	await _finish_playback(battle)
+	assert_no_new_orphans()
+
+
+func test_log_starts_closed_with_its_last_line_and_opens_on_demand() -> void:
+	var battle: Battle = _start_battle(ROUND_ROLLS, false)
+	var log_label: RichTextLabel = battle.get_node("%CombatLog") as RichTextLabel
+	var toggle: Button = battle.get_node("%LogToggleButton") as Button
+	_attack(battle)
+	await battle.wait_for_playback()
+
+	assert_false(battle.is_log_expanded(), "The log starts closed")
+	assert_false(log_label.visible)
+	var lines: PackedStringArray = log_label.get_parsed_text().strip_edges().split("\n")
+	assert_eq((battle.get_node("%LastLogLabel") as Label).text, lines[-1])
+	toggle.button_pressed = true
+	assert_true(log_label.visible, "The toggle opens the log")
+	assert_eq(toggle.text, Battle.HIDE_LOG_TEXT)
+	toggle.button_pressed = false
+	assert_false(log_label.visible, "and closes it again")
+	assert_no_new_orphans()
+
+
+func test_opened_log_shows_its_latest_lines() -> void:
+	var battle: Battle = _start_battle(ROUND_ROLLS, false)
+	var log_label: RichTextLabel = battle.get_node("%CombatLog") as RichTextLabel
+	_attack(battle)
+	await battle.wait_for_playback()
+
+	battle.set_log_expanded(true)
+	await wait_physics_frames(2)
+
+	var scroll_bar: VScrollBar = log_label.get_v_scroll_bar()
+	assert_gt(
+		scroll_bar.max_value, scroll_bar.page, "Precondition: the round fills more than the box"
+	)
+	assert_almost_eq(scroll_bar.value + scroll_bar.page, scroll_bar.max_value, 1.0)
 	assert_no_new_orphans()

@@ -1,13 +1,16 @@
 class_name CombatantCard
 extends PanelContainer
-## Placeholder portrait of one combatant with hit points and stats. Enemy cards can be marked.
+## One combatant on the battlefield: its figure with hit points and stats below it and, for an
+## enemy, its next move above it. Enemy cards can be marked.
 
 signal selected(card: CombatantCard)
 
-const PLAYER_BODY_COLOR: Color = Color(0.25, 0.45, 0.85)
-const ENEMY_BODY_COLOR: Color = Color(0.75, 0.3, 0.25)
-const BACKGROUND_COLOR: Color = Color(0.13, 0.13, 0.16)
-const BORDER_COLOR: Color = Color(0.32, 0.32, 0.38)
+## See-through, so the figure stands on the battlefield. Only the target gets a frame.
+const BACKGROUND_COLOR: Color = Color(0.0, 0.0, 0.0, 0.0)
+const BORDER_COLOR: Color = Color(0.0, 0.0, 0.0, 0.0)
+## The texts get an outline, so they stay readable in front of the battlefield.
+const TEXT_OUTLINE_COLOR: Color = Color(0.03, 0.03, 0.05)
+const TEXT_OUTLINE_SIZE: int = 6
 const SELECTED_BORDER_COLOR: Color = Color(1.0, 0.82, 0.2)
 const BORDER_WIDTH: int = 2
 const SELECTED_BORDER_WIDTH: int = 4
@@ -27,7 +30,7 @@ var _is_selected: bool = false
 var _normal_style: StyleBoxFlat = _make_style(BORDER_COLOR, BORDER_WIDTH)
 var _selected_style: StyleBoxFlat = _make_style(SELECTED_BORDER_COLOR, SELECTED_BORDER_WIDTH)
 
-@onready var _body: ColorRect = %Body
+@onready var _figure: FigureView = %Figure
 @onready var _name_label: Label = %NameLabel
 @onready var _hit_point_bar: ProgressBar = %HitPointBar
 @onready var _hit_point_label: Label = %HitPointLabel
@@ -39,6 +42,7 @@ var _selected_style: StyleBoxFlat = _make_style(SELECTED_BORDER_COLOR, SELECTED_
 
 
 func _ready() -> void:
+	theme = _make_text_outline_theme()
 	_refresh_look()
 
 
@@ -71,9 +75,24 @@ static func describe_intent(enemy: Enemy, intent: EnemyIntentData) -> String:
 	return "%s: %s" % [intent.display_name, ", ".join(parts)]
 
 
+## The figure frames of a combatant: its class's for the player, its type's for an enemy.
+static func figure_frames_of(shown_combatant: Combatant) -> Array[Texture2D]:
+	var enemy: Enemy = shown_combatant as Enemy
+	if enemy != null:
+		return enemy.data.figure_frames
+	var character: Character = shown_combatant as Character
+	if character != null:
+		return character.class_data.figure_frames
+	var no_frames: Array[Texture2D] = []
+	return no_frames
+
+
 func show_combatant(shown_combatant: Combatant, is_player: bool) -> void:
 	combatant = shown_combatant
-	_body.color = PLAYER_BODY_COLOR if is_player else ENEMY_BODY_COLOR
+	var enemy: Enemy = shown_combatant as Enemy
+	var figure_scale: float = enemy.data.figure_scale if enemy != null else 1.0
+	# The player stands on the left and faces right, the enemies face the player.
+	_figure.show_figure(figure_frames_of(shown_combatant), not is_player, figure_scale)
 	_name_label.text = shown_combatant.display_name
 	show_stats(shown_combatant.get_armor_class(), shown_combatant.get_attack_bonus())
 	_hit_point_bar.max_value = shown_combatant.max_hit_points
@@ -149,6 +168,10 @@ func is_defeated() -> bool:
 	return _shown_hit_points <= 0
 
 
+func figure() -> FigureView:
+	return _figure
+
+
 func set_selectable(value: bool) -> void:
 	_is_selectable = value
 	_refresh_look()
@@ -173,8 +196,17 @@ func _can_be_selected() -> bool:
 
 func _refresh_look() -> void:
 	add_theme_stylebox_override("panel", _selected_style if _is_selected else _normal_style)
-	modulate = DEFEATED_MODULATE if combatant != null and is_defeated() else Color.WHITE
+	var defeated: bool = combatant != null and is_defeated()
+	modulate = DEFEATED_MODULATE if defeated else Color.WHITE
+	_figure.set_defeated(defeated)
 	mouse_default_cursor_shape = CURSOR_POINTING_HAND if _can_be_selected() else CURSOR_ARROW
+
+
+func _make_text_outline_theme() -> Theme:
+	var outline_theme: Theme = Theme.new()
+	outline_theme.set_constant("outline_size", "Label", TEXT_OUTLINE_SIZE)
+	outline_theme.set_color("font_outline_color", "Label", TEXT_OUTLINE_COLOR)
+	return outline_theme
 
 
 func _make_style(border_color: Color, border_width: int) -> StyleBoxFlat:

@@ -1,6 +1,7 @@
 class_name Battle
 extends Control
-## Battle screen with combatant cards, dice display, combat log and action bar.
+## Battle screen with the combatants' figures on a battlefield, dice display, action bar and a
+## combat log that shows its last line until the player opens it.
 
 ## Emitted after all queued combat events have been shown.
 signal playback_finished
@@ -39,6 +40,8 @@ const EFFECT_DAMAGE_COLOR: Color = Color(1.0, 0.55, 0.2)
 const OUT_OF_MOMENTUM_LOG: String = "Out of Momentum – your turn ends."
 const END_TURN_HIGHLIGHT_COLOR: Color = Color(1.0, 0.78, 0.25)
 const END_TURN_HIGHLIGHT_BORDER_WIDTH: int = 3
+const SHOW_LOG_TEXT: String = "Show Log"
+const HIDE_LOG_TEXT: String = "Hide Log"
 
 var _combat: Combat
 var _cards: Dictionary[Combatant, CombatantCard] = {}
@@ -65,10 +68,12 @@ var _is_end_turn_highlighted: bool = false
 @onready var _enemy_cards_box: HBoxContainer = %EnemyCards
 @onready var _dice_display: DiceDisplay = %DiceDisplay
 @onready var _combat_log: RichTextLabel = %CombatLog
+@onready var _last_log_label: Label = %LastLogLabel
+@onready var _log_toggle_button: Button = %LogToggleButton
 @onready var _attack_button: Button = %AttackButton
 @onready var _block_button: Button = %BlockButton
 @onready var _end_turn_button: Button = %EndTurnButton
-@onready var _skill_buttons_box: VBoxContainer = %SkillButtons
+@onready var _skill_buttons_box: HFlowContainer = %SkillButtons
 @onready var _character_button: Button = %CharacterButton
 @onready var _continue_button: Button = %ContinueButton
 @onready var _main_menu_button: Button = %MainMenuButton
@@ -84,6 +89,8 @@ func _ready() -> void:
 	_end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
 	_continue_button.pressed.connect(_on_continue_button_pressed)
+	_log_toggle_button.toggled.connect(set_log_expanded)
+	set_log_expanded(false)
 	_character_sheet.character = RunState.player
 	_character_button.pressed.connect(_character_sheet.toggle)
 	_character_sheet.visibility_changed.connect(_on_character_sheet_visibility_changed)
@@ -122,6 +129,17 @@ func set_animations_enabled(enabled: bool) -> void:
 ## Whether End Turn glows because it is the obvious next action.
 func is_end_turn_highlighted() -> bool:
 	return _is_end_turn_highlighted
+
+
+## The full combat log, for players who want to retrace a fight. Closed, only its last line shows.
+func set_log_expanded(expanded: bool) -> void:
+	_combat_log.visible = expanded
+	_log_toggle_button.set_pressed_no_signal(expanded)
+	_log_toggle_button.text = HIDE_LOG_TEXT if expanded else SHOW_LOG_TEXT
+
+
+func is_log_expanded() -> bool:
+	return _combat_log.visible
 
 
 func _apply_animations_enabled() -> void:
@@ -328,6 +346,9 @@ func _show_attack_feedback(
 	attacker: Combatant, defender_card: CombatantCard, attack: AttackRoll, damage: DamageRoll
 ) -> void:
 	var outcome: DiceDisplay.Outcome = DiceDisplay.outcome_for(attack)
+	_cards[attacker].figure().lunge()
+	if attack.is_hit:
+		defender_card.figure().flash_hit()
 	_popup_layer.show_attack(defender_card, outcome, damage, attacker.get_damage_die_sides())
 	if outcome == DiceDisplay.Outcome.CRITICAL_HIT:
 		_shake_layout()
@@ -404,6 +425,7 @@ func _play_effect_damage(
 		var card: CombatantCard = _cards[targets[index]]
 		card.show_hit_points(hit_points[index])
 		if _animations_enabled:
+			card.figure().flash_hit()
 			_popup_layer.show_attack(card, DiceDisplay.Outcome.HIT, damage, die_sides)
 	_log(
 		(
@@ -441,6 +463,8 @@ func _play_defeat(combatant: Combatant) -> void:
 func _play_combat_end(player_won: bool) -> void:
 	_log("")
 	_log("Victory!" if player_won else "You have fallen. The run is over.")
+	# Continue takes the place of Attack, so the layout keeps its height.
+	_attack_button.visible = false
 	_continue_button.visible = true
 
 
@@ -604,6 +628,8 @@ func _describe_dice(dice_results: Array[int], bonus: int) -> String:
 
 func _log(line: String) -> void:
 	_combat_log.add_text(line + "\n")
+	if line != "":
+		_last_log_label.text = line
 
 
 func _on_round_started(round_number: int) -> void:

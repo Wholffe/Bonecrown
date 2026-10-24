@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/ui/combatant_card.gd" id="1_1qkvx"]
+[ext_resource type="Script" path="res://scenes/ui/figure_view.gd" id="2_fgrvw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_45a1h"]
 content_margin_left = 0.0
@@ -37,14 +38,29 @@ script = ExtResource("1_1qkvx")
 [node name="Layout" type="VBoxContainer" parent="." unique_id=652095095]
 layout_mode = 2
 theme_override_constants/separation = 6
+alignment = 2
 
-[node name="Body" type="ColorRect" parent="Layout" unique_id=1806947802]
+[node name="IntentSlot" type="VBoxContainer" parent="Layout" unique_id=1820443121]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 104)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-size_flags_horizontal = 4
 mouse_filter = 2
-color = Color(0.5, 0.5, 0.5, 1)
+alignment = 2
+
+[node name="IntentLabel" type="Label" parent="Layout/IntentSlot" unique_id=1820443120]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(156, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Figure" type="Control" parent="Layout" unique_id=1806947802]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("2_fgrvw")
 
 [node name="NameLabel" type="Label" parent="Layout" unique_id=1042556577]
 unique_name_in_owner = true
@@ -94,15 +110,6 @@ layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 4
-
-[node name="IntentLabel" type="Label" parent="Layout" unique_id=1820443120]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(156, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-horizontal_alignment = 1
-autowrap_mode = 3
 
 [node name="RollModeLabel" type="Label" parent="Layout" unique_id=1659207341]
 unique_name_in_owner = true
