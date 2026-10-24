@@ -8,8 +8,8 @@ const SEED: int = 42
 const BOSS_ROOM: int = 10
 
 
-## Warrior: attack +5, d8+4, 14 HP. The Bone King: AC 16, attack +10, 1d10+6, phase 2 at 60 HP
-## (Command and two Skeletons with attack +4), phase 3 at 30 HP (AC 14, Frenzy).
+## Warrior: attack +5, d8+4, 14 HP. The Bone King: AC 16, attack +11, 1d10+6, phase 2 at 73 HP
+## (Command and two Skeletons with attack +4), phase 3 at 37 HP (AC 14, Frenzy).
 func _start_boss_battle(rolls: Array[int], boss_hit_points: int) -> Battle:
 	RunState.start_new_run(WARRIOR, SEED)
 	RunState.room_number = BOSS_ROOM
@@ -70,7 +70,7 @@ func test_phase_with_a_new_armor_class_updates_the_card() -> void:
 	await _attack(battle)
 
 	var stats: Label = _enemy_cards(battle)[0].get_node("%StatsLabel") as Label
-	assert_eq(stats.text, "AC 14   Attack +10")
+	assert_eq(stats.text, "AC 14   Attack +11")
 
 
 func test_intent_without_attacks_names_only_its_effect() -> void:

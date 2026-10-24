@@ -34,7 +34,7 @@ attack_count = 2
 
 [sub_resource type="Resource" id="Resource_raise_the_dead"]
 script = ExtResource("3_bphas")
-hit_points_at_most = 60
+hit_points_at_most = 73
 announcement = "The Bone King raises the dead!"
 momentum_per_round = 1
 momentum_cap = 2
@@ -43,7 +43,7 @@ summons = Array[ExtResource("4_oevm7")]([ExtResource("5_skltn"), ExtResource("5_
 
 [sub_resource type="Resource" id="Resource_frenzy_phase"]
 script = ExtResource("3_bphas")
-hit_points_at_most = 30
+hit_points_at_most = 37
 announcement = "The Bone King flies into a frenzy, his guard drops!"
 armor_class = 14
 intents = Array[ExtResource("2_g7int")]([SubResource("Resource_frenzy")])
@@ -54,8 +54,8 @@ phases = Array[ExtResource("3_bphas")]([SubResource("Resource_raise_the_dead"), 
 id = &"bone_king"
 display_name = "The Bone King"
 armor_class = 16
-max_hit_points = 90
-attack_bonus = 10
+max_hit_points = 110
+attack_bonus = 11
 damage_die_count = 1
 damage_die_sides = 10
 damage_bonus = 6
