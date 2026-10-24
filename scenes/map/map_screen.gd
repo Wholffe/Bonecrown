@@ -12,10 +12,7 @@ const MERCHANT_SCENE_PATH: String = "res://scenes/map/merchant_screen.tscn"
 const REST_SCENE_PATH: String = "res://scenes/map/rest_screen.tscn"
 ## A treasure uses the loot part of the post-fight screen.
 const TREASURE_SCENE_PATH: String = "res://scenes/levelup/level_up.tscn"
-const LEGEND_TEXT: String = (
-	"F Fight   ·   E Elite   ·   $ Merchant   ·   R Rest   ·   T Treasure   ·   B Boss\n"
-	+ "Every node gives a level-up. Select a node to see where it leads."
-)
+const LEGEND_TEXT: String = "Every node gives a level-up. Select a node to see where it leads."
 
 var _selected: MapNode = null
 

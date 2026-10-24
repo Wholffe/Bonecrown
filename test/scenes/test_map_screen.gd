@@ -1,6 +1,7 @@
 extends GutTest
-## Map screen: a button per node, the first node selected, details with the node's type and check,
-## Enter only for the nodes the player can go to next, and where each node type leads.
+## Map screen: a button with a type icon per node, the first node selected, details with the
+## node's type and check, Enter only for the nodes the player can go to next, and where each node
+## type leads.
 
 const MAP_SCENE: PackedScene = preload("res://scenes/map/map_screen.tscn")
 const WARRIOR: ClassData = preload("res://scripts/data/classes/warrior.tres")
@@ -38,11 +39,14 @@ func _enter_button(screen: MapScreen) -> Button:
 	return screen.get_node("%EnterButton") as Button
 
 
-func test_every_node_gets_a_button() -> void:
+func test_every_node_gets_a_button_with_its_type_icon() -> void:
 	var screen: MapScreen = _create()
 
 	for node: MapNode in RunState.map.nodes:
-		assert_not_null(_view(screen).node_button(node.row, node.lane), "row %d" % node.row)
+		var button: Button = _view(screen).node_button(node.row, node.lane)
+		assert_not_null(button, "row %d" % node.row)
+		if button != null:
+			assert_eq(button.icon, MapView.TYPE_ICONS[node.type], "row %d" % node.row)
 
 
 func test_first_fight_is_selected_and_can_be_entered() -> void:

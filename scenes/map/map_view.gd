@@ -10,7 +10,6 @@ const NODE_SIZE: float = 46.0
 const NAME_WIDTH: float = 100.0
 const NAME_HEIGHT: float = 34.0
 const NAME_FONT_SIZE: int = 13
-const ICON_FONT_SIZE: int = 18
 const NAME_OUTLINE_SIZE: int = 6
 const BACKGROUND_COLOR: Color = Color(0.1, 0.1, 0.12)
 const NODE_FILL_COLOR: Color = Color(0.15, 0.16, 0.19)
@@ -34,15 +33,16 @@ const TYPE_NAMES: Dictionary[MapNode.Type, String] = {
 	MapNode.Type.TREASURE: "Treasure",
 	MapNode.Type.BOSS: "Boss",
 }
-## Placeholder icons until the pixel art arrives.
-const TYPE_ICONS: Dictionary[MapNode.Type, String] = {
-	MapNode.Type.FIGHT: "F",
-	MapNode.Type.ELITE: "E",
-	MapNode.Type.MERCHANT: "$",
-	MapNode.Type.REST: "R",
-	MapNode.Type.TREASURE: "T",
-	MapNode.Type.BOSS: "B",
+const TYPE_ICONS: Dictionary[MapNode.Type, Texture2D] = {
+	MapNode.Type.FIGHT: preload("res://assets/sprites/dungeon/weapon_regular_sword.png"),
+	MapNode.Type.ELITE: preload("res://assets/sprites/dungeon/skull.png"),
+	MapNode.Type.MERCHANT: preload("res://assets/sprites/dungeon/coin_anim_f0.png"),
+	MapNode.Type.REST: preload("res://assets/sprites/dungeon/flask_big_red.png"),
+	MapNode.Type.TREASURE: preload("res://assets/sprites/dungeon/chest_full_open_anim_f0.png"),
+	MapNode.Type.BOSS: preload("res://assets/sprites/dungeon/necromancer_anim_f0.png"),
 }
+## Room between the circle's edge and the icon inside it.
+const ICON_MARGIN: int = 10
 const TYPE_COLORS: Dictionary[MapNode.Type, Color] = {
 	MapNode.Type.FIGHT: Color(0.8, 0.8, 0.85),
 	MapNode.Type.ELITE: Color(0.95, 0.45, 0.35),
@@ -137,8 +137,11 @@ func _create_node_button(node: MapNode) -> Button:
 	button.toggle_mode = true
 	button.button_group = _button_group
 	button.size = Vector2(NODE_SIZE, NODE_SIZE)
-	button.text = TYPE_ICONS[node.type]
-	button.add_theme_font_size_override("font_size", ICON_FONT_SIZE)
+	button.icon = TYPE_ICONS[node.type]
+	button.expand_icon = true
+	button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# Pixel art stays crisp only without filtering. The name below is text and stays smooth.
+	button.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(node_pressed.emit.bind(node))
 	var name_label: Label = Label.new()
@@ -146,6 +149,7 @@ func _create_node_button(node: MapNode) -> Button:
 	name_label.text = TYPE_NAMES[node.type]
 	if node.check != null:
 		name_label.text = "Sealed " + name_label.text
+	name_label.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.add_theme_font_size_override("font_size", NAME_FONT_SIZE)
@@ -187,10 +191,6 @@ func _style_node(node: MapNode) -> void:
 	button.add_theme_stylebox_override("hover", _circle(border.lightened(0.2), BORDER_WIDTH))
 	button.add_theme_stylebox_override("pressed", _circle(border, SELECTED_BORDER_WIDTH))
 	button.add_theme_stylebox_override("hover_pressed", _circle(border, SELECTED_BORDER_WIDTH))
-	for state: String in [
-		"font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color"
-	]:
-		button.add_theme_color_override(state, type_color)
 	var label: Label = button.get_node("NameLabel") as Label
 	label.add_theme_color_override("font_color", type_color)
 	var is_open: bool = node in _walked or node in _reachable
@@ -203,5 +203,6 @@ func _circle(border: Color, border_width: int) -> StyleBoxFlat:
 	style.border_color = border
 	style.set_border_width_all(border_width)
 	style.set_corner_radius_all(int(NODE_SIZE / 2.0))
+	style.set_content_margin_all(ICON_MARGIN)
 	style.anti_aliasing = true
 	return style
